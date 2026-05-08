@@ -4,11 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import maplibregl, { Map as MapLibreMap, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-import { property, propertyAreas, worldRing } from "@/data/property";
+import { property, worldRing } from "@/data/property";
 import { publicCabins } from "@/data/cabins";
 import { pois, categoryStyle } from "@/data/pois";
-import waterData from "@/data/water.json";
 import type { Cabin, Poi } from "@/data/types";
+import parcelsData from "@/data/parcels.json";
+import waterData from "@/data/water.json";
 
 export type SelectedItem =
   | { kind: "cabin"; data: Cabin }
@@ -18,8 +19,6 @@ type Props = {
   onSelect: (item: SelectedItem | null) => void;
 };
 
-// OpenTopoMap shows contour lines, hillshading, and trails on top of OSM.
-// Free under CC-BY-SA — attribution is added below.
 const TOPO_STYLE: maplibregl.StyleSpecification = {
   version: 8,
   sources: {
@@ -39,29 +38,18 @@ const TOPO_STYLE: maplibregl.StyleSpecification = {
   layers: [{ id: "topo", type: "raster", source: "topo" }],
 };
 
-// Lucide-derived icon paths (24x24 viewBox). Stroke-only, white.
 const ICON_PATHS: Record<string, string> = {
-  cabin:
-    '<path d="M3 9l9-7 9 7v12H3z"/><path d="M9 21V12h6v9"/>',
-  pavilion:
-    '<path d="M2 21h20"/><path d="M3.5 21 12 4l8.5 17"/><path d="M12 13v8"/>',
-  firepit:
-    '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
-  "lake-feature":
-    '<path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>',
-  barn:
-    '<path d="M22 8.35V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.35a2 2 0 0 1 1.26-1.85l8-3.2a2 2 0 0 1 1.48 0l8 3.2A2 2 0 0 1 22 8.35Z"/><path d="M6 18h12"/><path d="M6 14h12"/><path d="M6 10h12"/>',
-  treehouse:
-    '<path d="m17 14 3 3.3a1 1 0 0 1-.7 1.7H4.7a1 1 0 0 1-.7-1.7L7 14h-.3a1 1 0 0 1-.7-1.7L9 9h-.2A1 1 0 0 1 8 7.3L12 3l4 4.3a1 1 0 0 1-.8 1.7H15l3 3.3a1 1 0 0 1-.7 1.7Z"/><path d="M12 22v-3"/>',
-  shack:
-    '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
-  trailhead:
-    '<path d="M14 8a2 2 0 1 0-4 0c0 2 2 4 2 4s2-2 2-4z"/><path d="m4 22 6-10"/><path d="m20 22-6-10"/>',
+  cabin: '<path d="M3 9l9-7 9 7v12H3z"/><path d="M9 21V12h6v9"/>',
+  pavilion: '<path d="M2 21h20"/><path d="M3.5 21 12 4l8.5 17"/><path d="M12 13v8"/>',
+  firepit: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+  "lake-feature": '<path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>',
+  barn: '<path d="M22 8.35V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.35a2 2 0 0 1 1.26-1.85l8-3.2a2 2 0 0 1 1.48 0l8 3.2A2 2 0 0 1 22 8.35Z"/><path d="M6 18h12"/><path d="M6 14h12"/><path d="M6 10h12"/>',
+  treehouse: '<path d="m17 14 3 3.3a1 1 0 0 1-.7 1.7H4.7a1 1 0 0 1-.7-1.7L7 14h-.3a1 1 0 0 1-.7-1.7L9 9h-.2A1 1 0 0 1 8 7.3L12 3l4 4.3a1 1 0 0 1-.8 1.7H15l3 3.3a1 1 0 0 1-.7 1.7Z"/><path d="M12 22v-3"/>',
+  shack: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  trailhead: '<path d="M14 8a2 2 0 1 0-4 0c0 2 2 4 2 4s2-2 2-4z"/><path d="m4 22 6-10"/><path d="m20 22-6-10"/>',
   parking: '<path d="M9 17V7h4a3 3 0 0 1 0 6H9"/>',
-  "scenic-viewpoint":
-    '<circle cx="12" cy="12" r="3"/><path d="M12 3v2"/><path d="M12 19v2"/><path d="M3 12h2"/><path d="M19 12h2"/>',
-  waterfall:
-    '<path d="M3 5l3 3"/><path d="M9 4v4"/><path d="M15 5l-3 3"/><path d="M21 7l-3 1"/><path d="M3 13c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M3 19c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>',
+  "scenic-viewpoint": '<circle cx="12" cy="12" r="3"/><path d="M12 3v2"/><path d="M12 19v2"/><path d="M3 12h2"/><path d="M19 12h2"/>',
+  waterfall: '<path d="M3 5l3 3"/><path d="M9 4v4"/><path d="M15 5l-3 3"/><path d="M21 7l-3 1"/><path d="M3 13c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M3 19c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>',
 };
 
 function buildPinElement(color: string, category: string): HTMLDivElement {
@@ -72,14 +60,12 @@ function buildPinElement(color: string, category: string): HTMLDivElement {
     background: ${color};
     border: 2.5px solid #F0E2C2;
     box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-    display: grid;
-    place-items: center;
+    display: grid; place-items: center;
     cursor: pointer;
     transition: transform 0.15s ease-out;
   `;
   wrap.addEventListener("mouseenter", () => (wrap.style.transform = "scale(1.12)"));
   wrap.addEventListener("mouseleave", () => (wrap.style.transform = ""));
-
   const path = ICON_PATHS[category] ?? '<circle cx="12" cy="12" r="3"/>';
   wrap.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block">${path}</svg>`;
   return wrap;
@@ -87,26 +73,10 @@ function buildPinElement(color: string, category: string): HTMLDivElement {
 
 function buildUserDot(): HTMLDivElement {
   const wrap = document.createElement("div");
-  wrap.style.cssText = `
-    position: relative; width: 18px; height: 18px;
-  `;
+  wrap.style.cssText = `position: relative; width: 18px; height: 18px;`;
   wrap.innerHTML = `
-    <div style="
-      position: absolute; inset: 0;
-      width: 18px; height: 18px;
-      border-radius: 50%;
-      background: #2E78D2;
-      border: 3px solid #fff;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
-      z-index: 2;
-    "></div>
-    <div style="
-      position: absolute; left: -16px; top: -16px;
-      width: 50px; height: 50px;
-      border-radius: 50%;
-      background: rgba(46, 120, 210, 0.18);
-      animation: pulse-dot 2.4s ease-out infinite;
-    "></div>
+    <div style="position: absolute; inset: 0; width: 18px; height: 18px; border-radius: 50%; background: #2E78D2; border: 3px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.4); z-index: 2;"></div>
+    <div style="position: absolute; left: -16px; top: -16px; width: 50px; height: 50px; border-radius: 50%; background: rgba(46, 120, 210, 0.18); animation: pulse-dot 2.4s ease-out infinite;"></div>
   `;
   return wrap;
 }
@@ -120,7 +90,6 @@ export default function PropertyMap({ onSelect }: Props) {
   const [locateError, setLocateError] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
 
-  // Map init
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -141,16 +110,18 @@ export default function PropertyMap({ onSelect }: Props) {
     map.on("load", () => {
       map.resize();
 
-      // Off-property dim mask: world rectangle with property polygons as holes
+      // Build the dim mask: world rect with all 7 parcels punched out as holes.
+      // Both owned parcels and the permission parcel (horse pasture) are NOT dimmed,
+      // since guests can walk on either.
+      type ParcelFeature = { geometry: { coordinates: number[][][] } };
+      const allRings: number[][][] = (parcelsData.features as unknown as ParcelFeature[])
+        .flatMap((f) => f.geometry.coordinates);
       const maskFeature = {
         type: "Feature" as const,
         properties: {},
         geometry: {
           type: "Polygon" as const,
-          coordinates: [
-            worldRing,
-            ...propertyAreas.map((p) => p.ring),
-          ],
+          coordinates: [worldRing as number[][], ...allRings],
         },
       };
       map.addSource("off-property", {
@@ -161,79 +132,71 @@ export default function PropertyMap({ onSelect }: Props) {
         id: "off-property-fill",
         type: "fill",
         source: "off-property",
-        paint: {
-          "fill-color": "#1A1310",
-          "fill-opacity": 0.45,
-        },
+        paint: { "fill-color": "#1A1310", "fill-opacity": 0.45 },
       });
 
-      // Property outlines
-      const outlineFeatures = propertyAreas.map((p) => ({
-        type: "Feature" as const,
-        properties: { id: p.id, name: p.name, approximate: !!p.approximate },
-        geometry: {
-          type: "LineString" as const,
-          coordinates: p.ring,
-        },
-      }));
-      map.addSource("property-outlines", {
-        type: "geojson",
-        data: { type: "FeatureCollection", features: outlineFeatures },
-      });
-      map.addLayer({
-        id: "property-outline",
-        type: "line",
-        source: "property-outlines",
-        paint: {
-          "line-color": "#F0E2C2",
-          "line-width": 3,
-          "line-opacity": 0.95,
-          "line-dasharray": [
-            "case",
-            ["get", "approximate"],
-            ["literal", [2, 2]],
-            ["literal", [1, 0]],
-          ] as never, // older typedef
-        },
-      });
-
-
-      // Bodies of water — lakes, ponds, the dock area
-      map.addSource("water", {
-        type: "geojson",
-        data: waterData as never,
-      });
+      // Bodies of water — drawn ABOVE the dim mask so on- and off-property water both show
+      map.addSource("water", { type: "geojson", data: waterData as never });
       map.addLayer({
         id: "water-fill",
         type: "fill",
         source: "water",
-        paint: {
-          "fill-color": "#3a82c2",
-          "fill-opacity": 0.62,
-        },
+        paint: { "fill-color": "#3a82c2", "fill-opacity": 0.62 },
       });
       map.addLayer({
         id: "water-outline",
         type: "line",
         source: "water",
-        paint: {
-          "line-color": "#1d5688",
-          "line-width": 1.2,
-          "line-opacity": 0.9,
-        },
+        paint: { "line-color": "#1d5688", "line-width": 1.2, "line-opacity": 0.9 },
       });
 
-      // Fit to property bounds
-      map.fitBounds(
-        [
-          [property.bounds.west, property.bounds.south],
-          [property.bounds.east, property.bounds.north],
-        ],
-        { padding: 50, duration: 0 },
+      // Permission parcels (horse pasture) — light tan fill behind owned outline
+      map.addSource("parcels", { type: "geojson", data: parcelsData as never });
+      map.addLayer({
+        id: "parcel-permission-fill",
+        type: "fill",
+        source: "parcels",
+        filter: ["==", ["get", "tier"], "permission"],
+        paint: { "fill-color": "#B89968", "fill-opacity": 0.13 },
+      });
+      // Permission parcels — dashed warm-tan outline
+      map.addLayer({
+        id: "parcel-permission-outline",
+        type: "line",
+        source: "parcels",
+        filter: ["==", ["get", "tier"], "permission"],
+        paint: {
+          "line-color": "#B89968",
+          "line-width": 2,
+          "line-opacity": 0.9,
+          "line-dasharray": [3, 2],
+        },
+      });
+      // Owned parcels — solid bright cream outline
+      map.addLayer({
+        id: "parcel-owned-outline",
+        type: "line",
+        source: "parcels",
+        filter: ["==", ["get", "tier"], "owned"],
+        paint: { "line-color": "#F0E2C2", "line-width": 2.5, "line-opacity": 0.95 },
+      });
+
+      // Compute fit-bounds from all parcels
+      const lngs: number[] = [];
+      const lats: number[] = [];
+      allRings.forEach((ring) =>
+        ring.forEach((pt) => {
+          lngs.push(pt[0]);
+          lats.push(pt[1]);
+        }),
       );
+      const minLng = Math.min(...lngs);
+      const maxLng = Math.max(...lngs);
+      const minLat = Math.min(...lats);
+      const maxLat = Math.max(...lats);
+      map.fitBounds([[minLng, minLat], [maxLng, maxLat]], { padding: 50, duration: 0 });
     });
 
-    // Cabin pins
     publicCabins.forEach((c) => {
       const el = buildPinElement(categoryStyle.cabin.color, "cabin");
       el.title = c.name;
@@ -247,7 +210,6 @@ export default function PropertyMap({ onSelect }: Props) {
         .addTo(map);
     });
 
-    // POI pins
     pois.forEach((p) => {
       const style = categoryStyle[p.category] ?? categoryStyle.pavilion;
       const el = buildPinElement(style.color, p.category);
@@ -263,7 +225,6 @@ export default function PropertyMap({ onSelect }: Props) {
     });
 
     map.on("click", () => onSelect(null));
-
     const ro = new ResizeObserver(() => map.resize());
     ro.observe(container);
 
@@ -274,7 +235,6 @@ export default function PropertyMap({ onSelect }: Props) {
     };
   }, [onSelect]);
 
-  // Live location tracking — starts when user enables it, runs continuously
   useEffect(() => {
     if (!tracking) return;
     if (!navigator.geolocation) {
@@ -283,7 +243,6 @@ export default function PropertyMap({ onSelect }: Props) {
       return;
     }
     setLocateError(null);
-
     watchIdRef.current = navigator.geolocation.watchPosition(
       (pos) => {
         const ll: [number, number] = [pos.coords.longitude, pos.coords.latitude];
@@ -293,13 +252,9 @@ export default function PropertyMap({ onSelect }: Props) {
         if (userMarkerRef.current) {
           userMarkerRef.current.setLngLat(ll);
         } else {
-          userMarkerRef.current = new maplibregl.Marker({
-            element: buildUserDot(),
-            anchor: "center",
-          })
+          userMarkerRef.current = new maplibregl.Marker({ element: buildUserDot(), anchor: "center" })
             .setLngLat(ll)
             .addTo(map);
-          // First fix: recenter
           map.flyTo({ center: ll, zoom: Math.max(map.getZoom(), 16) });
         }
       },
@@ -309,7 +264,6 @@ export default function PropertyMap({ onSelect }: Props) {
       },
       { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 },
     );
-
     return () => {
       if (watchIdRef.current !== null) {
         navigator.geolocation.clearWatch(watchIdRef.current);
