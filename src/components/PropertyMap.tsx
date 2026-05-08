@@ -25,15 +25,15 @@ const TOPO_STYLE: maplibregl.StyleSpecification = {
   sources: {
     topo: {
       type: "raster",
+      // Esri World Topo Map — terrain + roads + place names. Free, no API key.
+      // Uses {z}/{y}/{x} order (different from OSM).
       tiles: [
-        "https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
-        "https://b.tile.opentopomap.org/{z}/{x}/{y}.png",
-        "https://c.tile.opentopomap.org/{z}/{x}/{y}.png",
+        "https://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",
       ],
       tileSize: 256,
-      maxzoom: 17,
+      maxzoom: 19,
       attribution:
-        '© <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA) · © OpenStreetMap contributors',
+        'Tiles © <a href="https://www.esri.com">Esri</a> — Esri, DeLorme, NAVTEQ, TomTom, Intermap, increment P Corp., GEBCO, USGS, FAO, NPS, NRCAN, GeoBase, IGN, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community',
     },
   },
   layers: [{ id: "topo", type: "raster", source: "topo" }],
