@@ -57,23 +57,33 @@ const ICON_PATHS: Record<string, string> = {
 };
 
 function buildPinElement(color: string, category: string): HTMLDivElement {
+  // OUTER WRAP — MapLibre owns this element's transform (uses it for
+  // translate(...) positioning). Do NOT touch wrap.style.transform anywhere.
   const wrap = document.createElement("div");
-  wrap.style.cssText = `
+  wrap.style.cssText = `width: 36px; height: 36px; cursor: pointer;`;
+
+  // INNER VISUAL — this is the only thing we animate.
+  const inner = document.createElement("div");
+  inner.style.cssText = `
     width: 36px; height: 36px;
     border-radius: 50%;
     background: ${color};
     border: 2.5px solid #F0E2C2;
     box-shadow: 0 2px 6px rgba(0,0,0,0.4);
     display: grid; place-items: center;
-    cursor: pointer;
-    transition: transform 0.18s cubic-bezier(0.2,0.8,0.2,1.05);
+    transition: transform 0.18s cubic-bezier(0.2,0.8,0.2,1.05), filter 0.18s ease-out;
+    will-change: transform;
   `;
-  wrap.addEventListener("mouseenter", () => (wrap.style.transform = "scale(1.12)"));
-  wrap.addEventListener("mouseleave", () => (wrap.style.transform = ""));
-  wrap.addEventListener("touchstart", () => (wrap.style.transform = "scale(0.9)"));
-  wrap.addEventListener("touchend", () => (wrap.style.transform = ""));
+  inner.addEventListener("mouseenter", () => (inner.style.transform = "scale(1.12)"));
+  inner.addEventListener("mouseleave", () => (inner.style.transform = ""));
+  inner.addEventListener("touchstart", () => (inner.style.transform = "scale(0.92)"), { passive: true });
+  inner.addEventListener("touchend", () => (inner.style.transform = ""), { passive: true });
+  inner.addEventListener("touchcancel", () => (inner.style.transform = ""), { passive: true });
+
   const path = ICON_PATHS[category] ?? '<circle cx="12" cy="12" r="3"/>';
-  wrap.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block">${path}</svg>`;
+  inner.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block">${path}</svg>`;
+
+  wrap.appendChild(inner);
   return wrap;
 }
 
