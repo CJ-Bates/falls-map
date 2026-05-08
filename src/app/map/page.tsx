@@ -31,6 +31,14 @@ export default function MapPage() {
       </header>
 
       <PropertyMap onSelect={setSelected} />
+      {selected && (
+        <button
+          aria-label="Close detail panel"
+          onClick={() => setSelected(null)}
+          className="fixed inset-x-0 top-0 z-[15] cursor-default bg-transparent"
+          style={{ height: "45svh" }}
+        />
+      )}
       <DetailPanel item={selected} onClose={() => setSelected(null)} />
     </main>
   );

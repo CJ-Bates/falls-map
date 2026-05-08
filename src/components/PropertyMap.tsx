@@ -338,7 +338,7 @@ export default function PropertyMap({ onSelect }: Props) {
           center: [c.lng, c.lat],
           duration: 250,
           essential: true,
-          padding: { top: 80, bottom: Math.round(window.innerHeight * 0.55), left: 20, right: 20 },
+          padding: { top: 80, bottom: Math.round(window.innerHeight * 0.42), left: 20, right: 20 },
         });
       });
       new maplibregl.Marker({ element: el, anchor: "center" })
@@ -356,7 +356,7 @@ export default function PropertyMap({ onSelect }: Props) {
           center: [p.lng, p.lat],
           duration: 250,
           essential: true,
-          padding: { top: 80, bottom: Math.round(window.innerHeight * 0.55), left: 20, right: 20 },
+          padding: { top: 80, bottom: Math.round(window.innerHeight * 0.42), left: 20, right: 20 },
         });
       });
       new maplibregl.Marker({ element: el, anchor: "center" })

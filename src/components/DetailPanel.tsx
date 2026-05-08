@@ -35,7 +35,7 @@ export default function DetailPanel({ item, onClose }: Props) {
 
   return (
     <div
-      className="ios-glass-strong animate-slide-up fixed inset-x-0 bottom-0 z-20 max-h-[78svh] overflow-y-auto rounded-t-[28px] text-[#F0E2C2] shadow-[0_-12px_40px_rgba(0,0,0,0.55)]"
+      className="ios-glass-strong animate-slide-up fixed inset-x-0 bottom-0 z-20 max-h-[55svh] overflow-y-auto rounded-t-[28px] text-[#F0E2C2] shadow-[0_-12px_40px_rgba(0,0,0,0.55)]"
       style={{ paddingBottom: "max(env(safe-area-inset-bottom), 16px)" }}
     >
       {/* iOS sheet drag handle */}
@@ -75,7 +75,7 @@ export default function DetailPanel({ item, onClose }: Props) {
       <div className="px-5 py-4 space-y-4">
         {item.kind === "cabin" && (
           <>
-            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-[#2A1F18]">
+            <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-[#2A1F18]">
               <Image
                 src={item.data.coverPhoto}
                 alt={item.data.name}
