@@ -23,15 +23,23 @@ type Props = {
 const TOPO_STYLE: maplibregl.StyleSpecification = {
   version: 8,
   sources: {
-    osm: {
+    base: {
       type: "raster",
-      tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+      // CartoDB Voyager — clean colorful style with roads, place names, terrain hints.
+      // Has proper CORS headers (required for WebGL canvas rendering).
+      // Free under CC-BY-SA via CARTO + OpenStreetMap.
+      tiles: [
+        "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+        "https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+        "https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+      ],
       tileSize: 256,
-      maxzoom: 19,
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxzoom: 20,
+      attribution:
+        '© <a href="https://carto.com/attributions">CARTO</a> · © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     },
   },
-  layers: [{ id: "osm", type: "raster", source: "osm" }],
+  layers: [{ id: "base", type: "raster", source: "base" }],
 };
 
 const ICON_PATHS: Record<string, string> = {
