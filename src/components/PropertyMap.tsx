@@ -13,6 +13,7 @@ import waterData from "@/data/water.json";
 import trailsData from "@/data/trails.json";
 import buildingsData from "@/data/buildings.json";
 import horsePastureFence from "@/data/horse-pasture-fence.json";
+import ownedBoundary from "@/data/owned-boundary.json";
 
 export type SelectedItem =
   | { kind: "cabin"; data: Cabin }
@@ -143,26 +144,32 @@ export default function PropertyMap({ onSelect }: Props) {
         id: "off-property-fill",
         type: "fill",
         source: "off-property",
-        paint: { "fill-color": "#1A1310", "fill-opacity": 0.18 },
+        paint: { "fill-color": "#1A1310", "fill-opacity": 0.22 },
       });
 
-      // Soft warm glow on the OWNED parcels (cream tint, layered for a halo feel)
-      map.addSource("owned-parcels", {
-        type: "geojson",
-        data: {
-          type: "FeatureCollection",
-          features: [{
-            type: "Feature",
-            properties: {},
-            geometry: { type: "MultiPolygon", coordinates: ownedRings.map((r) => [r]) },
-          }],
-        },
-      });
+      // OWNED parcels — just a subtle cream fill, NO borders. The boundary reads
+      // through the absence of dim outside it.
+      map.addSource("owned-parcels", { type: "geojson", data: parcelsData as never });
       map.addLayer({
         id: "owned-fill",
         type: "fill",
         source: "owned-parcels",
-        paint: { "fill-color": "#F0E2C2", "fill-opacity": 0.06 },
+        filter: ["==", ["get", "tier"], "owned"],
+        paint: { "fill-color": "#F0E2C2", "fill-opacity": 0.10 },
+      });
+
+      // Single soft halo around the OUTER union of owned parcels (no internal seams)
+      map.addSource("owned-boundary", { type: "geojson", data: ownedBoundary as never });
+      map.addLayer({
+        id: "owned-halo",
+        type: "line",
+        source: "owned-boundary",
+        paint: {
+          "line-color": "#F0E2C2",
+          "line-width": 6,
+          "line-opacity": 0.22,
+          "line-blur": 5,
+        },
       });
 
       // Bodies of water
@@ -239,9 +246,8 @@ export default function PropertyMap({ onSelect }: Props) {
         },
       });
 
-      // Buildings (small footprints) — split by kind so cabins read differently
+      // Buildings — split by kind so cabins read differently
       map.addSource("buildings", { type: "geojson", data: buildingsData as never });
-      // Cabins: deeper warm wood tone — this is where guests sleep
       map.addLayer({
         id: "cabins-fill",
         type: "fill",
@@ -256,7 +262,6 @@ export default function PropertyMap({ onSelect }: Props) {
         filter: ["==", ["get", "kind"], "cabin"],
         paint: { "line-color": "#1A1310", "line-width": 1.5 },
       });
-      // Pavilions / barn / treehouse: lighter cream
       map.addLayer({
         id: "buildings-fill",
         type: "fill",
@@ -272,7 +277,7 @@ export default function PropertyMap({ onSelect }: Props) {
         paint: { "line-color": "#2A1F18", "line-width": 1.5 },
       });
 
-      // Permission parcels (the WHOLE accessible parcel) — soft warm-tan tint
+      // Permission parcel (horse pasture access) — soft tan fill, NO border
       map.addSource("parcels-source", { type: "geojson", data: parcelsData as never });
       map.addLayer({
         id: "permission-fill",
@@ -282,62 +287,31 @@ export default function PropertyMap({ onSelect }: Props) {
         paint: { "fill-color": "#B89968", "fill-opacity": 0.10 },
       });
 
-      // The actual fenced horse pasture — slightly more saturated tint, INSIDE the permission parcel
+      // Inner FENCED horse pasture — punchier sage-tan fill so it stands out
+      // inside the larger permission parcel, NO border
       map.addSource("horse-pasture", { type: "geojson", data: horsePastureFence as never });
       map.addLayer({
         id: "horse-pasture-fill",
         type: "fill",
         source: "horse-pasture",
-        paint: { "fill-color": "#cdac7d", "fill-opacity": 0.22 },
+        paint: { "fill-color": "#7d8f5a", "fill-opacity": 0.45 },
       });
+      // "Horse Pasture" label centered on the polygon
       map.addLayer({
-        id: "horse-pasture-outline",
-        type: "line",
+        id: "horse-pasture-label",
+        type: "symbol",
         source: "horse-pasture",
-        paint: {
-          "line-color": "#F0E2C2",
-          "line-width": 1.2,
-          "line-opacity": 0.6,
-          "line-dasharray": [3, 2],
+        layout: {
+          "text-field": "Horse Pasture",
+          "text-size": 13,
+          "text-letter-spacing": 0.08,
+          "text-transform": "uppercase",
+          "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
         },
-      });
-
-      // Permission parcel outline — dashed warm tan (rendered above pasture so it's the boundary)
-      map.addLayer({
-        id: "permission-outline",
-        type: "line",
-        source: "parcels-source",
-        filter: ["==", ["get", "tier"], "permission"],
         paint: {
-          "line-color": "#B89968",
-          "line-width": 2,
-          "line-opacity": 0.95,
-          "line-dasharray": [3, 2],
-        },
-      });
-
-      // Owned parcels outline — bright cream solid (with a subtle blurred halo underneath for "glow")
-      map.addLayer({
-        id: "owned-outline-glow",
-        type: "line",
-        source: "parcels-source",
-        filter: ["==", ["get", "tier"], "owned"],
-        paint: {
-          "line-color": "#F0E2C2",
-          "line-width": 6,
-          "line-opacity": 0.28,
-          "line-blur": 4,
-        },
-      });
-      map.addLayer({
-        id: "owned-outline",
-        type: "line",
-        source: "parcels-source",
-        filter: ["==", ["get", "tier"], "owned"],
-        paint: {
-          "line-color": "#F0E2C2",
-          "line-width": 2.5,
-          "line-opacity": 0.98,
+          "text-color": "#1A1310",
+          "text-halo-color": "#F0E2C2",
+          "text-halo-width": 2,
         },
       });
 

@@ -11,7 +11,10 @@ export default function MapPage() {
   return (
     <main className="relative h-[100svh] w-full overflow-hidden bg-[#2A1F18]">
       {/* iOS-style floating header */}
-      <header className="absolute inset-x-0 top-0 z-10 flex items-center gap-2 px-3 pt-3 pb-2">
+      <header
+        className="absolute inset-x-0 top-0 z-10 flex items-center gap-2 px-3 pb-2"
+        style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 0.75rem)" }}
+      >
         <Link
           href="/"
           aria-label="Back to home"
