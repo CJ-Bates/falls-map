@@ -23,20 +23,15 @@ type Props = {
 const TOPO_STYLE: maplibregl.StyleSpecification = {
   version: 8,
   sources: {
-    topo: {
+    osm: {
       type: "raster",
-      // Esri World Topo Map — terrain + roads + place names. Free, no API key.
-      // Uses {z}/{y}/{x} order (different from OSM).
-      tiles: [
-        "https://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",
-      ],
+      tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
       tileSize: 256,
       maxzoom: 19,
-      attribution:
-        'Tiles © <a href="https://www.esri.com">Esri</a> — Esri, DeLorme, NAVTEQ, TomTom, Intermap, increment P Corp., GEBCO, USGS, FAO, NPS, NRCAN, GeoBase, IGN, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community',
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     },
   },
-  layers: [{ id: "topo", type: "raster", source: "topo" }],
+  layers: [{ id: "osm", type: "raster", source: "osm" }],
 };
 
 const ICON_PATHS: Record<string, string> = {
