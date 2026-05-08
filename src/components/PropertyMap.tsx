@@ -239,18 +239,36 @@ export default function PropertyMap({ onSelect }: Props) {
         },
       });
 
-      // Buildings (small footprints)
+      // Buildings (small footprints) — split by kind so cabins read differently
       map.addSource("buildings", { type: "geojson", data: buildingsData as never });
+      // Cabins: deeper warm wood tone — this is where guests sleep
+      map.addLayer({
+        id: "cabins-fill",
+        type: "fill",
+        source: "buildings",
+        filter: ["==", ["get", "kind"], "cabin"],
+        paint: { "fill-color": "#8a5a3b", "fill-opacity": 0.92 },
+      });
+      map.addLayer({
+        id: "cabins-outline",
+        type: "line",
+        source: "buildings",
+        filter: ["==", ["get", "kind"], "cabin"],
+        paint: { "line-color": "#1A1310", "line-width": 1.5 },
+      });
+      // Pavilions / barn / treehouse: lighter cream
       map.addLayer({
         id: "buildings-fill",
         type: "fill",
         source: "buildings",
+        filter: ["!=", ["get", "kind"], "cabin"],
         paint: { "fill-color": "#F0E2C2", "fill-opacity": 0.85 },
       });
       map.addLayer({
         id: "buildings-outline",
         type: "line",
         source: "buildings",
+        filter: ["!=", ["get", "kind"], "cabin"],
         paint: { "line-color": "#2A1F18", "line-width": 1.5 },
       });
 

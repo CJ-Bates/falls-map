@@ -22,8 +22,8 @@ export const cabins: Cabin[] = [
     ],
     description:
       "Spacious 4-bedroom, 2-bathroom cabin nestled in Jefferson County. Secluded location with the perfect blend of comfort and adventure.",
-    lat: 38.41133,
-    lng: -90.457299,
+    lat: 38.411291,
+    lng: -90.457274,
     coverPhoto:
       "https://bookingenginecdn.hostaway.com/listing/121272-313514-JxMt6wiAcEcc9qYXfxZbH82i3dQ7fbgbE70JSwLQP68-66fc1b0036e77",
     photoCount: 31,
@@ -50,8 +50,8 @@ export const cabins: Cabin[] = [
     ],
     description:
       "Modern two-story 4-bedroom cabin with bar, pool table, and vintage arcade in the lower level. Full kitchens on both floors.",
-    lat: 38.411712,
-    lng: -90.456774,
+    lat: 38.411745,
+    lng: -90.456765,
     coverPhoto:
       "https://bookingenginecdn.hostaway.com/listing/121272-398418--NdTKkrWJRBzmpilnReLtwZ4wENFqd9QXsZHWgRPPLc-68600f6db4cf2",
     photoCount: null,
@@ -72,8 +72,8 @@ export const cabins: Cabin[] = [
     amenities: ["Kitchenette", "Full bathroom", "Washer/dryer"],
     description:
       "Half of Ridge Cabin 3 — split into 3A (King) and 3B (Twin) sides. Cozy retreat with kitchenette, bath, and W/D.",
-    lat: 38.411495,
-    lng: -90.45662,
+    lat: 38.411481,
+    lng: -90.456591,
     coverPhoto:
       "https://bookingenginecdn.hostaway.com/listing/121272-313511-FieC-Al-0UGZxm0wXkbT17IxW0BOgPBkyBZwWjNQdYs-68ac9fc2a1607",
     photoCount: null,
@@ -94,8 +94,8 @@ export const cabins: Cabin[] = [
     amenities: ["Kitchenette", "Full bathroom", "Washer/dryer"],
     description:
       "Half of Ridge Cabin 3 — split into 3A (King) and 3B (Twin) sides. Cozy retreat with kitchenette, bath, and W/D.",
-    lat: 38.411495,
-    lng: -90.45662,
+    lat: 38.411481,
+    lng: -90.456591,
     coverPhoto:
       "https://bookingenginecdn.hostaway.com/listing/121272-313512-r--G944i4fotZ-Daf1sgTzfjZhaIZRKb2jjX6s--l9GCc-68ac9ff9564c1",
     photoCount: null,
@@ -116,8 +116,8 @@ export const cabins: Cabin[] = [
     amenities: ["Identical layout to Cabin 1", "Full kitchen (no dishwasher)", "Washer/dryer"],
     description:
       "Currently occupied by family — not listed for rental. Hidden from public app by default.",
-    lat: 38.411762,
-    lng: -90.456388,
+    lat: 38.411705,
+    lng: -90.456331,
     coverPhoto:
       "https://bookingenginecdn.hostaway.com/listing/121272-313513-qGUxqzMs1WsCHBlaEzzMHoyh0veWss9--wkMS6h-ZB0o-68712aad04291",
     photoCount: null,
