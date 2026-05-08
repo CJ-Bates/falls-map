@@ -49,3 +49,9 @@ body {
 .maplibregl-ctrl-attrib a {
   color: var(--brand-tan) !important;
 }
+
+@keyframes pulse-dot {
+  0% { transform: scale(0.5); opacity: 0.6; }
+  80% { transform: scale(1.4); opacity: 0; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
