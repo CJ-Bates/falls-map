@@ -3,55 +3,126 @@
 :root {
   /* The Falls at Lions Den brand palette */
   --brand-cream: #f0e2c2;
+  --brand-cream-soft: #ebd9a8;
   --brand-tan: #b89968;
+  --brand-tan-soft: #cdac7d;
   --brand-coffee: #2a1f18;
+  --brand-coffee-soft: #3a2d22;
   --brand-shadow: #1a1310;
+  --brand-night: #0e0a08;
 
-  --background: var(--brand-coffee);
+  --background: var(--brand-night);
   --foreground: var(--brand-cream);
+
+  /* iOS-style glass tokens */
+  --glass-bg: rgba(42, 31, 24, 0.55);
+  --glass-bg-strong: rgba(42, 31, 24, 0.85);
+  --glass-border: rgba(240, 226, 194, 0.18);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-brand-cream: var(--brand-cream);
+  --color-brand-cream-soft: var(--brand-cream-soft);
   --color-brand-tan: var(--brand-tan);
+  --color-brand-tan-soft: var(--brand-tan-soft);
   --color-brand-coffee: var(--brand-coffee);
+  --color-brand-coffee-soft: var(--brand-coffee-soft);
   --color-brand-shadow: var(--brand-shadow);
+  --color-brand-night: var(--brand-night);
 }
 
-html,
-body {
-  height: 100%;
-}
+html, body { height: 100%; }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+               "Helvetica Neue", "Segoe UI", Roboto, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   overscroll-behavior-y: none;
+  font-feature-settings: "ss01", "ss02", "kern";
 }
 
+/* iOS-style ultra-thin material */
+.ios-glass {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8);
+  backdrop-filter: blur(20px) saturate(1.8);
+  border: 1px solid var(--glass-border);
+}
+.ios-glass-strong {
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(28px) saturate(1.8);
+  backdrop-filter: blur(28px) saturate(1.8);
+  border: 1px solid var(--glass-border);
+}
+
+/* iOS large title kerning */
+.ios-title {
+  font-weight: 700;
+  letter-spacing: -0.022em;
+  line-height: 1.05;
+}
+.ios-headline {
+  font-weight: 600;
+  letter-spacing: -0.014em;
+}
+
+/* Spring-feeling button press */
+.ios-press {
+  transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1.05),
+              filter 200ms ease-out;
+}
+.ios-press:active {
+  transform: scale(0.96);
+  filter: brightness(0.92);
+}
+
+/* Hero waterfall radial */
+.hero-radial {
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(184, 153, 104, 0.22) 0%, transparent 60%),
+    radial-gradient(80% 60% at 90% 100%, rgba(46, 120, 210, 0.12) 0%, transparent 60%),
+    var(--background);
+}
+
+/* Slide-up panel (kept for map detail panel) */
 @keyframes slide-up {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
 }
+.animate-slide-up { animation: slide-up 280ms cubic-bezier(0.2, 0.85, 0.25, 1.02); }
 
-.animate-slide-up {
-  animation: slide-up 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
+/* MapLibre attribution legibility on dark theme */
 .maplibregl-ctrl-attrib {
-  background: rgba(26, 19, 16, 0.8) !important;
+  background: rgba(26, 19, 16, 0.55) !important;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   color: var(--brand-cream) !important;
+  font-size: 10px !important;
+  border-radius: 9999px !important;
+  margin: 8px !important;
+  padding: 2px 8px !important;
 }
-.maplibregl-ctrl-attrib a {
-  color: var(--brand-tan) !important;
-}
+.maplibregl-ctrl-attrib a { color: var(--brand-tan-soft) !important; }
+.maplibregl-ctrl-bottom-right { gap: 6px; }
 
+/* Pulse for live location dot */
 @keyframes pulse-dot {
   0% { transform: scale(0.5); opacity: 0.6; }
   80% { transform: scale(1.4); opacity: 0; }
   100% { transform: scale(1.4); opacity: 0; }
 }
+
+/* iOS-style horizontal scroll snap */
+.snap-row {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.snap-row::-webkit-scrollbar { display: none; }
+.snap-row > * { scroll-snap-align: start; }

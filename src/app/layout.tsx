@@ -2,24 +2,25 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "The Falls at Lions Den — Map",
+  title: "The Falls at Lions Den",
   description:
-    "Guest map for The Falls at Lions Den. Cabins, lakes, trails, firepits, and more.",
+    "Guest hub for The Falls at Lions Den. Cabins, lakes, trails, firepits, and more in Imperial, MO.",
   applicationName: "Falls at Lions Den",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "Falls Map",
+    title: "Falls",
     statusBarStyle: "black-translucent",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1A1310",
+  themeColor: "#0e0a08",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -27,7 +28,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className="h-full antialiased">
-      <body className="min-h-full bg-[#2A1F18] text-[#F0E2C2]">{children}</body>
+      <body className="min-h-full bg-[#0e0a08] text-[#F0E2C2]">{children}</body>
     </html>
   );
 }

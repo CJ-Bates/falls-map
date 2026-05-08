@@ -12,6 +12,7 @@ import parcelsData from "@/data/parcels.json";
 import waterData from "@/data/water.json";
 import trailsData from "@/data/trails.json";
 import buildingsData from "@/data/buildings.json";
+import horsePastureFence from "@/data/horse-pasture-fence.json";
 
 export type SelectedItem =
   | { kind: "cabin"; data: Cabin }
@@ -26,9 +27,6 @@ const TOPO_STYLE: maplibregl.StyleSpecification = {
   sources: {
     base: {
       type: "raster",
-      // CartoDB Voyager — clean colorful style with roads, place names, terrain hints.
-      // Has proper CORS headers (required for WebGL canvas rendering).
-      // Free under CC-BY-SA via CARTO + OpenStreetMap.
       tiles: [
         "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
         "https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
@@ -67,10 +65,12 @@ function buildPinElement(color: string, category: string): HTMLDivElement {
     box-shadow: 0 2px 6px rgba(0,0,0,0.4);
     display: grid; place-items: center;
     cursor: pointer;
-    transition: transform 0.15s ease-out;
+    transition: transform 0.18s cubic-bezier(0.2,0.8,0.2,1.05);
   `;
   wrap.addEventListener("mouseenter", () => (wrap.style.transform = "scale(1.12)"));
   wrap.addEventListener("mouseleave", () => (wrap.style.transform = ""));
+  wrap.addEventListener("touchstart", () => (wrap.style.transform = "scale(0.9)"));
+  wrap.addEventListener("touchend", () => (wrap.style.transform = ""));
   const path = ICON_PATHS[category] ?? '<circle cx="12" cy="12" r="3"/>';
   wrap.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block">${path}</svg>`;
   return wrap;
@@ -112,40 +112,60 @@ export default function PropertyMap({ onSelect }: Props) {
     mapRef.current = map;
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
 
-    map.on("error", (e) => {
-      console.error("[MapLibre error]", e?.error?.message || e, e);
-    });
+    map.on("error", (e) => console.error("[MapLibre]", e?.error?.message || e));
 
     map.on("load", () => {
-      console.log("[MapLibre] load fired");
       map.resize();
 
-      // Build the dim mask: world rect with all 7 parcels punched out as holes.
-      // Both owned parcels and the permission parcel (horse pasture) are NOT dimmed,
-      // since guests can walk on either.
-      type ParcelFeature = { geometry: { coordinates: number[][][] } };
+      type ParcelFeature = { geometry: { coordinates: number[][][] }, properties: { tier?: string } };
       const allRings: number[][][] = (parcelsData.features as unknown as ParcelFeature[])
         .flatMap((f) => f.geometry.coordinates);
-      const maskFeature = {
-        type: "Feature" as const,
-        properties: {},
-        geometry: {
-          type: "Polygon" as const,
-          coordinates: [worldRing as number[][], ...allRings],
-        },
-      };
+      const ownedRings: number[][][] = (parcelsData.features as unknown as ParcelFeature[])
+        .filter((f) => f.properties?.tier === "owned")
+        .flatMap((f) => f.geometry.coordinates);
+
+      // VERY subtle dim outside all property — just enough to draw the eye, not block context
       map.addSource("off-property", {
         type: "geojson",
-        data: { type: "FeatureCollection", features: [maskFeature] },
+        data: {
+          type: "FeatureCollection",
+          features: [{
+            type: "Feature",
+            properties: {},
+            geometry: {
+              type: "Polygon",
+              coordinates: [worldRing as number[][], ...allRings],
+            },
+          }],
+        },
       });
       map.addLayer({
         id: "off-property-fill",
         type: "fill",
         source: "off-property",
-        paint: { "fill-color": "#1A1310", "fill-opacity": 0.45 },
+        paint: { "fill-color": "#1A1310", "fill-opacity": 0.18 },
       });
 
-      // Bodies of water — drawn ABOVE the dim mask so on- and off-property water both show
+      // Soft warm glow on the OWNED parcels (cream tint, layered for a halo feel)
+      map.addSource("owned-parcels", {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: [{
+            type: "Feature",
+            properties: {},
+            geometry: { type: "MultiPolygon", coordinates: ownedRings.map((r) => [r]) },
+          }],
+        },
+      });
+      map.addLayer({
+        id: "owned-fill",
+        type: "fill",
+        source: "owned-parcels",
+        paint: { "fill-color": "#F0E2C2", "fill-opacity": 0.06 },
+      });
+
+      // Bodies of water
       map.addSource("water", { type: "geojson", data: waterData as never });
       map.addLayer({
         id: "water-fill",
@@ -160,19 +180,17 @@ export default function PropertyMap({ onSelect }: Props) {
         paint: { "line-color": "#1d5688", "line-width": 1.2, "line-opacity": 0.9 },
       });
 
-      // Trails / roads — colored by surface (paved / gravel / 4wd / trail / unknown).
-      // Dashed when marked approximate (still being verified against the ground).
+      // Trails / roads
       map.addSource("trails", { type: "geojson", data: trailsData as never });
-      // Trail "halo" for legibility on busy topo background
       map.addLayer({
         id: "trails-halo",
         type: "line",
         source: "trails",
         paint: {
           "line-color": "#1A1310",
-          "line-width": 5.5,
-          "line-opacity": 0.65,
-          "line-blur": 1,
+          "line-width": 6,
+          "line-opacity": 0.55,
+          "line-blur": 1.2,
         },
         layout: { "line-join": "round", "line-cap": "round" },
       });
@@ -184,10 +202,10 @@ export default function PropertyMap({ onSelect }: Props) {
           "line-color": [
             "match",
             ["get", "surface"],
-            "paved",   "#444444",
-            "gravel",  "#B89968",
-            "4wd",     "#D9531E",
-            "trail",   "#F0E2C2",
+            "paved", "#444444",
+            "gravel", "#B89968",
+            "4wd", "#D9531E",
+            "trail", "#F0E2C2",
             /* default */ "#9aa3a8",
           ],
           "line-width": 3,
@@ -201,7 +219,6 @@ export default function PropertyMap({ onSelect }: Props) {
         },
         layout: { "line-join": "round", "line-cap": "round" },
       });
-      // Trail name labels along each line
       map.addLayer({
         id: "trails-labels",
         type: "symbol",
@@ -222,75 +239,100 @@ export default function PropertyMap({ onSelect }: Props) {
         },
       });
 
-      // Building footprints — small structures (pavilions, barn, treehouse).
-      // Visible mainly when zoomed in close.
+      // Buildings (small footprints)
       map.addSource("buildings", { type: "geojson", data: buildingsData as never });
       map.addLayer({
         id: "buildings-fill",
         type: "fill",
         source: "buildings",
-        paint: {
-          "fill-color": "#F0E2C2",
-          "fill-opacity": 0.85,
-        },
+        paint: { "fill-color": "#F0E2C2", "fill-opacity": 0.85 },
       });
       map.addLayer({
         id: "buildings-outline",
         type: "line",
         source: "buildings",
+        paint: { "line-color": "#2A1F18", "line-width": 1.5 },
+      });
+
+      // Permission parcels (the WHOLE accessible parcel) — soft warm-tan tint
+      map.addSource("parcels-source", { type: "geojson", data: parcelsData as never });
+      map.addLayer({
+        id: "permission-fill",
+        type: "fill",
+        source: "parcels-source",
+        filter: ["==", ["get", "tier"], "permission"],
+        paint: { "fill-color": "#B89968", "fill-opacity": 0.10 },
+      });
+
+      // The actual fenced horse pasture — slightly more saturated tint, INSIDE the permission parcel
+      map.addSource("horse-pasture", { type: "geojson", data: horsePastureFence as never });
+      map.addLayer({
+        id: "horse-pasture-fill",
+        type: "fill",
+        source: "horse-pasture",
+        paint: { "fill-color": "#cdac7d", "fill-opacity": 0.22 },
+      });
+      map.addLayer({
+        id: "horse-pasture-outline",
+        type: "line",
+        source: "horse-pasture",
         paint: {
-          "line-color": "#2A1F18",
-          "line-width": 1.5,
+          "line-color": "#F0E2C2",
+          "line-width": 1.2,
+          "line-opacity": 0.6,
+          "line-dasharray": [3, 2],
         },
       });
 
-      // Permission parcels (horse pasture) — light tan fill behind owned outline
-      map.addSource("parcels", { type: "geojson", data: parcelsData as never });
+      // Permission parcel outline — dashed warm tan (rendered above pasture so it's the boundary)
       map.addLayer({
-        id: "parcel-permission-fill",
-        type: "fill",
-        source: "parcels",
-        filter: ["==", ["get", "tier"], "permission"],
-        paint: { "fill-color": "#B89968", "fill-opacity": 0.13 },
-      });
-      // Permission parcels — dashed warm-tan outline
-      map.addLayer({
-        id: "parcel-permission-outline",
+        id: "permission-outline",
         type: "line",
-        source: "parcels",
+        source: "parcels-source",
         filter: ["==", ["get", "tier"], "permission"],
         paint: {
           "line-color": "#B89968",
           "line-width": 2,
-          "line-opacity": 0.9,
+          "line-opacity": 0.95,
           "line-dasharray": [3, 2],
         },
       });
-      // Owned parcels — solid bright cream outline
+
+      // Owned parcels outline — bright cream solid (with a subtle blurred halo underneath for "glow")
       map.addLayer({
-        id: "parcel-owned-outline",
+        id: "owned-outline-glow",
         type: "line",
-        source: "parcels",
+        source: "parcels-source",
         filter: ["==", ["get", "tier"], "owned"],
-        paint: { "line-color": "#F0E2C2", "line-width": 2.5, "line-opacity": 0.95 },
+        paint: {
+          "line-color": "#F0E2C2",
+          "line-width": 6,
+          "line-opacity": 0.28,
+          "line-blur": 4,
+        },
+      });
+      map.addLayer({
+        id: "owned-outline",
+        type: "line",
+        source: "parcels-source",
+        filter: ["==", ["get", "tier"], "owned"],
+        paint: {
+          "line-color": "#F0E2C2",
+          "line-width": 2.5,
+          "line-opacity": 0.98,
+        },
       });
 
-      // Compute fit-bounds from all parcels
-      const lngs: number[] = [];
-      const lats: number[] = [];
-      allRings.forEach((ring) =>
-        ring.forEach((pt) => {
-          lngs.push(pt[0]);
-          lats.push(pt[1]);
-        }),
+      // Auto-fit to all parcels
+      const lngs: number[] = [], lats: number[] = [];
+      allRings.forEach((ring) => ring.forEach((p) => { lngs.push(p[0]); lats.push(p[1]); }));
+      map.fitBounds(
+        [[Math.min(...lngs), Math.min(...lats)], [Math.max(...lngs), Math.max(...lats)]],
+        { padding: 50, duration: 0 },
       );
-      const minLng = Math.min(...lngs);
-      const maxLng = Math.max(...lngs);
-      const minLat = Math.min(...lats);
-      const maxLat = Math.max(...lats);
-      map.fitBounds([[minLng, minLat], [maxLng, maxLat]], { padding: 50, duration: 0 });
     });
 
+    // Markers on top
     publicCabins.forEach((c) => {
       const el = buildPinElement(categoryStyle.cabin.color, "cabin");
       el.title = c.name;
@@ -300,10 +342,8 @@ export default function PropertyMap({ onSelect }: Props) {
         map.flyTo({ center: [c.lng, c.lat], zoom: 17, duration: 600 });
       });
       new maplibregl.Marker({ element: el, anchor: "center" })
-        .setLngLat([c.lng, c.lat])
-        .addTo(map);
+        .setLngLat([c.lng, c.lat]).addTo(map);
     });
-
     pois.forEach((p) => {
       const style = categoryStyle[p.category] ?? categoryStyle.pavilion;
       const el = buildPinElement(style.color, p.category);
@@ -314,11 +354,11 @@ export default function PropertyMap({ onSelect }: Props) {
         map.flyTo({ center: [p.lng, p.lat], zoom: 17, duration: 600 });
       });
       new maplibregl.Marker({ element: el, anchor: "center" })
-        .setLngLat([p.lng, p.lat])
-        .addTo(map);
+        .setLngLat([p.lng, p.lat]).addTo(map);
     });
 
     map.on("click", () => onSelect(null));
+
     const ro = new ResizeObserver(() => map.resize());
     ro.observe(container);
 
@@ -329,6 +369,7 @@ export default function PropertyMap({ onSelect }: Props) {
     };
   }, [onSelect]);
 
+  // Live location tracking
   useEffect(() => {
     if (!tracking) return;
     if (!navigator.geolocation) {
@@ -347,15 +388,11 @@ export default function PropertyMap({ onSelect }: Props) {
           userMarkerRef.current.setLngLat(ll);
         } else {
           userMarkerRef.current = new maplibregl.Marker({ element: buildUserDot(), anchor: "center" })
-            .setLngLat(ll)
-            .addTo(map);
+            .setLngLat(ll).addTo(map);
           map.flyTo({ center: ll, zoom: Math.max(map.getZoom(), 16) });
         }
       },
-      (err) => {
-        setLocateError(err.message || "Couldn't get your location.");
-        setTracking(false);
-      },
+      (err) => { setLocateError(err.message || "Couldn't get your location."); setTracking(false); },
       { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 },
     );
     return () => {
@@ -367,10 +404,7 @@ export default function PropertyMap({ onSelect }: Props) {
   }, [tracking]);
 
   function recenterOnUser() {
-    if (!tracking) {
-      setTracking(true);
-      return;
-    }
+    if (!tracking) { setTracking(true); return; }
     if (userLocation && mapRef.current) {
       mapRef.current.flyTo({ center: userLocation, zoom: 17 });
     }
@@ -382,7 +416,7 @@ export default function PropertyMap({ onSelect }: Props) {
       <button
         onClick={recenterOnUser}
         aria-label={tracking ? "Recenter on me" : "Track my location"}
-        className="absolute bottom-6 right-4 z-10 h-12 w-12 rounded-full bg-[#2A1F18] text-[#F0E2C2] shadow-lg border border-[#B89968] active:scale-95 transition grid place-items-center"
+        className="ios-glass-strong ios-press absolute bottom-6 right-4 z-10 grid h-12 w-12 place-items-center rounded-full text-[#F0E2C2]"
         title={tracking ? "Recenter on me" : "Show my live location"}
       >
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -400,7 +434,7 @@ export default function PropertyMap({ onSelect }: Props) {
         </svg>
       </button>
       {locateError && (
-        <div className="absolute bottom-24 right-4 z-10 max-w-[260px] rounded bg-[#2A1F18] text-[#F0E2C2] p-3 text-xs shadow-lg border border-[#B89968]">
+        <div className="ios-glass-strong absolute bottom-24 right-4 z-10 max-w-[260px] rounded-2xl px-4 py-3 text-xs text-[#F0E2C2] shadow-lg">
           {locateError}
         </div>
       )}
