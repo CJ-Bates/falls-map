@@ -7,6 +7,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { property, propertyAreas, worldRing } from "@/data/property";
 import { publicCabins } from "@/data/cabins";
 import { pois, categoryStyle } from "@/data/pois";
+import waterData from "@/data/water.json";
 import type { Cabin, Poi } from "@/data/types";
 
 export type SelectedItem =
@@ -193,6 +194,32 @@ export default function PropertyMap({ onSelect }: Props) {
             ["literal", [2, 2]],
             ["literal", [1, 0]],
           ] as never, // older typedef
+        },
+      });
+
+
+      // Bodies of water — lakes, ponds, the dock area
+      map.addSource("water", {
+        type: "geojson",
+        data: waterData as never,
+      });
+      map.addLayer({
+        id: "water-fill",
+        type: "fill",
+        source: "water",
+        paint: {
+          "fill-color": "#3a82c2",
+          "fill-opacity": 0.62,
+        },
+      });
+      map.addLayer({
+        id: "water-outline",
+        type: "line",
+        source: "water",
+        paint: {
+          "line-color": "#1d5688",
+          "line-width": 1.2,
+          "line-opacity": 0.9,
         },
       });
 
