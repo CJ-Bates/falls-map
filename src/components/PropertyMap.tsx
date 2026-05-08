@@ -10,6 +10,7 @@ import { pois, categoryStyle } from "@/data/pois";
 import type { Cabin, Poi } from "@/data/types";
 import parcelsData from "@/data/parcels.json";
 import waterData from "@/data/water.json";
+import trailsData from "@/data/trails.json";
 
 export type SelectedItem =
   | { kind: "cabin"; data: Cabin }
@@ -148,6 +149,48 @@ export default function PropertyMap({ onSelect }: Props) {
         type: "line",
         source: "water",
         paint: { "line-color": "#1d5688", "line-width": 1.2, "line-opacity": 0.9 },
+      });
+
+      // Trails / roads — colored by surface (paved / gravel / 4wd / trail / unknown).
+      // Dashed when marked approximate (still being verified against the ground).
+      map.addSource("trails", { type: "geojson", data: trailsData as never });
+      // Trail "halo" for legibility on busy topo background
+      map.addLayer({
+        id: "trails-halo",
+        type: "line",
+        source: "trails",
+        paint: {
+          "line-color": "#1A1310",
+          "line-width": 5.5,
+          "line-opacity": 0.65,
+          "line-blur": 1,
+        },
+        layout: { "line-join": "round", "line-cap": "round" },
+      });
+      map.addLayer({
+        id: "trails-line",
+        type: "line",
+        source: "trails",
+        paint: {
+          "line-color": [
+            "match",
+            ["get", "surface"],
+            "paved",   "#444444",
+            "gravel",  "#B89968",
+            "4wd",     "#D9531E",
+            "trail",   "#F0E2C2",
+            /* default */ "#9aa3a8",
+          ],
+          "line-width": 3,
+          "line-opacity": 0.95,
+          "line-dasharray": [
+            "case",
+            ["==", ["get", "approximate"], true],
+            ["literal", [2, 1.5]],
+            ["literal", [1, 0]],
+          ] as never,
+        },
+        layout: { "line-join": "round", "line-cap": "round" },
       });
 
       // Permission parcels (horse pasture) — light tan fill behind owned outline

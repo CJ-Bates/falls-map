@@ -1,0 +1,150 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Cabin Ridge Drive",
+        "surface": "paved",
+        "approximate": true,
+        "description": "Main driveway connecting the cabins."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-90.456850, 38.412050],
+          [-90.456620, 38.411800],
+          [-90.456620, 38.411495],
+          [-90.456800, 38.411330],
+          [-90.456900, 38.411100],
+          [-90.457100, 38.410800],
+          [-90.457400, 38.410200],
+          [-90.457700, 38.409600],
+          [-90.457800, 38.409100],
+          [-90.457500, 38.408500],
+          [-90.457400, 38.407900],
+          [-90.457400, 38.407400]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Main Lake Loop",
+        "surface": "trail",
+        "approximate": true,
+        "description": "Walking loop around the main lake. Approximate — needs a property walk to confirm."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-90.457400, 38.407400],
+          [-90.457800, 38.407500],
+          [-90.458200, 38.407600],
+          [-90.458400, 38.407300],
+          [-90.458200, 38.407000],
+          [-90.457800, 38.406900],
+          [-90.457400, 38.407000],
+          [-90.457200, 38.407200],
+          [-90.457400, 38.407400]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Upper Ridge Path",
+        "surface": "trail",
+        "approximate": true,
+        "description": "Path up to the Upper Ridge Firepit."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-90.457800, 38.407600],
+          [-90.458500, 38.407700],
+          [-90.459200, 38.407800],
+          [-90.459480, 38.407940]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Nature Barn Trail",
+        "surface": "gravel",
+        "approximate": true,
+        "description": "Service road / trail from cabins to the Nature Barn."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-90.456800, 38.411330],
+          [-90.457500, 38.411200],
+          [-90.458400, 38.411150],
+          [-90.459200, 38.411100],
+          [-90.459716, 38.411090]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shooting Shack Path",
+        "surface": "4wd",
+        "approximate": true,
+        "description": "Trail south to the shooting shack. May require 4WD or walking."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-90.457400, 38.407400],
+          [-90.458200, 38.407000],
+          [-90.459000, 38.406500],
+          [-90.459800, 38.406000],
+          [-90.460427, 38.405594]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "The 13 Connector",
+        "surface": "trail",
+        "approximate": true,
+        "description": "Trail connecting the main parcel to The 13 parcel. Crosses off-property land — guests have permission to use this trail."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-90.460427, 38.405594],
+          [-90.460800, 38.404500],
+          [-90.461200, 38.403200],
+          [-90.461500, 38.402000],
+          [-90.461700, 38.401200],
+          [-90.461875, 38.400400],
+          [-90.461875, 38.399779]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "The 13 Lake Loop",
+        "surface": "trail",
+        "approximate": true,
+        "description": "Walk around The 13 — pavilion, firepit, dock, treehouse."
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-90.461875, 38.399779],
+          [-90.461554, 38.399964],
+          [-90.461060, 38.400464],
+          [-90.460563, 38.399421],
+          [-90.461875, 38.399779]
+        ]
+      }
+    }
+  ]
+}
