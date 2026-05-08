@@ -11,6 +11,7 @@ import type { Cabin, Poi } from "@/data/types";
 import parcelsData from "@/data/parcels.json";
 import waterData from "@/data/water.json";
 import trailsData from "@/data/trails.json";
+import buildingsData from "@/data/buildings.json";
 
 export type SelectedItem =
   | { kind: "cabin"; data: Cabin }
@@ -218,6 +219,28 @@ export default function PropertyMap({ onSelect }: Props) {
           "text-halo-color": "#F0E2C2",
           "text-halo-width": 1.5,
           "text-halo-blur": 0.3,
+        },
+      });
+
+      // Building footprints — small structures (pavilions, barn, treehouse).
+      // Visible mainly when zoomed in close.
+      map.addSource("buildings", { type: "geojson", data: buildingsData as never });
+      map.addLayer({
+        id: "buildings-fill",
+        type: "fill",
+        source: "buildings",
+        paint: {
+          "fill-color": "#F0E2C2",
+          "fill-opacity": 0.85,
+        },
+      });
+      map.addLayer({
+        id: "buildings-outline",
+        type: "line",
+        source: "buildings",
+        paint: {
+          "line-color": "#2A1F18",
+          "line-width": 1.5,
         },
       });
 

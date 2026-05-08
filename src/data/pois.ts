@@ -8,8 +8,8 @@ export const pois: Poi[] = [
     zone: "cabin-ridge",
     description:
       "Pavilion overlooking the main lake. Great for family meals, gatherings, or shade after a swim.",
-    lat: 38.407423,
-    lng: -90.457331,
+    lat: 38.407201,
+    lng: -90.45736,
   },
   {
     slug: "beach-firepit",
@@ -36,8 +36,8 @@ export const pois: Poi[] = [
     category: "barn",
     zone: "cabin-ridge",
     description: "TBD",
-    lat: 38.41109,
-    lng: -90.459716,
+    lat: 38.411086,
+    lng: -90.459722,
   },
   {
     slug: "shooting-shack",
@@ -45,8 +45,8 @@ export const pois: Poi[] = [
     category: "shack",
     zone: "cabin-ridge",
     description: "TBD",
-    lat: 38.405594,
-    lng: -90.460427,
+    lat: 38.406099,
+    lng: -90.45972,
   },
   {
     slug: "the-13-pavilion",
@@ -54,8 +54,8 @@ export const pois: Poi[] = [
     category: "pavilion",
     zone: "the-13",
     description: "Pavilion at The 13 — south parcel.",
-    lat: 38.399779,
-    lng: -90.461875,
+    lat: 38.399841,
+    lng: -90.4618,
   },
   {
     slug: "the-13-firepit",
@@ -81,8 +81,8 @@ export const pois: Poi[] = [
     category: "treehouse",
     zone: "the-13",
     description: "TBD",
-    lat: 38.399421,
-    lng: -90.460563,
+    lat: 38.399401,
+    lng: -90.460676,
   },
 ];
 
