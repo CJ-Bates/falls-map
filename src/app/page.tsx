@@ -61,7 +61,12 @@ export default function Home() {
       <section className="mt-14 px-6">
         <div className="mx-auto max-w-5xl">
           <header className="mb-4 flex items-baseline justify-between">
-            <h2 className="ios-title text-2xl text-[#F0E2C2]">Cabins</h2>
+            <Link href="/cabins" className="ios-press inline-flex items-baseline gap-2">
+              <h2 className="ios-title text-2xl text-[#F0E2C2]">Cabins</h2>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="text-[#B89968] translate-y-[-2px]">
+                <path d="m9 6 6 6-6 6" />
+              </svg>
+            </Link>
             <span className="text-xs text-[#B89968]">{publicCabins.length} available</span>
           </header>
 
@@ -104,6 +109,36 @@ export default function Home() {
               </a>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* More */}
+      <section className="mt-12 px-6">
+        <div className="mx-auto max-w-3xl grid grid-cols-2 gap-3">
+          <Link
+            href="/trails"
+            className="ios-glass ios-press rounded-3xl p-5 flex items-center justify-between"
+          >
+            <span>
+              <span className="ios-headline block text-[15px] text-[#F0E2C2]">Trails & Roads</span>
+              <span className="block text-[12px] text-[#B89968] mt-0.5">7 named paths</span>
+            </span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="text-[#cdac7d]">
+              <path d="m9 6 6 6-6 6" />
+            </svg>
+          </Link>
+          <Link
+            href="/manual"
+            className="ios-glass ios-press rounded-3xl p-5 flex items-center justify-between"
+          >
+            <span>
+              <span className="ios-headline block text-[15px] text-[#F0E2C2]">House Manual</span>
+              <span className="block text-[12px] text-[#B89968] mt-0.5">Wi-Fi, codes, more</span>
+            </span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="text-[#cdac7d]">
+              <path d="m9 6 6 6-6 6" />
+            </svg>
+          </Link>
         </div>
       </section>
 
