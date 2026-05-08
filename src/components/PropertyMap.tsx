@@ -17,7 +17,6 @@ type Props = {
   onSelect: (item: SelectedItem | null) => void;
 };
 
-// OSM raster tiles — free, no API key. Will be replaced by our illustrated overlay later.
 const OSM_STYLE: maplibregl.StyleSpecification = {
   version: 8,
   sources: {
@@ -60,11 +59,12 @@ export default function PropertyMap({ onSelect }: Props) {
   const [locating, setLocating] = useState(false);
   const [locateError, setLocateError] = useState<string | null>(null);
 
-  // Initialize map
   useEffect(() => {
-    if (!containerRef.current) return;
+    const container = containerRef.current;
+    if (!container) return;
+
     const map = new maplibregl.Map({
-      container: containerRef.current,
+      container,
       style: OSM_STYLE,
       center: [property.center.lng, property.center.lat],
       zoom: 14.5,
@@ -76,8 +76,8 @@ export default function PropertyMap({ onSelect }: Props) {
     mapRef.current = map;
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
 
-    // Fit to property bounds on first load
     map.once("load", () => {
+      map.resize();
       map.fitBounds(
         [
           [property.bounds.west, property.bounds.south],
@@ -87,7 +87,6 @@ export default function PropertyMap({ onSelect }: Props) {
       );
     });
 
-    // Cabin pins
     publicCabins.forEach((c) => {
       const el = buildPinElement(categoryStyle.cabin.color, categoryStyle.cabin.emoji);
       el.title = c.name;
@@ -101,7 +100,6 @@ export default function PropertyMap({ onSelect }: Props) {
         .addTo(map);
     });
 
-    // POI pins
     pois.forEach((p) => {
       const style = categoryStyle[p.category] ?? categoryStyle.pavilion;
       const el = buildPinElement(style.color, style.emoji);
@@ -116,10 +114,19 @@ export default function PropertyMap({ onSelect }: Props) {
         .addTo(map);
     });
 
-    // Click-away on bare map dismisses panel
     map.on("click", () => onSelect(null));
 
+    // Critical fix: resize the map whenever the container resizes. This handles
+    // the case where the container is briefly 0-height during initial layout
+    // (next.js hydration before flexbox/svh settles), which would otherwise
+    // freeze the canvas at the initial bad size.
+    const ro = new ResizeObserver(() => {
+      map.resize();
+    });
+    ro.observe(container);
+
     return () => {
+      ro.disconnect();
       map.remove();
       mapRef.current = null;
     };
@@ -138,8 +145,6 @@ export default function PropertyMap({ onSelect }: Props) {
         const map = mapRef.current;
         if (!map) return;
         const ll: [number, number] = [pos.coords.longitude, pos.coords.latitude];
-
-        // Place / move user dot
         if (userMarkerRef.current) {
           userMarkerRef.current.setLngLat(ll);
         } else {
@@ -164,8 +169,10 @@ export default function PropertyMap({ onSelect }: Props) {
     );
   }
 
+  // Use absolute positioning so the container has concrete dimensions inside
+  // its `relative` parent (main), avoiding any block-flow height calc weirdness.
   return (
-    <div className="relative h-full w-full">
+    <>
       <div ref={containerRef} className="absolute inset-0" />
       <button
         onClick={locate}
@@ -178,6 +185,6 @@ export default function PropertyMap({ onSelect }: Props) {
           {locateError}
         </div>
       )}
-    </div>
+    </>
   );
 }
