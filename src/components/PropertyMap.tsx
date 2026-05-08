@@ -200,6 +200,26 @@ export default function PropertyMap({ onSelect }: Props) {
         },
         layout: { "line-join": "round", "line-cap": "round" },
       });
+      // Trail name labels along each line
+      map.addLayer({
+        id: "trails-labels",
+        type: "symbol",
+        source: "trails",
+        layout: {
+          "symbol-placement": "line",
+          "text-field": ["get", "name"],
+          "text-size": 12,
+          "text-letter-spacing": 0.05,
+          "text-anchor": "center",
+          "text-offset": [0, -0.6],
+        },
+        paint: {
+          "text-color": "#1A1310",
+          "text-halo-color": "#F0E2C2",
+          "text-halo-width": 1.5,
+          "text-halo-blur": 0.3,
+        },
+      });
 
       // Permission parcels (horse pasture) — light tan fill behind owned outline
       map.addSource("parcels", { type: "geojson", data: parcelsData as never });
