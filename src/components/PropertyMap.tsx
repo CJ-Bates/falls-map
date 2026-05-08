@@ -111,7 +111,12 @@ export default function PropertyMap({ onSelect }: Props) {
     mapRef.current = map;
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
 
+    map.on("error", (e) => {
+      console.error("[MapLibre error]", e?.error?.message || e, e);
+    });
+
     map.on("load", () => {
+      console.log("[MapLibre] load fired");
       map.resize();
 
       // Build the dim mask: world rect with all 7 parcels punched out as holes.
