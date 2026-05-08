@@ -332,7 +332,14 @@ export default function PropertyMap({ onSelect }: Props) {
         e.stopPropagation();
         e.preventDefault();
         onSelect({ kind: "cabin", data: c });
-        map.flyTo({ center: [c.lng, c.lat], zoom: 17, duration: 600 });
+        // Subtle pan to keep the clicked pin visible above the bottom sheet.
+        // padding.bottom ~ 60% of viewport reserves space for the panel.
+        map.easeTo({
+          center: [c.lng, c.lat],
+          duration: 250,
+          essential: true,
+          padding: { top: 80, bottom: Math.round(window.innerHeight * 0.55), left: 20, right: 20 },
+        });
       });
       new maplibregl.Marker({ element: el, anchor: "center" })
         .setLngLat([c.lng, c.lat]).addTo(map);
@@ -345,7 +352,12 @@ export default function PropertyMap({ onSelect }: Props) {
         e.stopPropagation();
         e.preventDefault();
         onSelect({ kind: "poi", data: p });
-        map.flyTo({ center: [p.lng, p.lat], zoom: 17, duration: 600 });
+        map.easeTo({
+          center: [p.lng, p.lat],
+          duration: 250,
+          essential: true,
+          padding: { top: 80, bottom: Math.round(window.innerHeight * 0.55), left: 20, right: 20 },
+        });
       });
       new maplibregl.Marker({ element: el, anchor: "center" })
         .setLngLat([p.lng, p.lat]).addTo(map);
