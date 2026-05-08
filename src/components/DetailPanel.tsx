@@ -2,6 +2,17 @@
 
 import Image from "next/image";
 import { categoryStyle } from "@/data/pois";
+
+// Mirror of the pin icon paths so the detail-panel badge shows the same icon
+const ICON_PATHS: Record<string, string> = {
+  cabin: '<path d="M3 9l9-7 9 7v12H3z"/><path d="M9 21V12h6v9"/>',
+  pavilion: '<path d="M2 21h20"/><path d="M3.5 21 12 4l8.5 17"/><path d="M12 13v8"/>',
+  firepit: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+  "lake-feature": '<path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>',
+  barn: '<path d="M22 8.35V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.35a2 2 0 0 1 1.26-1.85l8-3.2a2 2 0 0 1 1.48 0l8 3.2A2 2 0 0 1 22 8.35Z"/><path d="M6 18h12"/><path d="M6 14h12"/><path d="M6 10h12"/>',
+  treehouse: '<path d="m17 14 3 3.3a1 1 0 0 1-.7 1.7H4.7a1 1 0 0 1-.7-1.7L7 14h-.3a1 1 0 0 1-.7-1.7L9 9h-.2A1 1 0 0 1 8 7.3L12 3l4 4.3a1 1 0 0 1-.8 1.7H15l3 3.3a1 1 0 0 1-.7 1.7Z"/><path d="M12 22v-3"/>',
+  shack: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+};
 import type { SelectedItem } from "./PropertyMap";
 
 type Props = {
@@ -34,13 +45,14 @@ export default function DetailPanel({ item, onClose }: Props) {
 
       <div className="flex items-center gap-3 px-5 py-3 border-b border-[#B89968]/15">
         <div
-          className="h-10 w-10 rounded-full grid place-items-center text-xl border border-[#B89968]"
+          className="h-10 w-10 rounded-full grid place-items-center border-2 border-[#F0E2C2] flex-shrink-0"
           style={{ background: style?.color ?? "#7A5A2F" }}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F0E2C2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            {/* Same icon as on the pin — fall back gracefully */}
-          </svg>
-        </div>
+          dangerouslySetInnerHTML={{
+            __html: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${
+              ICON_PATHS[item.kind === "cabin" ? "cabin" : item.data.category] ?? ""
+            }</svg>`,
+          }}
+        />
         <div className="flex-1 min-w-0">
           <h2 className="ios-headline truncate text-[18px] leading-tight">
             {item.data.name}

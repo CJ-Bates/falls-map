@@ -330,6 +330,7 @@ export default function PropertyMap({ onSelect }: Props) {
       el.title = c.name;
       el.addEventListener("click", (e) => {
         e.stopPropagation();
+        e.preventDefault();
         onSelect({ kind: "cabin", data: c });
         map.flyTo({ center: [c.lng, c.lat], zoom: 17, duration: 600 });
       });
@@ -342,6 +343,7 @@ export default function PropertyMap({ onSelect }: Props) {
       el.title = p.name;
       el.addEventListener("click", (e) => {
         e.stopPropagation();
+        e.preventDefault();
         onSelect({ kind: "poi", data: p });
         map.flyTo({ center: [p.lng, p.lat], zoom: 17, duration: 600 });
       });
@@ -349,8 +351,7 @@ export default function PropertyMap({ onSelect }: Props) {
         .setLngLat([p.lng, p.lat]).addTo(map);
     });
 
-    map.on("click", () => onSelect(null));
-
+    
     const ro = new ResizeObserver(() => map.resize());
     ro.observe(container);
 
