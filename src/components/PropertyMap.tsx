@@ -173,7 +173,7 @@ export default function PropertyMap({ onSelect }: Props) {
   // its `relative` parent (main), avoiding any block-flow height calc weirdness.
   return (
     <>
-      <div ref={containerRef} className="absolute inset-0" />
+      <div ref={containerRef} style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0 }} />
       <button
         onClick={locate}
         className="absolute bottom-6 right-4 z-10 rounded-full bg-[#2A1F18] text-[#F0E2C2] shadow-lg px-4 py-3 text-sm font-medium border border-[#B89968] active:scale-95 transition"
