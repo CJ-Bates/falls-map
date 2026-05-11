@@ -2,11 +2,19 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import PropertyMap, { type SelectedItem } from "@/components/PropertyMap";
+import PropertyMap, { type SelectedItem, type TrailFilter } from "@/components/PropertyMap";
 import DetailPanel from "@/components/DetailPanel";
+
+const FILTERS: { id: TrailFilter; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "walking", label: "Walking" },
+  { id: "4wd", label: "4WD" },
+  { id: "gravel", label: "Gravel" },
+];
 
 export default function MapPage() {
   const [selected, setSelected] = useState<SelectedItem | null>(null);
+  const [filter, setFilter] = useState<TrailFilter>("all");
 
   return (
     <main className="relative h-[100svh] w-full overflow-hidden bg-[#2A1F18]">
@@ -30,7 +38,36 @@ export default function MapPage() {
         </div>
       </header>
 
-      <PropertyMap onSelect={setSelected} />
+      <PropertyMap onSelect={setSelected} trailFilter={filter} />
+
+      {/* Filter chips — float bottom-center so they don't compete with the
+          back button, compass, or live-location FAB */}
+      {!selected && (
+        <div
+          className="pointer-events-auto absolute z-10 left-1/2 -translate-x-1/2 flex gap-1.5"
+          style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 1.25rem)" }}
+        >
+          {FILTERS.map((f) => {
+            const active = f.id === filter;
+            return (
+              <button
+                key={f.id}
+                onClick={() => setFilter(f.id)}
+                className={
+                  "ios-press rounded-full px-3.5 py-2 text-[13px] font-semibold leading-none transition-colors " +
+                  (active
+                    ? "bg-[#F0E2C2] text-[#1A1310] shadow-[0_4px_14px_rgba(184,153,104,0.4)]"
+                    : "ios-glass-strong text-[#F0E2C2]")
+                }
+                aria-pressed={active}
+              >
+                {f.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {selected && (
         <button
           aria-label="Close detail panel"

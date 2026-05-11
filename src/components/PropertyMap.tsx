@@ -19,8 +19,11 @@ export type SelectedItem =
   | { kind: "cabin"; data: Cabin }
   | { kind: "poi"; data: Poi };
 
+export type TrailFilter = "all" | "walking" | "4wd" | "gravel";
+
 type Props = {
   onSelect: (item: SelectedItem | null) => void;
+  trailFilter?: TrailFilter;
 };
 
 const TOPO_STYLE: maplibregl.StyleSpecification = {
@@ -75,20 +78,37 @@ const ICON_PATHS: Record<string, string> = {
   waterfall: '<path d="M3 5l3 3"/><path d="M9 4v4"/><path d="M15 5l-3 3"/><path d="M21 7l-3 1"/><path d="M3 13c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M3 19c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>',
 };
 
-function buildPinElement(color: string, category: string): HTMLDivElement {
+// Deterministic small tilt per pin seed so the cluster of pins feels
+// hand-placed rather than perfectly cardinal. Same input → same tilt
+// every render.
+function tiltFromSeed(seed: string): number {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) | 0;
+  // map to range [-5, 5] degrees
+  return ((Math.abs(h) % 1000) / 1000) * 10 - 5;
+}
+
+function buildPinElement(color: string, category: string, seed: string = category): HTMLDivElement {
   // OUTER WRAP — MapLibre owns this element's transform (uses it for
   // translate(...) positioning). Do NOT touch wrap.style.transform anywhere.
   const wrap = document.createElement("div");
   wrap.style.cssText = `width: 36px; height: 36px; cursor: pointer;`;
 
-  // INNER VISUAL — this is the only thing we animate.
+  // TILT WRAPPER — gives the pin a small hand-placed rotation. Sits between
+  // the MapLibre-owned wrap and the visual inner so MapLibre's transform
+  // stays untouched.
+  const tilt = document.createElement("div");
+  const tiltDeg = tiltFromSeed(seed);
+  tilt.style.cssText = `width: 36px; height: 36px; transform: rotate(${tiltDeg}deg); transform-origin: 50% 50%;`;
+
+  // INNER VISUAL — this is the only thing we animate on hover/touch.
   const inner = document.createElement("div");
   inner.style.cssText = `
     width: 36px; height: 36px;
     border-radius: 50%;
     background: ${color};
     border: 2.5px solid #F0E2C2;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(42,31,24,0.25);
     display: grid; place-items: center;
     transition: transform 0.18s cubic-bezier(0.2,0.8,0.2,1.05), filter 0.18s ease-out;
     will-change: transform;
@@ -100,9 +120,10 @@ function buildPinElement(color: string, category: string): HTMLDivElement {
   inner.addEventListener("touchcancel", () => (inner.style.transform = ""), { passive: true });
 
   const path = ICON_PATHS[category] ?? '<circle cx="12" cy="12" r="3"/>';
-  inner.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block">${path}</svg>`;
+  inner.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F0E2C2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block; filter: url(#pin-rough);">${path}</svg>`;
 
-  wrap.appendChild(inner);
+  tilt.appendChild(inner);
+  wrap.appendChild(tilt);
   return wrap;
 }
 
@@ -116,7 +137,7 @@ function buildUserDot(): HTMLDivElement {
   return wrap;
 }
 
-export default function PropertyMap({ onSelect }: Props) {
+export default function PropertyMap({ onSelect, trailFilter = "all" }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const userMarkerRef = useRef<Marker | null>(null);
@@ -124,6 +145,7 @@ export default function PropertyMap({ onSelect }: Props) {
   const [tracking, setTracking] = useState(false);
   const [locateError, setLocateError] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [bearing, setBearing] = useState(0);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -143,6 +165,8 @@ export default function PropertyMap({ onSelect }: Props) {
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     map.addControl(new maplibregl.ScaleControl({ maxWidth: 110, unit: "imperial" }), "bottom-left");
 
+    map.on("rotate", () => setBearing(map.getBearing()));
+    map.on("rotateend", () => setBearing(map.getBearing()));
     map.on("error", (e) => console.error("[MapLibre]", e?.error?.message || e));
 
     map.on("load", () => {
@@ -374,7 +398,7 @@ export default function PropertyMap({ onSelect }: Props) {
 
     // Markers on top
     publicCabins.forEach((c) => {
-      const el = buildPinElement(categoryStyle.cabin.color, "cabin");
+      const el = buildPinElement(categoryStyle.cabin.color, "cabin", c.slug);
       el.title = c.name;
       el.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -394,7 +418,7 @@ export default function PropertyMap({ onSelect }: Props) {
     });
     pois.forEach((p) => {
       const style = categoryStyle[p.category] ?? categoryStyle.pavilion;
-      const el = buildPinElement(style.color, p.category);
+      const el = buildPinElement(style.color, p.category, p.slug);
       el.title = p.name;
       el.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -460,6 +484,27 @@ export default function PropertyMap({ onSelect }: Props) {
     };
   }, [onSelect]);
 
+  // Apply trail filter by calling setFilter on the trail layers. Runs when
+  // the trailFilter prop changes, OR after the map has finished loading.
+  useEffect(() => {
+    const m = mapRef.current;
+    if (!m) return;
+    type FilterExpr = unknown[] | null;
+    const expr: FilterExpr =
+      trailFilter === "all" ? null :
+      ["==", ["get", "surface"], trailFilter === "walking" ? "trail" : trailFilter];
+    const apply = () => {
+      ["trails-halo", "trails-line", "trails-labels"].forEach((id) => {
+        if (m.getLayer(id)) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          m.setFilter(id, expr as any);
+        }
+      });
+    };
+    if (m.isStyleLoaded()) apply();
+    else m.once("idle", apply);
+  }, [trailFilter]);
+
   // Live location tracking
   useEffect(() => {
     if (!tracking) return;
@@ -512,13 +557,45 @@ export default function PropertyMap({ onSelect }: Props) {
           so it never intercepts taps meant for markers underneath. */}
       <div className="map-paper-grain" aria-hidden />
 
-      {/* Hand-drawn compass rose — pure decoration over the basemap */}
-      <div
-        className="pointer-events-none absolute z-10 select-none"
-        style={{ top: "calc(env(safe-area-inset-top, 0px) + 5rem)", left: "1rem" }}
+      {/* Hidden SVG defs — a subtle displacement filter used by the pin icons
+          to give them a hand-drawn wobble. */}
+      <svg
         aria-hidden
+        style={{ position: "absolute", width: 0, height: 0, overflow: "hidden" }}
       >
-        <svg width="62" height="62" viewBox="0 0 62 62" fill="none">
+        <defs>
+          <filter id="pin-rough">
+            <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="3" />
+            <feDisplacementMap in="SourceGraphic" scale="0.9" />
+          </filter>
+        </defs>
+      </svg>
+
+      {/* Hand-drawn compass — live: rotates with map bearing, tap resets to north */}
+      <button
+        onClick={() => mapRef.current?.easeTo({ bearing: 0, pitch: 0, duration: 350 })}
+        className="ios-press absolute z-10 select-none"
+        style={{
+          top: "calc(env(safe-area-inset-top, 0px) + 5rem)",
+          left: "1rem",
+          background: "transparent",
+          border: "none",
+          padding: 0,
+          cursor: "pointer",
+        }}
+        aria-label={`Reset map to north (currently ${Math.round(bearing)}°)`}
+        title="Reset to north"
+      >
+        <svg
+          width="62"
+          height="62"
+          viewBox="0 0 62 62"
+          fill="none"
+          style={{
+            transform: `rotate(${-bearing}deg)`,
+            transition: "transform 80ms linear",
+          }}
+        >
           <circle cx="31" cy="31" r="27" stroke="#2A1F18" strokeWidth="1.6" opacity="0.55" fill="#F0E2C2" fillOpacity="0.55" />
           <circle cx="31" cy="31" r="22" stroke="#2A1F18" strokeWidth="0.6" opacity="0.35" fill="none" />
           {/* North spike */}
@@ -531,7 +608,7 @@ export default function PropertyMap({ onSelect }: Props) {
           <circle cx="31" cy="31" r="2.5" fill="#2A1F18" />
           <text x="31" y="13" textAnchor="middle" fontFamily="Cabin Sketch, serif" fontWeight="700" fontSize="9" fill="#2A1F18">N</text>
         </svg>
-      </div>
+      </button>
 
       <button
         onClick={recenterOnUser}
