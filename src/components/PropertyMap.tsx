@@ -157,7 +157,11 @@ export default function PropertyMap({ onSelect, basemap = "topo" }: Props) {
   const [tracking, setTracking] = useState(false);
   const [locateError, setLocateError] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
-  const [bearing, setBearing] = useState(0);
+  // Compass: write the rotation transform directly to the SVG via a ref so
+  // we bypass React's render cycle on every rotate frame. This is what makes
+  // the dial silky instead of jittery — no setState during the gesture.
+  const compassRef = useRef<SVGSVGElement | null>(null);
+  const bearingRef = useRef(0);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -178,8 +182,15 @@ export default function PropertyMap({ onSelect, basemap = "topo" }: Props) {
     // are enough. Compass rose top-left handles north reset.
     map.addControl(new maplibregl.ScaleControl({ maxWidth: 110, unit: "imperial" }), "bottom-left");
 
-    map.on("rotate", () => setBearing(map.getBearing()));
-    map.on("rotateend", () => setBearing(map.getBearing()));
+    const handleRotate = () => {
+      const b = map.getBearing();
+      bearingRef.current = b;
+      if (compassRef.current) {
+        compassRef.current.style.transform = `rotate(${-b}deg)`;
+      }
+    };
+    map.on("rotate", handleRotate);
+    map.on("rotateend", handleRotate);
     map.on("error", (e) => console.error("[MapLibre]", e?.error?.message || e));
 
     map.on("load", () => {
@@ -594,18 +605,16 @@ export default function PropertyMap({ onSelect, basemap = "topo" }: Props) {
           padding: 0,
           cursor: "pointer",
         }}
-        aria-label={`Reset map to north (currently ${Math.round(bearing)}°)`}
+        aria-label="Reset map to north"
         title="Reset to north"
       >
         <svg
+          ref={compassRef}
           width="62"
           height="62"
           viewBox="0 0 62 62"
           fill="none"
-          style={{
-            transform: `rotate(${-bearing}deg)`,
-            transition: "transform 80ms linear",
-          }}
+          style={{ willChange: "transform" }}
         >
           <circle cx="31" cy="31" r="27" stroke="#2A1F18" strokeWidth="1.6" opacity="0.55" fill="#F0E2C2" fillOpacity="0.55" />
           <circle cx="31" cy="31" r="22" stroke="#2A1F18" strokeWidth="0.6" opacity="0.35" fill="none" />
