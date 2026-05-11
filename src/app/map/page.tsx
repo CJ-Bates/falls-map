@@ -2,19 +2,25 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import PropertyMap, { type SelectedItem, type TrailFilter } from "@/components/PropertyMap";
+import PropertyMap, { type SelectedItem, type Basemap } from "@/components/PropertyMap";
 import DetailPanel from "@/components/DetailPanel";
 
-const FILTERS: { id: TrailFilter; label: string }[] = [
-  { id: "all", label: "All" },
-  { id: "walking", label: "Walking" },
-  { id: "4wd", label: "4WD" },
-  { id: "gravel", label: "Gravel" },
+const BASEMAPS: { id: Basemap; label: string }[] = [
+  { id: "topo",      label: "Topo" },
+  { id: "satellite", label: "Satellite" },
+  { id: "apple",     label: "Standard" },
+];
+
+// Trail color legend, keyed to the surface->color match in PropertyMap.tsx
+const LEGEND: { color: string; label: string; sublabel: string }[] = [
+  { color: "#C9A974", label: "Gravel",   sublabel: "any vehicle" },
+  { color: "#D9531E", label: "4WD",      sublabel: "truck or SUV" },
+  { color: "#F0E2C2", label: "Walking",  sublabel: "on foot only" },
 ];
 
 export default function MapPage() {
   const [selected, setSelected] = useState<SelectedItem | null>(null);
-  const [filter, setFilter] = useState<TrailFilter>("all");
+  const [basemap, setBasemap] = useState<Basemap>("topo");
 
   return (
     <main className="relative h-[100svh] w-full overflow-hidden bg-[#2A1F18]">
@@ -38,21 +44,46 @@ export default function MapPage() {
         </div>
       </header>
 
-      <PropertyMap onSelect={setSelected} trailFilter={filter} />
+      <PropertyMap onSelect={setSelected} basemap={basemap} />
 
-      {/* Filter chips — float bottom-center so they don't compete with the
-          back button, compass, or live-location FAB */}
+      {/* Legend — bottom-left, just above the scale bar */}
+      {!selected && (
+        <div
+          className="ios-glass-strong pointer-events-none absolute z-10 rounded-2xl px-3 py-2 text-[#F0E2C2]"
+          style={{
+            left: "12px",
+            bottom: "calc(env(safe-area-inset-bottom, 0px) + 56px)",
+          }}
+          aria-label="Trail legend"
+        >
+          <div className="text-[10px] uppercase tracking-[0.14em] text-[#B89968] mb-1">Trails</div>
+          <ul className="space-y-1.5">
+            {LEGEND.map((row) => (
+              <li key={row.label} className="flex items-center gap-2 text-[12px] leading-none">
+                <span
+                  className="block h-1 w-6 rounded-full flex-shrink-0"
+                  style={{ background: row.color, boxShadow: `0 0 6px ${row.color}80` }}
+                />
+                <span className="font-semibold">{row.label}</span>
+                <span className="text-[11px] text-[#F0E2C2]/65">· {row.sublabel}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Basemap switcher — bottom-center */}
       {!selected && (
         <div
           className="pointer-events-auto absolute z-10 left-1/2 -translate-x-1/2 flex gap-1.5"
           style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 1.25rem)" }}
         >
-          {FILTERS.map((f) => {
-            const active = f.id === filter;
+          {BASEMAPS.map((b) => {
+            const active = b.id === basemap;
             return (
               <button
-                key={f.id}
-                onClick={() => setFilter(f.id)}
+                key={b.id}
+                onClick={() => setBasemap(b.id)}
                 className={
                   "ios-press rounded-full px-3.5 py-2 text-[13px] font-semibold leading-none transition-colors " +
                   (active
@@ -61,7 +92,7 @@ export default function MapPage() {
                 }
                 aria-pressed={active}
               >
-                {f.label}
+                {b.label}
               </button>
             );
           })}

@@ -94,11 +94,22 @@ body {
 }
 .animate-slide-up { animation: slide-up 280ms cubic-bezier(0.2, 0.85, 0.25, 1.02); }
 
-/* Gentler tint — USGS topo tiles already have warm contour lines + hillshade
-   baked in, so heavy sepia would muddy them. */
-.maplibregl-canvas {
+/* Sepia paper tint only on the topo basemap. Satellite imagery and the
+   clean "standard" basemap look weird with sepia, so we keep them raw. */
+.map-mode-topo .maplibregl-canvas {
   filter: sepia(0.18) saturate(0.92) contrast(1.04) brightness(1.02) hue-rotate(-3deg);
 }
+/* Satellite mode: keep imagery untouched but very slight contrast lift */
+.map-mode-satellite .maplibregl-canvas {
+  filter: contrast(1.04) saturate(1.05);
+}
+/* Standard mode: no filter — it's already designed to be the "clean" look */
+.map-mode-apple .maplibregl-canvas { filter: none; }
+
+/* Paper grain feels right on topo, less right on a photo, and overpowering
+   on the clean basemap. Tone it down for the non-topo modes. */
+.map-mode-satellite + .map-paper-grain,
+.map-mode-apple + .map-paper-grain { opacity: 0.06; }
 
 .map-vignette::after {
   content: "";

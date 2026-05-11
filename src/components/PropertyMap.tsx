@@ -19,19 +19,17 @@ export type SelectedItem =
   | { kind: "cabin"; data: Cabin }
   | { kind: "poi"; data: Poi };
 
-export type TrailFilter = "all" | "walking" | "4wd" | "gravel";
+export type Basemap = "topo" | "satellite" | "apple";
 
 type Props = {
   onSelect: (item: SelectedItem | null) => void;
-  trailFilter?: TrailFilter;
+  basemap?: Basemap;
 };
 
 const TOPO_STYLE: maplibregl.StyleSpecification = {
   version: 8,
   sources: {
-    // OpenTopoMap — classic topographic look with contour lines + hillshade,
-    // free, no API key, CORS-enabled. Goes to z17, which covers any practical
-    // viewing zoom on a 194-acre property.
+    // OpenTopoMap — classic topographic look (contour + hillshade), z17 max
     topo: {
       type: "raster",
       tiles: [
@@ -42,11 +40,10 @@ const TOPO_STYLE: maplibregl.StyleSpecification = {
       tileSize: 256,
       maxzoom: 17,
       attribution:
-        'Map data: © <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors, SRTM | Map style: © <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+        'Map data: © <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors, SRTM | © <a href="https://opentopomap.org">OpenTopoMap</a>',
     },
-    // CartoDB Voyager — fallback for deepest pinch-zoom (z > 17). The
-    // topo source covers everything else.
-    deep: {
+    // CartoDB Voyager — clean light style, doubles as topo deep-zoom fallback
+    apple: {
       type: "raster",
       tiles: [
         "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
@@ -57,10 +54,25 @@ const TOPO_STYLE: maplibregl.StyleSpecification = {
       maxzoom: 20,
       attribution: '© <a href="https://carto.com/attributions">CARTO</a>',
     },
+    // Esri World Imagery — aerial satellite photography, z19 max
+    satellite: {
+      type: "raster",
+      tiles: [
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      ],
+      tileSize: 256,
+      maxzoom: 19,
+      attribution: 'Imagery © <a href="https://www.esri.com/">Esri</a>, Maxar, Earthstar Geographics',
+    },
   },
+  // All four base layers are present from the start. Visibility is toggled
+  // by the basemap prop (see useEffect below). The topo mode actually uses
+  // two stacked layers: opentopomap up to z17.2, apple beyond.
   layers: [
-    { id: "base-topo",     type: "raster", source: "topo", maxzoom: 17.2 },
-    { id: "base-fallback", type: "raster", source: "deep", minzoom: 17.2 },
+    { id: "base-topo",        type: "raster", source: "topo",      maxzoom: 17.2, layout: { visibility: "visible" } },
+    { id: "base-topo-deep",   type: "raster", source: "apple",     minzoom: 17.2, layout: { visibility: "visible" } },
+    { id: "base-apple",       type: "raster", source: "apple",                    layout: { visibility: "none" } },
+    { id: "base-satellite",   type: "raster", source: "satellite",                layout: { visibility: "none" } },
   ],
 };
 
@@ -137,7 +149,7 @@ function buildUserDot(): HTMLDivElement {
   return wrap;
 }
 
-export default function PropertyMap({ onSelect, trailFilter = "all" }: Props) {
+export default function PropertyMap({ onSelect, basemap = "topo" }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const userMarkerRef = useRef<Marker | null>(null);
@@ -484,26 +496,24 @@ export default function PropertyMap({ onSelect, trailFilter = "all" }: Props) {
     };
   }, [onSelect]);
 
-  // Apply trail filter by calling setFilter on the trail layers. Runs when
-  // the trailFilter prop changes, OR after the map has finished loading.
+  // Apply basemap selection by toggling visibility on the 4 base raster
+  // layers. Topo mode uses two stacked layers (opentopomap + voyager deep
+  // fallback); satellite and apple are single-layer.
   useEffect(() => {
     const m = mapRef.current;
     if (!m) return;
-    type FilterExpr = unknown[] | null;
-    const expr: FilterExpr =
-      trailFilter === "all" ? null :
-      ["==", ["get", "surface"], trailFilter === "walking" ? "trail" : trailFilter];
     const apply = () => {
-      ["trails-halo", "trails-line", "trails-labels"].forEach((id) => {
-        if (m.getLayer(id)) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          m.setFilter(id, expr as any);
-        }
-      });
+      const vis = (id: string, on: boolean) => {
+        if (m.getLayer(id)) m.setLayoutProperty(id, "visibility", on ? "visible" : "none");
+      };
+      vis("base-topo",      basemap === "topo");
+      vis("base-topo-deep", basemap === "topo");
+      vis("base-apple",     basemap === "apple");
+      vis("base-satellite", basemap === "satellite");
     };
     if (m.isStyleLoaded()) apply();
     else m.once("idle", apply);
-  }, [trailFilter]);
+  }, [basemap]);
 
   // Live location tracking
   useEffect(() => {
@@ -550,7 +560,7 @@ export default function PropertyMap({ onSelect, trailFilter = "all" }: Props) {
     <>
       <div
         ref={containerRef}
-        className="map-vignette"
+        className={`map-vignette map-mode-${basemap}`}
         style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0 }}
       />
       {/* Paper-grain texture above the basemap canvas. Pointer-events: none
