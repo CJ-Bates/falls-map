@@ -4,7 +4,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Cabin+Sketch:wght@400;700&family=Caveat:wght@500;700&display=swap");
 
 :root {
-  /* The Falls at Lions Den brand palette */
   --brand-cream: #f0e2c2;
   --brand-cream-soft: #ebd9a8;
   --brand-tan: #b89968;
@@ -17,7 +16,6 @@
   --background: var(--brand-night);
   --foreground: var(--brand-cream);
 
-  /* iOS-style glass tokens */
   --glass-bg: rgba(42, 31, 24, 0.55);
   --glass-bg-strong: rgba(42, 31, 24, 0.85);
   --glass-border: rgba(240, 226, 194, 0.18);
@@ -63,17 +61,9 @@ body {
   border: 1px solid var(--glass-border);
 }
 
-.ios-title {
-  font-weight: 700;
-  letter-spacing: -0.022em;
-  line-height: 1.05;
-}
-.ios-headline {
-  font-weight: 600;
-  letter-spacing: -0.014em;
-}
+.ios-title { font-weight: 700; letter-spacing: -0.022em; line-height: 1.05; }
+.ios-headline { font-weight: 600; letter-spacing: -0.014em; }
 
-/* Hand-drawn display type */
 .font-sketch {
   font-family: "Cabin Sketch", "Caveat", system-ui, sans-serif;
   font-weight: 700;
@@ -89,10 +79,7 @@ body {
   transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1.05),
               filter 200ms ease-out;
 }
-.ios-press:active {
-  transform: scale(0.96);
-  filter: brightness(0.92);
-}
+.ios-press:active { transform: scale(0.96); filter: brightness(0.92); }
 
 .hero-radial {
   background:
@@ -107,14 +94,12 @@ body {
 }
 .animate-slide-up { animation: slide-up 280ms cubic-bezier(0.2, 0.85, 0.25, 1.02); }
 
-/* Warm the basemap to a painted-paper feel. Filter only cascades to the canvas.
-   HTML markers and overlays are siblings of .maplibregl-canvas, so they
-   stay vibrant. */
+/* Gentler tint — USGS topo tiles already have warm contour lines + hillshade
+   baked in, so heavy sepia would muddy them. */
 .maplibregl-canvas {
-  filter: sepia(0.45) saturate(0.82) contrast(1.06) brightness(1.04) hue-rotate(-6deg);
+  filter: sepia(0.18) saturate(0.92) contrast(1.04) brightness(1.02) hue-rotate(-3deg);
 }
 
-/* Subtle warm radial vignette over the basemap */
 .map-vignette::after {
   content: "";
   position: absolute;
@@ -125,9 +110,6 @@ body {
   z-index: 1;
 }
 
-/* Paper-grain texture overlay. SVG fractal noise tinted warm brown,
-   blended with multiply so it darkens the basemap subtly like printer toner
-   that bit a fibrous paper. pointer-events: none so it doesn't block taps. */
 .map-paper-grain {
   position: absolute;
   inset: 0;
@@ -139,12 +121,8 @@ body {
   background-size: 240px 240px;
 }
 
-/* Each map pin gets a small CSS variable rotation so the cluster feels
-   hand-stuck-to-paper rather than perfectly rotated to north. Applied via
-   inline --pin-tilt set on the wrap element. */
 .pin-tilt { transform: rotate(var(--pin-tilt, 0deg)); }
 
-/* MapLibre attribution legibility */
 .maplibregl-ctrl-attrib {
   background: rgba(26, 19, 16, 0.55) !important;
   -webkit-backdrop-filter: blur(8px);
@@ -158,7 +136,6 @@ body {
 .maplibregl-ctrl-attrib a { color: var(--brand-tan-soft) !important; }
 .maplibregl-ctrl-bottom-right { gap: 6px; }
 
-/* Pulse for live location dot */
 @keyframes pulse-dot {
   0% { transform: scale(0.5); opacity: 0.6; }
   80% { transform: scale(1.4); opacity: 0; }
@@ -173,7 +150,7 @@ body {
 .snap-row::-webkit-scrollbar { display: none; }
 .snap-row > * { scroll-snap-align: start; }
 
-/* MapLibre scale bar — restyled to feel like a hand-inked ruler */
+/* MapLibre scale bar — hand-inked ruler look */
 .maplibregl-ctrl-scale {
   background: rgba(240, 226, 194, 0.78) !important;
   border: 2px solid #2A1F18 !important;

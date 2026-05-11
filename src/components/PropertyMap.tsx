@@ -28,15 +28,16 @@ const TOPO_STYLE: maplibregl.StyleSpecification = {
   sources: {
     base: {
       type: "raster",
+      // USGS National Map US Topo — has contour lines + hillshade baked in,
+      // free, no API key, CORS-enabled. No parcel/property lines drawn at
+      // this scale, which is what we want.
       tiles: [
-        "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-        "https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-        "https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+        "https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}",
       ],
       tileSize: 256,
-      maxzoom: 20,
+      maxzoom: 16,
       attribution:
-        '© <a href="https://carto.com/attributions">CARTO</a> · © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        '<a href="https://www.usgs.gov/programs/national-geospatial-program/national-map">USGS National Map</a>',
     },
   },
   layers: [{ id: "base", type: "raster", source: "base" }],
