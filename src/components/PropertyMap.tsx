@@ -57,8 +57,11 @@ const TOPO_STYLE: maplibregl.StyleSpecification = {
     },
   },
   layers: [
-    { id: "base-topo",     type: "raster", source: "topo", maxzoom: 16.5 },
-    { id: "base-fallback", type: "raster", source: "deep", minzoom: 16.5 },
+    // Layered handoff: USGS topo shows up to ~zoom 14.7 (a hair past the
+    // default property-overview zoom of 14.5), CartoDB Voyager takes over for
+    // anything deeper so tiles stay crisp on close inspection.
+    { id: "base-topo",     type: "raster", source: "topo", maxzoom: 14.7 },
+    { id: "base-fallback", type: "raster", source: "deep", minzoom: 14.7 },
   ],
 };
 
