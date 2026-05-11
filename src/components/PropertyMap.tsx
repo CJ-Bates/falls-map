@@ -350,38 +350,6 @@ export default function PropertyMap({ onSelect }: Props) {
       );
     });
 
-    // Area labels in the handwritten Caveat font — HTML markers so we get
-    // a real web font instead of MapLibre\'s built-in glyph stack. Added BEFORE
-    // the cabin/POI pins so the pins render on top in DOM order.
-    const AREA_LABELS: { lng: number; lat: number; label: string; size?: number; rotate?: number }[] = [
-      { lng: -90.4585, lat: 38.4118, label: "Cabin Ridge",   size: 30, rotate: -4 },
-      { lng: -90.45744, lat: 38.40688, label: "Main Lake",   size: 24, rotate: 2 },
-      { lng: -90.4612,  lat: 38.4000,  label: "The 13",      size: 32, rotate: -3 },
-      { lng: -90.45029, lat: 38.40857, label: "Horse Pasture", size: 28, rotate: -2 },
-    ];
-    AREA_LABELS.forEach((a) => {
-      const el = document.createElement("div");
-      el.style.cssText = `
-        font-family: "Caveat", "Cabin Sketch", cursive;
-        font-weight: 700;
-        font-size: ${a.size ?? 26}px;
-        color: #2A1F18;
-        text-shadow:
-          0 0 6px #F0E2C2,
-          0 0 6px #F0E2C2,
-          0 0 6px #F0E2C2,
-          1px 1px 0 rgba(240, 226, 194, 0.9);
-        opacity: 0.78;
-        white-space: nowrap;
-        pointer-events: none;
-        user-select: none;
-        transform: rotate(${a.rotate ?? 0}deg);
-        letter-spacing: 0.04em;
-      `;
-      el.textContent = a.label;
-      new maplibregl.Marker({ element: el, anchor: "center" })
-        .setLngLat([a.lng, a.lat]).addTo(map);
-    });
     // Markers on top
     publicCabins.forEach((c) => {
       const el = buildPinElement(categoryStyle.cabin.color, "cabin");
@@ -419,6 +387,42 @@ export default function PropertyMap({ onSelect }: Props) {
       });
       new maplibregl.Marker({ element: el, anchor: "center" })
         .setLngLat([p.lng, p.lat]).addTo(map);
+    });
+
+    // Area labels go LAST so they paint on top of the icons. The chunky cream
+    // halo "punches through" any pin underneath so the hand-drawn label and
+    // the icon feel composed together instead of one covering the other.
+    // Positions chosen near each cluster, in the clearer space adjacent to
+    // the pins, not directly on top of them.
+    const AREA_LABELS: { lng: number; lat: number; label: string; size?: number; rotate?: number }[] = [
+      { lng: -90.4567,  lat: 38.4124,  label: "Cabin Ridge",   size: 30, rotate: -4 },
+      { lng: -90.45810, lat: 38.40720, label: "Main Lake",     size: 26, rotate: 2 },
+      { lng: -90.46145, lat: 38.40070, label: "The 13",        size: 34, rotate: -3 },
+      { lng: -90.45029, lat: 38.40857, label: "Horse Pasture", size: 28, rotate: -2 },
+    ];
+    AREA_LABELS.forEach((a) => {
+      const el = document.createElement("div");
+      el.style.cssText = `
+        font-family: "Caveat", "Cabin Sketch", cursive;
+        font-weight: 700;
+        font-size: ${a.size ?? 26}px;
+        color: #2A1F18;
+        text-shadow:
+          0 0 10px #F5E8C9,
+          0 0 10px #F5E8C9,
+          0 0 8px #F5E8C9,
+          0 0 6px #F5E8C9,
+          1px 1px 0 rgba(245, 232, 201, 1);
+        opacity: 0.92;
+        white-space: nowrap;
+        pointer-events: none;
+        user-select: none;
+        transform: rotate(${a.rotate ?? 0}deg);
+        letter-spacing: 0.04em;
+      `;
+      el.textContent = a.label;
+      new maplibregl.Marker({ element: el, anchor: "center" })
+        .setLngLat([a.lng, a.lat]).addTo(map);
     });
 
 
