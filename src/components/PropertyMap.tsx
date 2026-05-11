@@ -280,7 +280,7 @@ export default function PropertyMap({ onSelect }: Props) {
             { type: "Feature", geometry: { type: "Point", coordinates: [-90.4610, 38.3997] }, properties: { label: "The 13" } },
             { type: "Feature", geometry: { type: "Point", coordinates: [-90.4607, 38.4060] }, properties: { label: "Lions View" } },
           ],
-        },
+        } as never,
       });
       map.addLayer({
         id: "area-labels",
@@ -449,4 +449,83 @@ export default function PropertyMap({ onSelect }: Props) {
         if (userMarkerRef.current) {
           userMarkerRef.current.setLngLat(ll);
         } else {
-          userMarkerRef.current = new maplibregl.Marker({ element: buildUser
+          userMarkerRef.current = new maplibregl.Marker({ element: buildUserDot(), anchor: "center" })
+            .setLngLat(ll).addTo(map);
+          map.flyTo({ center: ll, zoom: Math.max(map.getZoom(), 16) });
+        }
+      },
+      (err) => { setLocateError(err.message || "Couldn't get your location."); setTracking(false); },
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 },
+    );
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+    };
+  }, [tracking]);
+
+  function recenterOnUser() {
+    if (!tracking) { setTracking(true); return; }
+    if (userLocation && mapRef.current) {
+      mapRef.current.flyTo({ center: userLocation, zoom: 17 });
+    }
+  }
+
+  return (
+    <>
+      <div
+        ref={containerRef}
+        className="map-vignette"
+        style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0 }}
+      />
+
+      {/* Hand-drawn compass rose — pure decoration over the basemap */}
+      <div
+        className="pointer-events-none absolute z-10 select-none"
+        style={{ top: "calc(env(safe-area-inset-top, 0px) + 5rem)", left: "1rem" }}
+        aria-hidden
+      >
+        <svg width="62" height="62" viewBox="0 0 62 62" fill="none">
+          <circle cx="31" cy="31" r="27" stroke="#2A1F18" strokeWidth="1.6" opacity="0.55" fill="#F0E2C2" fillOpacity="0.55" />
+          <circle cx="31" cy="31" r="22" stroke="#2A1F18" strokeWidth="0.6" opacity="0.35" fill="none" />
+          {/* North spike */}
+          <path d="M31 6 L34.5 30 L31 33 L27.5 30 Z" fill="#D9531E" stroke="#2A1F18" strokeWidth="0.7" strokeLinejoin="round" />
+          {/* South spike */}
+          <path d="M31 56 L27.5 32 L31 29 L34.5 32 Z" fill="#F0E2C2" stroke="#2A1F18" strokeWidth="0.7" strokeLinejoin="round" />
+          {/* East/West shorter spikes */}
+          <path d="M56 31 L34 33 L31 31 L34 29 Z" fill="#B89968" stroke="#2A1F18" strokeWidth="0.4" strokeLinejoin="round" opacity="0.85" />
+          <path d="M6 31 L28 29 L31 31 L28 33 Z" fill="#B89968" stroke="#2A1F18" strokeWidth="0.4" strokeLinejoin="round" opacity="0.85" />
+          <circle cx="31" cy="31" r="2.5" fill="#2A1F18" />
+          <text x="31" y="13" textAnchor="middle" fontFamily="Cabin Sketch, serif" fontWeight="700" fontSize="9" fill="#2A1F18">N</text>
+        </svg>
+      </div>
+
+      <button
+        onClick={recenterOnUser}
+        aria-label={tracking ? "Recenter on me" : "Track my location"}
+        className="ios-glass-strong ios-press absolute bottom-6 right-4 z-10 grid h-12 w-12 place-items-center rounded-full text-[#F0E2C2]"
+        title={tracking ? "Recenter on me" : "Show my live location"}
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          {tracking ? (
+            <>
+              <circle cx="12" cy="12" r="3" fill="#2E78D2" stroke="#2E78D2" />
+              <path d="M12 2v3" /><path d="M12 19v3" /><path d="M2 12h3" /><path d="M19 12h3" />
+            </>
+          ) : (
+            <>
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 2v3" /><path d="M12 19v3" /><path d="M2 12h3" /><path d="M19 12h3" />
+            </>
+          )}
+        </svg>
+      </button>
+      {locateError && (
+        <div className="ios-glass-strong absolute bottom-24 right-4 z-10 max-w-[260px] rounded-2xl px-4 py-3 text-xs text-[#F0E2C2] shadow-lg">
+          {locateError}
+        </div>
+      )}
+    </>
+  );
+}

@@ -40,3 +40,6 @@ export default function MapPage() {
         />
       )}
       <DetailPanel item={selected} onClose={() => setSelected(null)} />
+    </main>
+  );
+}
