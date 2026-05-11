@@ -27,8 +27,8 @@ export const pois: Poi[] = [
     category: "firepit",
     zone: "cabin-ridge",
     description: "Quieter firepit up on the ridge.",
-    lat: 38.40794,
-    lng: -90.45948,
+    lat: 38.4081,
+    lng: -90.459661,
   },
   {
     slug: "nature-barn",
