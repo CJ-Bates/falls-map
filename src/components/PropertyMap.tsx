@@ -26,11 +26,11 @@ type Props = {
 const TOPO_STYLE: maplibregl.StyleSpecification = {
   version: 8,
   sources: {
-    base: {
+    // USGS National Map US Topo — contour lines + hillshade baked in. Tile
+    // server only goes to z16, so we use it for the wide property-overview
+    // zoom range and hand off to a sharper source when the user zooms deep.
+    topo: {
       type: "raster",
-      // USGS National Map US Topo — has contour lines + hillshade baked in,
-      // free, no API key, CORS-enabled. No parcel/property lines drawn at
-      // this scale, which is what we want.
       tiles: [
         "https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}",
       ],
@@ -39,8 +39,27 @@ const TOPO_STYLE: maplibregl.StyleSpecification = {
       attribution:
         '<a href="https://www.usgs.gov/programs/national-geospatial-program/national-map">USGS National Map</a>',
     },
+    // CartoDB Voyager — used only as a deep-zoom fallback (z >= 16.5) so the
+    // basemap stays crisp when zooming in on a cabin or feature. Parcel
+    // lines are still in this tileset but only show at the close-up zoom
+    // level where the user is looking at a single feature anyway.
+    deep: {
+      type: "raster",
+      tiles: [
+        "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+        "https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+        "https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+      ],
+      tileSize: 256,
+      maxzoom: 20,
+      attribution:
+        '© <a href="https://carto.com/attributions">CARTO</a>',
+    },
   },
-  layers: [{ id: "base", type: "raster", source: "base" }],
+  layers: [
+    { id: "base-topo",     type: "raster", source: "topo", maxzoom: 16.5 },
+    { id: "base-fallback", type: "raster", source: "deep", minzoom: 16.5 },
+  ],
 };
 
 const ICON_PATHS: Record<string, string> = {
