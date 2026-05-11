@@ -81,8 +81,11 @@ export default function DetailPanel({ item, onClose }: Props) {
       </div>
 
       <div className="px-5 py-4 space-y-4">
-        {/* Photo block — used by cabins and any POI that has photoUrl */}
-        {photoSrc && (
+        {/* Photo block. Cabins use a 16:10 cover-crop (Hostaway gallery
+            shots are uniformly landscape). POIs preserve their natural
+            aspect ratio inside a max-height bound, so portrait shots
+            like Big Lou show head-to-toe. */}
+        {photoSrc && item.kind === "cabin" && (
           <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-[#2A1F18]">
             <Image
               src={photoSrc}
@@ -91,6 +94,15 @@ export default function DetailPanel({ item, onClose }: Props) {
               sizes="(max-width: 640px) 100vw, 640px"
               className="object-cover"
               unoptimized
+            />
+          </div>
+        )}
+        {photoSrc && item.kind === "poi" && (
+          <div className="w-full overflow-hidden rounded-2xl bg-[#2A1F18] grid place-items-center">
+            <img
+              src={photoSrc}
+              alt={item.data.name}
+              className="block max-h-[340px] w-auto object-contain"
             />
           </div>
         )}
