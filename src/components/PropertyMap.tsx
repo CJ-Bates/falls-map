@@ -123,6 +123,20 @@ const ICON_PATHS: Record<string, string> = {
     <circle cx="12" cy="15" r="3.5"/>
     <circle cx="12" cy="15" r="1.5" fill="#F0E2C2" stroke="none"/>
   </g>`,
+  // Standing chainsaw-carved bear — filled cream silhouette with dark
+  // accents for eyes and snout, since at small sizes a stroke-only bear
+  // dissolves into noise.
+  bear: `<g stroke="#F0E2C2" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round">
+    <circle cx="8.5" cy="4.2" r="1.6" fill="#F0E2C2"/>
+    <circle cx="15.5" cy="4.2" r="1.6" fill="#F0E2C2"/>
+    <circle cx="12" cy="6.5" r="3.6" fill="#F0E2C2"/>
+    <ellipse cx="12" cy="14.5" rx="5" ry="6" fill="#F0E2C2"/>
+    <circle cx="10.4" cy="6.1" r="0.55" fill="#1f1410" stroke="none"/>
+    <circle cx="13.6" cy="6.1" r="0.55" fill="#1f1410" stroke="none"/>
+    <ellipse cx="12" cy="8" rx="1.2" ry="0.7" fill="#1f1410" stroke="none"/>
+    <ellipse cx="9" cy="20.5" rx="1.3" ry="1" fill="#F0E2C2"/>
+    <ellipse cx="15" cy="20.5" rx="1.3" ry="1" fill="#F0E2C2"/>
+  </g>`,
   trailhead: `<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M9 7l-3 3 3 3M15 7l3 3-3 3"/>
     <path d="M6 10h12"/>

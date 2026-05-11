@@ -3,15 +3,17 @@
 import Image from "next/image";
 import { categoryStyle } from "@/data/pois";
 
-// Mirror of the pin icon paths so the detail-panel badge shows the same icon
+// Mirror of the pin icon paths so the detail-panel badge shows the same icon.
+// Kept as a small map of complete SVG <g> fragments so per-icon fills work.
 const ICON_PATHS: Record<string, string> = {
-  cabin: '<path d="M3 9l9-7 9 7v12H3z"/><path d="M9 21V12h6v9"/>',
-  pavilion: '<path d="M2 21h20"/><path d="M3.5 21 12 4l8.5 17"/><path d="M12 13v8"/>',
-  firepit: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
-  "lake-feature": '<path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>',
-  barn: '<path d="M22 8.35V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.35a2 2 0 0 1 1.26-1.85l8-3.2a2 2 0 0 1 1.48 0l8 3.2A2 2 0 0 1 22 8.35Z"/><path d="M6 18h12"/><path d="M6 14h12"/><path d="M6 10h12"/>',
-  treehouse: '<path d="m17 14 3 3.3a1 1 0 0 1-.7 1.7H4.7a1 1 0 0 1-.7-1.7L7 14h-.3a1 1 0 0 1-.7-1.7L9 9h-.2A1 1 0 0 1 8 7.3L12 3l4 4.3a1 1 0 0 1-.8 1.7H15l3 3.3a1 1 0 0 1-.7 1.7Z"/><path d="M12 22v-3"/>',
-  shack: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  cabin: '<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4.5v3"/><path d="M3 12 12 4l9 8"/><path d="M5 12v9h14v-9"/><path d="M10 21v-5h4v5"/></g>',
+  pavilion: '<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 3l9 8"/><path d="M6 11v10"/><path d="M18 11v10"/><path d="M4 21h16"/></g>',
+  firepit: '<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-1.5 3-4 4-4 8 a4 4 0 0 0 8 0c0-4-2.5-5-4-8z"/><path d="M5 21l3-1M19 21l-3-1"/></g>',
+  "lake-feature": '<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="M12 6l5 9H12z" fill="#F0E2C2"/><path d="M4 16c3 2.5 13 2.5 16 0"/></g>',
+  barn: '<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V11l9-7 9 7v10z"/><path d="M9 21v-5.5h6V21"/><path d="M9 15.5l6 5.5M15 15.5l-6 5.5"/></g>',
+  treehouse: '<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="5.5"/><path d="M10.5 14v7M13.5 14v7"/><path d="M10.5 16h3M10.5 19h3"/></g>',
+  shack: '<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-9l8-5 8 5v9z"/><circle cx="12" cy="15" r="3.5"/><circle cx="12" cy="15" r="1.5" fill="#F0E2C2" stroke="none"/></g>',
+  bear: '<g stroke="#F0E2C2" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"><circle cx="8.5" cy="4.2" r="1.6" fill="#F0E2C2"/><circle cx="15.5" cy="4.2" r="1.6" fill="#F0E2C2"/><circle cx="12" cy="6.5" r="3.6" fill="#F0E2C2"/><ellipse cx="12" cy="14.5" rx="5" ry="6" fill="#F0E2C2"/><circle cx="10.4" cy="6.1" r="0.55" fill="#1f1410" stroke="none"/><circle cx="13.6" cy="6.1" r="0.55" fill="#1f1410" stroke="none"/><ellipse cx="12" cy="8" rx="1.2" ry="0.7" fill="#1f1410" stroke="none"/></g>',
 };
 import type { SelectedItem } from "./PropertyMap";
 
@@ -33,6 +35,12 @@ export default function DetailPanel({ item, onClose }: Props) {
       ? `${item.data.bedrooms} BR · ${item.data.bathrooms} BA`
       : style?.label ?? "Location";
 
+  // Photo source: cabins use coverPhoto; POIs use optional photoUrl
+  const photoSrc =
+    item.kind === "cabin"
+      ? item.data.coverPhoto
+      : item.data.photoUrl;
+
   return (
     <div
       className="ios-glass-strong animate-slide-up fixed inset-x-0 bottom-0 z-20 max-h-[55svh] overflow-y-auto rounded-t-[28px] text-[#F0E2C2] shadow-[0_-12px_40px_rgba(0,0,0,0.55)]"
@@ -48,7 +56,7 @@ export default function DetailPanel({ item, onClose }: Props) {
           className="h-10 w-10 rounded-full grid place-items-center border-2 border-[#F0E2C2] flex-shrink-0"
           style={{ background: style?.color ?? "#7A5A2F" }}
           dangerouslySetInnerHTML={{
-            __html: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${
+            __html: `<svg width="22" height="22" viewBox="0 0 24 24">${
               ICON_PATHS[item.kind === "cabin" ? "cabin" : item.data.category] ?? ""
             }</svg>`,
           }}
@@ -73,18 +81,22 @@ export default function DetailPanel({ item, onClose }: Props) {
       </div>
 
       <div className="px-5 py-4 space-y-4">
+        {/* Photo block — used by cabins and any POI that has photoUrl */}
+        {photoSrc && (
+          <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-[#2A1F18]">
+            <Image
+              src={photoSrc}
+              alt={item.data.name}
+              fill
+              sizes="(max-width: 640px) 100vw, 640px"
+              className="object-cover"
+              unoptimized
+            />
+          </div>
+        )}
+
         {item.kind === "cabin" && (
           <>
-            <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-[#2A1F18]">
-              <Image
-                src={item.data.coverPhoto}
-                alt={item.data.name}
-                fill
-                sizes="(max-width: 640px) 100vw, 640px"
-                className="object-cover"
-                unoptimized
-              />
-            </div>
             <p className="text-[15px] leading-relaxed text-[#F0E2C2]/85">
               {item.data.description}
             </p>
@@ -117,9 +129,21 @@ export default function DetailPanel({ item, onClose }: Props) {
         )}
 
         {item.kind === "poi" && (
-          <p className="text-[15px] leading-relaxed text-[#F0E2C2]/85">
-            {item.data.description}
-          </p>
+          <>
+            <p className="text-[15px] leading-relaxed text-[#F0E2C2]/85">
+              {item.data.description}
+            </p>
+            {item.data.story && (
+              <div>
+                <h3 className="text-[10px] uppercase tracking-[0.16em] text-[#B89968] mb-2">
+                  The Story
+                </h3>
+                <p className="font-hand text-[19px] leading-relaxed text-[#F0E2C2]/90">
+                  {item.data.story}
+                </p>
+              </div>
+            )}
+          </>
         )}
 
         <div className="pt-2 text-[11px] text-[#B89968]/70 border-t border-[#B89968]/15">

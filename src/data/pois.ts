@@ -84,6 +84,19 @@ export const pois: Poi[] = [
     lat: 38.399401,
     lng: -90.460676,
   },
+  {
+    slug: "lake-bear",
+    name: "Big Lou",
+    category: "bear",
+    zone: "cabin-ridge",
+    description:
+      "Chainsaw-carved black bear standing watch over the main lake. Holding the same fish for years — won\'t let go for anybody.",
+    story:
+      "Legend says Lou was carved in a single weekend by a chainsaw artist passing through Imperial. He showed up tired, picked the biggest stump on the property, and by Sunday evening Lou was standing there with his catch. The artist refused payment — just asked that the bear be left to keep watch over the lake. He\'s been on duty ever since, and judging by the grip he has on that fish, he hasn\'t shared it with anybody.",
+    lat: 38.40763,
+    lng: -90.45747,
+    photoUrl: "/photos/bear-carving.jpg",
+  },
 ];
 
 // Style metadata per category — used to color pins on the map
@@ -98,6 +111,7 @@ export const categoryStyle: Record<
   barn: { label: "Barn", color: "#6B4423", emoji: "🏚️" },
   treehouse: { label: "Treehouse", color: "#3F6B2A", emoji: "🌳" },
   shack: { label: "Shack", color: "#5A4A3A", emoji: "🎯" },
+  bear: { label: "Bear Carving", color: "#1f1410", emoji: "🐻" },
   trailhead: { label: "Trailhead", color: "#4A6B3A", emoji: "🥾" },
   parking: { label: "Parking", color: "#555", emoji: "🅿️" },
   "scenic-viewpoint": { label: "Viewpoint", color: "#8C6E2A", emoji: "🔭" },

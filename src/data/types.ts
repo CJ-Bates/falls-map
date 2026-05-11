@@ -14,6 +14,7 @@ export type PoiCategory =
   | "parking"
   | "scenic-viewpoint"
   | "waterfall"
+  | "bear"
   | "cabin";
 
 export type Cabin = {
@@ -45,6 +46,8 @@ export type Poi = {
   description: string;
   lat: number;
   lng: number;
+  photoUrl?: string;
+  story?: string;
 };
 
 export type Property = {
