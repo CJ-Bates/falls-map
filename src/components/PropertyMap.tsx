@@ -174,7 +174,8 @@ export default function PropertyMap({ onSelect, basemap = "topo" }: Props) {
       ],
     });
     mapRef.current = map;
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+    // Removed NavigationControl (+/- buttons) — pinch-zoom and mouse wheel
+    // are enough. Compass rose top-left handles north reset.
     map.addControl(new maplibregl.ScaleControl({ maxWidth: 110, unit: "imperial" }), "bottom-left");
 
     map.on("rotate", () => setBearing(map.getBearing()));
