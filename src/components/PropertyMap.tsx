@@ -122,6 +122,7 @@ export default function PropertyMap({ onSelect }: Props) {
     });
     mapRef.current = map;
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+    map.addControl(new maplibregl.ScaleControl({ maxWidth: 110, unit: "imperial" }), "bottom-left");
 
     map.on("error", (e) => console.error("[MapLibre]", e?.error?.message || e));
 
@@ -267,41 +268,9 @@ export default function PropertyMap({ onSelect }: Props) {
         },
       });
 
-      // Area labels — chunky hand-drawn-feeling text for the named zones
-      // of the property. Positions chosen to sit in the open space inside
-      // each zone, not on top of trails.
-      map.addSource("area-labels", {
-        type: "geojson",
-        data: {
-          type: "FeatureCollection",
-          features: [
-            { type: "Feature", geometry: { type: "Point", coordinates: [-90.4582, 38.4117] }, properties: { label: "Cabin Ridge" } },
-            { type: "Feature", geometry: { type: "Point", coordinates: [-90.4575, 38.4070] }, properties: { label: "Main Lake" } },
-            { type: "Feature", geometry: { type: "Point", coordinates: [-90.4610, 38.3997] }, properties: { label: "The 13" } },
-            { type: "Feature", geometry: { type: "Point", coordinates: [-90.4607, 38.4060] }, properties: { label: "Lions View" } },
-          ],
-        } as never,
-      });
-      map.addLayer({
-        id: "area-labels",
-        type: "symbol",
-        source: "area-labels",
-        layout: {
-          "text-field": ["get", "label"],
-          "text-size": 22,
-          "text-letter-spacing": 0.14,
-          "text-transform": "uppercase",
-          "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
-        },
-        paint: {
-          "text-color": "#3A2D22",
-          "text-halo-color": "#F0E2C2",
-          "text-halo-width": 3,
-          "text-halo-blur": 0.6,
-          "text-opacity": 0.55,
-        },
-        minzoom: 13.5,
-      });
+      // Area labels go via HTML Markers (see further down) so we can use the
+      // Caveat handwritten font. MapLibre's built-in glyph fonts can't render
+      // arbitrary web fonts without a hosted glyphs server.
 
       // Buildings — split by kind so cabins read differently
       map.addSource("buildings", { type: "geojson", data: buildingsData as never });
@@ -420,6 +389,39 @@ export default function PropertyMap({ onSelect }: Props) {
         .setLngLat([p.lng, p.lat]).addTo(map);
     });
 
+    // Area labels in the handwritten Caveat font — HTML markers so we get
+    // a real web font instead of MapLibre\'s built-in glyph stack.
+    const AREA_LABELS: { lng: number; lat: number; label: string; size?: number; rotate?: number }[] = [
+      { lng: -90.4585, lat: 38.4118, label: "Cabin Ridge",  size: 30, rotate: -4 },
+      { lng: -90.4575, lat: 38.4072, label: "Main Lake",    size: 26, rotate: 2 },
+      { lng: -90.4612, lat: 38.4000, label: "The 13",       size: 32, rotate: -3 },
+      { lng: -90.4610, lat: 38.4060, label: "Lions View",   size: 24, rotate: 3 },
+      { lng: -90.4538, lat: 38.4085, label: "Horse Pasture", size: 24, rotate: -2 },
+    ];
+    AREA_LABELS.forEach((a) => {
+      const el = document.createElement("div");
+      el.style.cssText = `
+        font-family: "Caveat", "Cabin Sketch", cursive;
+        font-weight: 700;
+        font-size: ${a.size ?? 26}px;
+        color: #2A1F18;
+        text-shadow:
+          0 0 6px #F0E2C2,
+          0 0 6px #F0E2C2,
+          0 0 6px #F0E2C2,
+          1px 1px 0 rgba(240, 226, 194, 0.9);
+        opacity: 0.78;
+        white-space: nowrap;
+        pointer-events: none;
+        user-select: none;
+        transform: rotate(${a.rotate ?? 0}deg);
+        letter-spacing: 0.04em;
+      `;
+      el.textContent = a.label;
+      new maplibregl.Marker({ element: el, anchor: "center" })
+        .setLngLat([a.lng, a.lat]).addTo(map);
+    });
+
     
     const ro = new ResizeObserver(() => map.resize());
     ro.observe(container);
@@ -479,6 +481,9 @@ export default function PropertyMap({ onSelect }: Props) {
         className="map-vignette"
         style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0 }}
       />
+      {/* Paper-grain texture above the basemap canvas. Pointer-events: none
+          so it never intercepts taps meant for markers underneath. */}
+      <div className="map-paper-grain" aria-hidden />
 
       {/* Hand-drawn compass rose — pure decoration over the basemap */}
       <div

@@ -50,7 +50,6 @@ body {
   font-feature-settings: "ss01", "ss02", "kern";
 }
 
-/* iOS-style ultra-thin material */
 .ios-glass {
   background: var(--glass-bg);
   -webkit-backdrop-filter: blur(20px) saturate(1.8);
@@ -64,7 +63,6 @@ body {
   border: 1px solid var(--glass-border);
 }
 
-/* iOS large title kerning */
 .ios-title {
   font-weight: 700;
   letter-spacing: -0.022em;
@@ -75,7 +73,7 @@ body {
   letter-spacing: -0.014em;
 }
 
-/* Hand-drawn display type — for titles & map-overlay labels */
+/* Hand-drawn display type */
 .font-sketch {
   font-family: "Cabin Sketch", "Caveat", system-ui, sans-serif;
   font-weight: 700;
@@ -87,7 +85,6 @@ body {
   letter-spacing: 0;
 }
 
-/* Spring-feeling button press */
 .ios-press {
   transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1.05),
               filter 200ms ease-out;
@@ -97,7 +94,6 @@ body {
   filter: brightness(0.92);
 }
 
-/* Hero waterfall radial */
 .hero-radial {
   background:
     radial-gradient(120% 80% at 50% 0%, rgba(184, 153, 104, 0.22) 0%, transparent 60%),
@@ -105,22 +101,20 @@ body {
     var(--background);
 }
 
-/* Slide-up panel (kept for map detail panel) */
 @keyframes slide-up {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
 }
 .animate-slide-up { animation: slide-up 280ms cubic-bezier(0.2, 0.85, 0.25, 1.02); }
 
-/* Warm the basemap to a painted-paper feel without touching the WebGL pipeline.
-   The filter cascades only to the canvas. HTML markers and overlays are
-   siblings of .maplibregl-canvas, so they stay vibrant. */
+/* Warm the basemap to a painted-paper feel. Filter only cascades to the canvas.
+   HTML markers and overlays are siblings of .maplibregl-canvas, so they
+   stay vibrant. */
 .maplibregl-canvas {
   filter: sepia(0.45) saturate(0.82) contrast(1.06) brightness(1.04) hue-rotate(-6deg);
 }
 
-/* Subtle warm radial vignette over the basemap so the property reads as
-   the center of an old field map */
+/* Subtle warm radial vignette over the basemap */
 .map-vignette::after {
   content: "";
   position: absolute;
@@ -131,7 +125,26 @@ body {
   z-index: 1;
 }
 
-/* MapLibre attribution legibility on dark theme */
+/* Paper-grain texture overlay. SVG fractal noise tinted warm brown,
+   blended with multiply so it darkens the basemap subtly like printer toner
+   that bit a fibrous paper. pointer-events: none so it doesn't block taps. */
+.map-paper-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.16;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.18  0 0 0 0 0.12  0 0 0 0 0.07  0 0 0 0.65 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 240px 240px;
+}
+
+/* Each map pin gets a small CSS variable rotation so the cluster feels
+   hand-stuck-to-paper rather than perfectly rotated to north. Applied via
+   inline --pin-tilt set on the wrap element. */
+.pin-tilt { transform: rotate(var(--pin-tilt, 0deg)); }
+
+/* MapLibre attribution legibility */
 .maplibregl-ctrl-attrib {
   background: rgba(26, 19, 16, 0.55) !important;
   -webkit-backdrop-filter: blur(8px);
@@ -152,7 +165,6 @@ body {
   100% { transform: scale(1.4); opacity: 0; }
 }
 
-/* iOS-style horizontal scroll snap */
 .snap-row {
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
@@ -160,3 +172,21 @@ body {
 }
 .snap-row::-webkit-scrollbar { display: none; }
 .snap-row > * { scroll-snap-align: start; }
+
+/* MapLibre scale bar — restyled to feel like a hand-inked ruler */
+.maplibregl-ctrl-scale {
+  background: rgba(240, 226, 194, 0.78) !important;
+  border: 2px solid #2A1F18 !important;
+  border-top: none !important;
+  color: #2A1F18 !important;
+  font-family: "Cabin Sketch", "Caveat", system-ui, sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+  padding: 1px 6px 3px 6px !important;
+  border-radius: 0 0 4px 4px !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+.maplibregl-ctrl-bottom-left {
+  margin-bottom: 16px !important;
+  margin-left: 12px !important;
+}
