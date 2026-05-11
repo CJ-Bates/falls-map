@@ -26,7 +26,7 @@ export default function MapPage() {
         </Link>
         <div className="ios-glass-strong flex-1 rounded-full px-4 py-2 leading-tight">
           <div className="text-[10px] uppercase tracking-[0.14em] text-[#B89968]">Property Map</div>
-          <div className="ios-headline text-sm text-[#F0E2C2]">The Falls at Lions Den</div>
+          <div className="font-sketch text-lg text-[#F0E2C2] leading-none mt-0.5">The Falls at Lions Den</div>
         </div>
       </header>
 
@@ -40,6 +40,3 @@ export default function MapPage() {
         />
       )}
       <DetailPanel item={selected} onClose={() => setSelected(null)} />
-    </main>
-  );
-}

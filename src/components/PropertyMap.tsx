@@ -197,17 +197,19 @@ export default function PropertyMap({ onSelect }: Props) {
         paint: { "line-color": "#1d5688", "line-width": 1.2, "line-opacity": 0.9 },
       });
 
-      // Trails / roads
+      // Trails / roads — painted-trail-map styling: chunky lines with a
+      // warm ink halo, surface-differentiated by color AND dash so the
+      // road / 4wd / walking-trail hierarchy reads at a glance.
       map.addSource("trails", { type: "geojson", data: trailsData as never });
       map.addLayer({
         id: "trails-halo",
         type: "line",
         source: "trails",
         paint: {
-          "line-color": "#1A1310",
-          "line-width": 6,
+          "line-color": "#2A1F18",
+          "line-width": 8,
           "line-opacity": 0.55,
-          "line-blur": 1.2,
+          "line-blur": 1.6,
         },
         layout: { "line-join": "round", "line-cap": "round" },
       });
@@ -219,18 +221,26 @@ export default function PropertyMap({ onSelect }: Props) {
           "line-color": [
             "match",
             ["get", "surface"],
-            "paved", "#444444",
-            "gravel", "#B89968",
-            "4wd", "#D9531E",
-            "trail", "#F0E2C2",
-            /* default */ "#9aa3a8",
+            "paved",  "#3D3022",
+            "gravel", "#C9A974",
+            "4wd",    "#D9531E",
+            "trail",  "#F0E2C2",
+            /* default */ "#C9A974",
           ],
-          "line-width": 3,
-          "line-opacity": 0.95,
+          "line-width": [
+            "match",
+            ["get", "surface"],
+            "gravel", 5,
+            "4wd",    4,
+            "trail",  3.5,
+            3.5,
+          ],
+          "line-opacity": 0.98,
           "line-dasharray": [
             "case",
-            ["==", ["get", "approximate"], true],
-            ["literal", [2, 1.5]],
+            ["==", ["get", "approximate"], true], ["literal", [2, 1.5]],
+            ["==", ["get", "surface"], "trail"],  ["literal", [1.2, 1.4]],
+            ["==", ["get", "surface"], "4wd"],    ["literal", [3, 1.6]],
             ["literal", [1, 0]],
           ] as never,
         },
@@ -243,17 +253,54 @@ export default function PropertyMap({ onSelect }: Props) {
         layout: {
           "symbol-placement": "line",
           "text-field": ["get", "name"],
-          "text-size": 12,
-          "text-letter-spacing": 0.05,
+          "text-size": 14,
+          "text-letter-spacing": 0.04,
           "text-anchor": "center",
-          "text-offset": [0, -0.6],
+          "text-offset": [0, -0.8],
+          "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
         },
         paint: {
-          "text-color": "#1A1310",
-          "text-halo-color": "#F0E2C2",
-          "text-halo-width": 1.5,
-          "text-halo-blur": 0.3,
+          "text-color": "#2A1F18",
+          "text-halo-color": "#F5E8C9",
+          "text-halo-width": 2.2,
+          "text-halo-blur": 0.4,
         },
+      });
+
+      // Area labels — chunky hand-drawn-feeling text for the named zones
+      // of the property. Positions chosen to sit in the open space inside
+      // each zone, not on top of trails.
+      map.addSource("area-labels", {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: [
+            { type: "Feature", geometry: { type: "Point", coordinates: [-90.4582, 38.4117] }, properties: { label: "Cabin Ridge" } },
+            { type: "Feature", geometry: { type: "Point", coordinates: [-90.4575, 38.4070] }, properties: { label: "Main Lake" } },
+            { type: "Feature", geometry: { type: "Point", coordinates: [-90.4610, 38.3997] }, properties: { label: "The 13" } },
+            { type: "Feature", geometry: { type: "Point", coordinates: [-90.4607, 38.4060] }, properties: { label: "Lions View" } },
+          ],
+        },
+      });
+      map.addLayer({
+        id: "area-labels",
+        type: "symbol",
+        source: "area-labels",
+        layout: {
+          "text-field": ["get", "label"],
+          "text-size": 22,
+          "text-letter-spacing": 0.14,
+          "text-transform": "uppercase",
+          "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+        },
+        paint: {
+          "text-color": "#3A2D22",
+          "text-halo-color": "#F0E2C2",
+          "text-halo-width": 3,
+          "text-halo-blur": 0.6,
+          "text-opacity": 0.55,
+        },
+        minzoom: 13.5,
       });
 
       // Buildings — split by kind so cabins read differently
@@ -402,57 +449,4 @@ export default function PropertyMap({ onSelect }: Props) {
         if (userMarkerRef.current) {
           userMarkerRef.current.setLngLat(ll);
         } else {
-          userMarkerRef.current = new maplibregl.Marker({ element: buildUserDot(), anchor: "center" })
-            .setLngLat(ll).addTo(map);
-          map.flyTo({ center: ll, zoom: Math.max(map.getZoom(), 16) });
-        }
-      },
-      (err) => { setLocateError(err.message || "Couldn't get your location."); setTracking(false); },
-      { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 },
-    );
-    return () => {
-      if (watchIdRef.current !== null) {
-        navigator.geolocation.clearWatch(watchIdRef.current);
-        watchIdRef.current = null;
-      }
-    };
-  }, [tracking]);
-
-  function recenterOnUser() {
-    if (!tracking) { setTracking(true); return; }
-    if (userLocation && mapRef.current) {
-      mapRef.current.flyTo({ center: userLocation, zoom: 17 });
-    }
-  }
-
-  return (
-    <>
-      <div ref={containerRef} style={{ position: "absolute", top: 0, right: 0, bottom: 0, left: 0 }} />
-      <button
-        onClick={recenterOnUser}
-        aria-label={tracking ? "Recenter on me" : "Track my location"}
-        className="ios-glass-strong ios-press absolute bottom-6 right-4 z-10 grid h-12 w-12 place-items-center rounded-full text-[#F0E2C2]"
-        title={tracking ? "Recenter on me" : "Show my live location"}
-      >
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          {tracking ? (
-            <>
-              <circle cx="12" cy="12" r="3" fill="#2E78D2" stroke="#2E78D2" />
-              <path d="M12 2v3" /><path d="M12 19v3" /><path d="M2 12h3" /><path d="M19 12h3" />
-            </>
-          ) : (
-            <>
-              <circle cx="12" cy="12" r="3" />
-              <path d="M12 2v3" /><path d="M12 19v3" /><path d="M2 12h3" /><path d="M19 12h3" />
-            </>
-          )}
-        </svg>
-      </button>
-      {locateError && (
-        <div className="ios-glass-strong absolute bottom-24 right-4 z-10 max-w-[260px] rounded-2xl px-4 py-3 text-xs text-[#F0E2C2] shadow-lg">
-          {locateError}
-        </div>
-      )}
-    </>
-  );
-}
+          userMarkerRef.current = new maplibregl.Marker({ element: buildUser
