@@ -96,7 +96,7 @@ export const pois: Poi[] = [
     description:
       "Chainsaw-carved black bear standing watch over the main lake. Holding the same fish for years — won\'t let go for anybody.",
     story:
-      "Legend says Lou was carved in a single weekend by a chainsaw artist passing through Imperial. He showed up tired, picked the biggest stump on the property, and by Sunday evening Lou was standing there with his catch. The artist refused payment — just asked that the bear be left to keep watch over the lake. He\'s been on duty ever since, and judging by the grip he has on that fish, he hasn\'t shared it with anybody.",
+      "They say Lou was the friendliest black bear ever to wander these woods — showed up at the lake most evenings, fished for a while, and ambled home without bothering a soul. Guests still claim to spot him down by the water from time to time, though biologists insist Missouri black bears don\'t roam this far north. Lou begs to differ.",
     lat: 38.40763,
     lng: -90.45747,
     photoUrl: "/photos/bear-carving.jpg",
