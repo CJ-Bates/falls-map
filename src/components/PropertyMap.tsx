@@ -77,17 +77,70 @@ const TOPO_STYLE: maplibregl.StyleSpecification = {
 };
 
 const ICON_PATHS: Record<string, string> = {
-  cabin: '<path d="M3 9l9-7 9 7v12H3z"/><path d="M9 21V12h6v9"/>',
-  pavilion: '<path d="M2 21h20"/><path d="M3.5 21 12 4l8.5 17"/><path d="M12 13v8"/>',
-  firepit: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
-  "lake-feature": '<path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>',
-  barn: '<path d="M22 8.35V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.35a2 2 0 0 1 1.26-1.85l8-3.2a2 2 0 0 1 1.48 0l8 3.2A2 2 0 0 1 22 8.35Z"/><path d="M6 18h12"/><path d="M6 14h12"/><path d="M6 10h12"/>',
-  treehouse: '<path d="m17 14 3 3.3a1 1 0 0 1-.7 1.7H4.7a1 1 0 0 1-.7-1.7L7 14h-.3a1 1 0 0 1-.7-1.7L9 9h-.2A1 1 0 0 1 8 7.3L12 3l4 4.3a1 1 0 0 1-.8 1.7H15l3 3.3a1 1 0 0 1-.7 1.7Z"/><path d="M12 22v-3"/>',
-  shack: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
-  trailhead: '<path d="M14 8a2 2 0 1 0-4 0c0 2 2 4 2 4s2-2 2-4z"/><path d="m4 22 6-10"/><path d="m20 22-6-10"/>',
-  parking: '<path d="M9 17V7h4a3 3 0 0 1 0 6H9"/>',
-  "scenic-viewpoint": '<circle cx="12" cy="12" r="3"/><path d="M12 3v2"/><path d="M12 19v2"/><path d="M3 12h2"/><path d="M19 12h2"/>',
-  waterfall: '<path d="M3 5l3 3"/><path d="M9 4v4"/><path d="M15 5l-3 3"/><path d="M21 7l-3 1"/><path d="M3 13c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M3 19c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>',
+  // Each icon is a complete SVG fragment so we can mix strokes and fills.
+  // Designed at 24x24 viewBox, rendered at 20x20 with the wobble filter.
+  cabin: `<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M16 4.5v3"/>
+    <path d="M3 12 12 4l9 8"/>
+    <path d="M5 12v9h14v-9"/>
+    <path d="M10 21v-5h4v5"/>
+    <rect x="6.5" y="13" width="2.2" height="2.2" fill="#F0E2C2" stroke="none"/>
+    <rect x="15.3" y="13" width="2.2" height="2.2" fill="#F0E2C2" stroke="none"/>
+  </g>`,
+  pavilion: `<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 11 12 3l9 8"/>
+    <path d="M6 11v10"/>
+    <path d="M18 11v10"/>
+    <path d="M4 21h16"/>
+    <path d="M9 11v10M15 11v10" opacity="0.5"/>
+  </g>`,
+  firepit: `<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 3c-1.5 3-4 4-4 8 a4 4 0 0 0 8 0c0-4-2.5-5-4-8z"/>
+    <path d="M12 12.5c-1 1-1.5 2-1 3 0.7 0.6 1.7 0.4 2-0.5 0.3-0.8-0.3-1.5-1-2.5z" fill="#F0E2C2"/>
+    <path d="M5 21l3-1M19 21l-3-1"/>
+  </g>`,
+  "lake-feature": `<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 4v11"/>
+    <path d="M12 6l5 9H12z" fill="#F0E2C2"/>
+    <path d="M4 16c3 2.5 13 2.5 16 0"/>
+    <path d="M3 20c1.5 0.7 3.5 0.7 5 0s3.5-0.7 5 0 3.5 0.7 5 0"/>
+  </g>`,
+  barn: `<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 21V11l9-7 9 7v10z"/>
+    <path d="M9 21v-5.5h6V21"/>
+    <path d="M9 15.5l6 5.5M15 15.5l-6 5.5"/>
+  </g>`,
+  treehouse: `<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="8.5" r="5.5"/>
+    <rect x="9" y="6.5" width="6" height="5" rx="0.5" fill="#F0E2C2" stroke="none"/>
+    <path d="M9.5 6.5 12 4l2.5 2.5" stroke="#2A1F18" stroke-width="1.4"/>
+    <path d="M11 11.5v-2.5h2v2.5" stroke="#2A1F18" stroke-width="1.4" fill="none"/>
+    <path d="M10.5 14v7M13.5 14v7"/>
+    <path d="M10.5 16h3M10.5 19h3"/>
+  </g>`,
+  shack: `<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 21v-9l8-5 8 5v9z"/>
+    <circle cx="12" cy="15" r="3.5"/>
+    <circle cx="12" cy="15" r="1.5" fill="#F0E2C2" stroke="none"/>
+  </g>`,
+  trailhead: `<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 7l-3 3 3 3M15 7l3 3-3 3"/>
+    <path d="M6 10h12"/>
+    <path d="M9 17l3 3 3-3"/>
+  </g>`,
+  parking: `<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 18V6h5a3.5 3.5 0 0 1 0 7H8"/>
+  </g>`,
+  "scenic-viewpoint": `<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="3.5"/>
+    <circle cx="12" cy="12" r="1.2" fill="#F0E2C2" stroke="none"/>
+    <path d="M12 4v2M12 18v2M4 12h2M18 12h2M6 6l1.4 1.4M16.6 7.4 18 6M6 18l1.4-1.4M16.6 16.6 18 18"/>
+  </g>`,
+  waterfall: `<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M7 3v6M11 3v3M15 3v6M19 3v3"/>
+    <path d="M3 13c1.5 0.8 3.5 0.8 5 0s3.5-0.8 5 0 3.5 0.8 5 0 3.5-0.8 4-0.3"/>
+    <path d="M3 19c1.5 0.8 3.5 0.8 5 0s3.5-0.8 5 0 3.5 0.8 5 0 3.5-0.8 4-0.3"/>
+  </g>`,
 };
 
 // Deterministic small tilt per pin seed so the cluster of pins feels
@@ -131,8 +184,8 @@ function buildPinElement(color: string, category: string, seed: string = categor
   inner.addEventListener("touchend", () => (inner.style.transform = ""), { passive: true });
   inner.addEventListener("touchcancel", () => (inner.style.transform = ""), { passive: true });
 
-  const path = ICON_PATHS[category] ?? '<circle cx="12" cy="12" r="3"/>';
-  inner.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F0E2C2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:block; filter: url(#pin-rough);">${path}</svg>`;
+  const path = ICON_PATHS[category] ?? '<g fill="none" stroke="#F0E2C2" stroke-width="2"><circle cx="12" cy="12" r="3"/></g>';
+  inner.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" style="display:block; filter: url(#pin-rough);">${path}</svg>`;
 
   tilt.appendChild(inner);
   wrap.appendChild(tilt);
@@ -587,8 +640,8 @@ export default function PropertyMap({ onSelect, basemap = "topo" }: Props) {
       >
         <defs>
           <filter id="pin-rough">
-            <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="3" />
-            <feDisplacementMap in="SourceGraphic" scale="0.9" />
+            <feTurbulence type="fractalNoise" baseFrequency="0.08" numOctaves="2" seed="3" />
+            <feDisplacementMap in="SourceGraphic" scale="1.5" />
           </filter>
         </defs>
       </svg>
