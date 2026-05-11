@@ -74,7 +74,7 @@ export default function MapPage() {
   const [layersOpen, setLayersOpen] = useState(false);
 
   return (
-    <main className="relative h-[100svh] w-full overflow-hidden bg-[#2A1F18]">
+    <main className="fixed inset-0 w-full overflow-hidden bg-[#2A1F18]" style={{ height: "100dvh" }}>
       {/* Floating back button — solo top-left, no title bar */}
       <Link
         href="/"

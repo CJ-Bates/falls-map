@@ -29,7 +29,13 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className="h-full antialiased">
-      <body className="min-h-full bg-[#0e0a08] text-[#F0E2C2]"><RegisterSW />{children}</body>
+      <body
+        className="bg-[#0e0a08] text-[#F0E2C2]"
+        style={{ minHeight: "100dvh" }}
+      >
+        <RegisterSW />
+        {children}
+      </body>
     </html>
   );
 }
