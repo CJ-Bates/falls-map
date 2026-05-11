@@ -29,7 +29,7 @@ export const pois: Poi[] = [
     description:
       "The highest firepit on the property — south-facing log benches at the edge of the ridge with an open view over the Jefferson County hills. Stacked firewood right there; hitching rail for the horses on the right.",
     story:
-      "Best spot on the whole property to watch a sunset. Bring a folding chair if the benches are full, and a flashlight for the walk back — it gets dark quickly out here.",
+      "Best spot to catch the late-afternoon light spilling over the Jefferson County hills. Bring a folding chair if the benches are full, and a flashlight for the walk back — it gets dark quickly out here.",
     lat: 38.4081,
     lng: -90.459661,
     photoUrl: "/photos/upper-ridge-firepit.jpg",
