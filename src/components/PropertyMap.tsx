@@ -322,11 +322,14 @@ export default function PropertyMap({ onSelect }: Props) {
         source: "horse-pasture",
         paint: { "fill-color": "#7d8f5a", "fill-opacity": 0.45 },
       });
-      // "Horse Pasture" label centered on the polygon
+      // "Horse Pasture" uppercase label — only appears when zoomed in (>= 15.5).
+      // At default zoom the handwritten Caveat HTML marker handles this, and
+      // having both visible at once felt redundant.
       map.addLayer({
         id: "horse-pasture-label",
         type: "symbol",
         source: "horse-pasture",
+        minzoom: 15.5,
         layout: {
           "text-field": "Horse Pasture",
           "text-size": 13,
@@ -396,8 +399,8 @@ export default function PropertyMap({ onSelect }: Props) {
     // the pins, not directly on top of them.
     const AREA_LABELS: { lng: number; lat: number; label: string; size?: number; rotate?: number }[] = [
       { lng: -90.4567,  lat: 38.4124,  label: "Cabin Ridge",   size: 30, rotate: -4 },
-      { lng: -90.45810, lat: 38.40720, label: "Main Lake",     size: 26, rotate: 2 },
-      { lng: -90.46145, lat: 38.40070, label: "The 13",        size: 34, rotate: -3 },
+      { lng: -90.45741, lat: 38.40679, label: "Main Lake",     size: 26, rotate: 2 },
+      { lng: -90.46040, lat: 38.39880, label: "The 13",        size: 34, rotate: -3 },
       { lng: -90.45029, lat: 38.40857, label: "Horse Pasture", size: 28, rotate: -2 },
     ];
     AREA_LABELS.forEach((a) => {
