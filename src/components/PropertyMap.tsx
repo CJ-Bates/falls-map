@@ -26,23 +26,23 @@ type Props = {
 const TOPO_STYLE: maplibregl.StyleSpecification = {
   version: 8,
   sources: {
-    // USGS National Map US Topo — contour lines + hillshade baked in. Tile
-    // server only goes to z16, so we use it for the wide property-overview
-    // zoom range and hand off to a sharper source when the user zooms deep.
+    // OpenTopoMap — classic topographic look with contour lines + hillshade,
+    // free, no API key, CORS-enabled. Goes to z17, which covers any practical
+    // viewing zoom on a 194-acre property.
     topo: {
       type: "raster",
       tiles: [
-        "https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}",
+        "https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
+        "https://b.tile.opentopomap.org/{z}/{x}/{y}.png",
+        "https://c.tile.opentopomap.org/{z}/{x}/{y}.png",
       ],
       tileSize: 256,
-      maxzoom: 16,
+      maxzoom: 17,
       attribution:
-        '<a href="https://www.usgs.gov/programs/national-geospatial-program/national-map">USGS National Map</a>',
+        'Map data: © <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors, SRTM | Map style: © <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
     },
-    // CartoDB Voyager — used only as a deep-zoom fallback (z >= 16.5) so the
-    // basemap stays crisp when zooming in on a cabin or feature. Parcel
-    // lines are still in this tileset but only show at the close-up zoom
-    // level where the user is looking at a single feature anyway.
+    // CartoDB Voyager — fallback for deepest pinch-zoom (z > 17). The
+    // topo source covers everything else.
     deep: {
       type: "raster",
       tiles: [
@@ -52,16 +52,12 @@ const TOPO_STYLE: maplibregl.StyleSpecification = {
       ],
       tileSize: 256,
       maxzoom: 20,
-      attribution:
-        '© <a href="https://carto.com/attributions">CARTO</a>',
+      attribution: '© <a href="https://carto.com/attributions">CARTO</a>',
     },
   },
   layers: [
-    // Layered handoff: USGS topo shows up to ~zoom 14.7 (a hair past the
-    // default property-overview zoom of 14.5), CartoDB Voyager takes over for
-    // anything deeper so tiles stay crisp on close inspection.
-    { id: "base-topo",     type: "raster", source: "topo", maxzoom: 14.7 },
-    { id: "base-fallback", type: "raster", source: "deep", minzoom: 14.7 },
+    { id: "base-topo",     type: "raster", source: "topo", maxzoom: 17.2 },
+    { id: "base-fallback", type: "raster", source: "deep", minzoom: 17.2 },
   ],
 };
 
