@@ -115,28 +115,41 @@ export default function InstallAppButton() {
 
             <h2 className="ios-title text-xl">Add to your home screen</h2>
             <p className="text-[13px] text-[#F0E2C2]/70 mt-1">
-              iPhone needs three taps to install. Apple doesn&apos;t let us do
-              it for you — but it&apos;s easy.
+              A few quick taps and you&apos;re set. Apple doesn&apos;t let us do
+              it for you — but we&apos;ll walk you through it.
             </p>
 
             <ol className="mt-5 space-y-4">
               <li className="flex items-center gap-3">
                 <span className="grid h-8 w-8 place-items-center rounded-full bg-[#F0E2C2] text-[#1A1310] text-[14px] font-bold flex-shrink-0">1</span>
                 <span className="text-[14px] flex items-center gap-2 flex-wrap">
-                  Tap the
+                  At the bottom, tap the
                   <span className="inline-flex items-center gap-1 rounded-md bg-[#F0E2C2]/12 px-2 py-1">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#67B0FF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <span className="inline-flex items-center gap-[3px]">
+                      <span className="block h-[5px] w-[5px] rounded-full bg-[#F0E2C2]" />
+                      <span className="block h-[5px] w-[5px] rounded-full bg-[#F0E2C2]" />
+                      <span className="block h-[5px] w-[5px] rounded-full bg-[#F0E2C2]" />
+                    </span>
+                  </span>
+                  next to the address bar
+                </span>
+              </li>
+              <li className="flex items-center gap-3">
+                <span className="grid h-8 w-8 place-items-center rounded-full bg-[#F0E2C2] text-[#1A1310] text-[14px] font-bold flex-shrink-0">2</span>
+                <span className="text-[14px] flex items-center gap-2 flex-wrap">
+                  Tap
+                  <span className="inline-flex items-center gap-1 rounded-md bg-[#F0E2C2]/12 px-2 py-1">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#67B0FF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M12 3v13" />
                       <path d="m7 8 5-5 5 5" />
                       <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" />
                     </svg>
                     <span className="text-[12px] font-semibold">Share</span>
                   </span>
-                  button at the bottom of Safari
                 </span>
               </li>
               <li className="flex items-center gap-3">
-                <span className="grid h-8 w-8 place-items-center rounded-full bg-[#F0E2C2] text-[#1A1310] text-[14px] font-bold flex-shrink-0">2</span>
+                <span className="grid h-8 w-8 place-items-center rounded-full bg-[#F0E2C2] text-[#1A1310] text-[14px] font-bold flex-shrink-0">3</span>
                 <span className="text-[14px] flex items-center gap-2 flex-wrap">
                   Scroll down, then tap
                   <span className="inline-flex items-center gap-1 rounded-md bg-[#F0E2C2]/12 px-2 py-1 text-[12px] font-semibold">
@@ -149,7 +162,7 @@ export default function InstallAppButton() {
                 </span>
               </li>
               <li className="flex items-center gap-3">
-                <span className="grid h-8 w-8 place-items-center rounded-full bg-[#F0E2C2] text-[#1A1310] text-[14px] font-bold flex-shrink-0">3</span>
+                <span className="grid h-8 w-8 place-items-center rounded-full bg-[#F0E2C2] text-[#1A1310] text-[14px] font-bold flex-shrink-0">4</span>
                 <span className="text-[14px]">
                   Tap <span className="font-semibold">Add</span> in the top right
                 </span>
