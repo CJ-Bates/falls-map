@@ -129,6 +129,7 @@ export default function MapPage() {
   const [offlineStatus, setOfflineStatus] = useState<OfflineStatus | null>(null);
   const [downloading, setDownloading] = useState<PrefetchProgress | null>(null);
   const [route, setRoute] = useState<Route | null>(null);
+  const [routeToName, setRouteToName] = useState<string | null>(null);
   const [sourcePickerOpen, setSourcePickerOpen] = useState(false);
 
   // Build the trail-network graph once. Memoized so it doesn't rebuild on
@@ -139,22 +140,25 @@ export default function MapPage() {
   // item, by snapping both to graph vertices and running Dijkstra.
   const computeRoute = (fromLngLat: LngLat) => {
     if (!selected) return;
-    const toLngLat: LngLat =
-      selected.kind === "cabin"
-        ? [selected.data.lng, selected.data.lat]
-        : [selected.data.lng, selected.data.lat];
+    const toLngLat: LngLat = [selected.data.lng, selected.data.lat];
     const from = snapToGraph(graph, fromLngLat);
     const to = snapToGraph(graph, toLngLat);
     const r = shortestPath(graph, from.node, to.node);
     setRoute(r);
+    setRouteToName(selected.data.name);
     setSourcePickerOpen(false);
   };
 
-  // Clear route when the selected item changes or panel closes.
+  // Close the source-picker when selection changes, but DON'T clear the
+  // route — users want it to persist across closing the detail panel.
   useEffect(() => {
-    setRoute(null);
     setSourcePickerOpen(false);
   }, [selected]);
+
+  const clearRoute = () => {
+    setRoute(null);
+    setRouteToName(null);
+  };
 
   // Hydrate offline status on mount.
   useEffect(() => {
@@ -188,6 +192,38 @@ export default function MapPage() {
           <path d="m15 18-6-6 6-6" />
         </svg>
       </Link>
+
+      {/* Floating route chip — visible only when a route is active and
+          the detail panel is closed. Tells the user what's highlighted
+          and gives them a way to dismiss without re-opening the panel. */}
+      {route && !selected && (
+        <div
+          className="ios-glass-strong absolute z-10 left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-full pl-3.5 pr-1 py-1 shadow-[0_8px_24px_rgba(0,0,0,0.35)]"
+          style={{ top: "calc(env(safe-area-inset-top, 0px) + 0.85rem)" }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#67B0FF" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
+            <path d="M3 11 21 3l-8 18-2-7-8-3z"/>
+          </svg>
+          <div className="leading-none">
+            <div className="text-[10px] uppercase tracking-[0.14em] text-[#B89968]">Route to</div>
+            <div className="text-[13px] font-semibold text-[#F0E2C2] mt-0.5">
+              {routeToName ?? "destination"}{" · "}
+              <span className="text-[#F0E2C2]/65">
+                {(route.distance / 1609.344).toFixed(2)} mi
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={clearRoute}
+            aria-label="Clear route"
+            className="ios-press grid h-7 w-7 place-items-center rounded-full bg-[#F0E2C2]/10 text-[#F0E2C2]/70 hover:text-[#F0E2C2] flex-shrink-0 ml-1"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
 
       <PropertyMap
         onSelect={setSelected}
@@ -366,7 +402,7 @@ export default function MapPage() {
         onClose={() => setSelected(null)}
         onGetDirections={() => setSourcePickerOpen(true)}
         route={route}
-        onClearRoute={() => setRoute(null)}
+        onClearRoute={clearRoute}
       />
 
       {/* Source picker sheet — appears when the user taps "Directions" */}
