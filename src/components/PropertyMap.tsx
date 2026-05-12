@@ -706,27 +706,36 @@ export default function PropertyMap({ onSelect, basemap = "topo", routeCoords = 
     else m.once("idle", apply);
   }, [routeCoords]);
 
-  // Animate the route's line-dasharray so dashes appear to flow from start
-  // to end. Runs only while a route is active.
+  // Animate the route's line-dasharray so dashes appear to flow from the
+  // first vertex toward the last. When routeCoords reverses, MapLibre
+  // re-walks the same shifting pattern starting from the new first vertex,
+  // which means the dashes visibly reverse direction.
+  //
+  // Uses MapLibre's canonical 12-frame smooth-shift sequence (no
+  // discontinuity), running at ~80ms/frame so the flow is easy to follow
+  // and unambiguous about direction.
   useEffect(() => {
     const m = mapRef.current;
     if (!m || !routeCoords || routeCoords.length < 2) return;
     let raf = 0;
     let step = 0;
-    // 8-frame cycle. The pattern (gap, dash) shifts one unit per tick.
-    const cycle: [number, number, number, number][] = [
-      [0, 0.5, 3, 1.5],
-      [0, 1.0, 3, 1.0],
-      [0, 1.5, 3, 0.5],
-      [0, 2.0, 3, 0.0],
-      [0.5, 2.0, 2.5, 0.0],
-      [1.0, 2.0, 2.0, 0.0],
-      [1.5, 2.0, 1.5, 0.0],
-      [2.0, 2.0, 1.0, 0.0],
+    const cycle: number[][] = [
+      [0, 4, 3],
+      [0.5, 4, 2.5],
+      [1, 4, 2],
+      [1.5, 4, 1.5],
+      [2, 4, 1],
+      [2.5, 4, 0.5],
+      [3, 4, 0],
+      [0, 0.5, 3, 2.5],
+      [0, 1, 3, 2],
+      [0, 1.5, 3, 1.5],
+      [0, 2, 3, 1],
+      [0, 2.5, 3, 0.5],
     ];
     let last = 0;
     const tick = (t: number) => {
-      if (t - last > 70) {
+      if (t - last > 80) {
         last = t;
         if (m.getLayer("route-line")) {
           m.setPaintProperty(
