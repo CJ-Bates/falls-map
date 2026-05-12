@@ -22,16 +22,13 @@ const SLIDES: { title: string; body: string; icon: React.ReactElement }[] = [
     ),
   },
   {
-    title: "Works offline, anywhere",
-    body: "Map tiles, trails, and house info are cached on your phone. Use it deep in the woods, no signal needed.",
+    title: "Save it for offline use",
+    body: "On the map page, tap the download button to save the property to your phone. Once downloaded, the whole map works without signal — deep in the woods, no problem.",
     icon: (
       <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#cdac7d" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M5 13a10 10 0 0 1 14 0" />
-        <path d="M8.5 16.5a5 5 0 0 1 7 0" />
-        <line x1="12" y1="20" x2="12.01" y2="20" />
-        <path d="M2 8.82a15 15 0 0 1 20 0" />
-        <path d="M3 3l18 18" stroke="#1A1310" strokeWidth="2.5" />
-        <path d="M3 3l18 18" />
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        <polyline points="7 10 12 15 17 10" />
+        <line x1="12" y1="15" x2="12" y2="3" />
       </svg>
     ),
   },
