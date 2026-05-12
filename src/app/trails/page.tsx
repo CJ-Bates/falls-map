@@ -3,20 +3,22 @@ import trails from "@/data/trails.json";
 
 export const metadata = { title: "Trails · The Falls at Lions Den" };
 
-const SURFACE_LABEL: Record<string, { label: string; color: string; description: string }> = {
-  paved: { label: "Paved", color: "#444444", description: "Any car." },
-  gravel: { label: "Gravel", color: "#B89968", description: "Any car — drive carefully." },
-  "4wd": { label: "4-Wheel Drive", color: "#D9531E", description: "Truck or SUV with 4WD." },
-  trail: { label: "Walking Trail", color: "#F0E2C2", description: "On foot only." },
+const SURFACE_META: Record<
+  string,
+  { label: string; color: string; sub: string }
+> = {
+  paved:  { label: "Paved",   color: "#3D3022", sub: "Any car" },
+  gravel: { label: "Gravel",  color: "#C9A974", sub: "Any vehicle" },
+  "4wd":  { label: "4WD",     color: "#D9531E", sub: "Truck or SUV" },
+  trail:  { label: "Walking", color: "#F0E2C2", sub: "On foot only" },
 };
 
-// Approximate length in miles using haversine for line strings.
 function lineLengthMiles(coords: number[][]): number {
   let m = 0;
   for (let i = 1; i < coords.length; i++) {
     const [lng1, lat1] = coords[i - 1];
     const [lng2, lat2] = coords[i];
-    const R = 6371000; // meters
+    const R = 6371000;
     const toRad = (d: number) => (d * Math.PI) / 180;
     const dLat = toRad(lat2 - lat1);
     const dLng = toRad(lng2 - lng1);
@@ -28,16 +30,34 @@ function lineLengthMiles(coords: number[][]): number {
   return m / 1609.344;
 }
 
+function slugify(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
 export default function TrailsPage() {
   type TrailFeature = {
     properties: { name?: string; surface?: string; description?: string };
     geometry: { coordinates: number[][] };
   };
-  const features = (trails.features as unknown as TrailFeature[]).slice();
+  const features = (trails.features as unknown as TrailFeature[])
+    .slice()
+    // Sort: surface order (gravel, 4wd, walking) then by length descending
+    .sort((a, b) => {
+      const order: Record<string, number> = { paved: 0, gravel: 1, "4wd": 2, trail: 3 };
+      const oa = order[a.properties.surface ?? "trail"] ?? 9;
+      const ob = order[b.properties.surface ?? "trail"] ?? 9;
+      if (oa !== ob) return oa - ob;
+      return lineLengthMiles(b.geometry.coordinates) - lineLengthMiles(a.geometry.coordinates);
+    });
+
+  const totalMiles = features.reduce(
+    (sum, t) => sum + lineLengthMiles(t.geometry.coordinates),
+    0,
+  );
 
   return (
     <main className="hero-radial min-h-[100svh] w-full pb-16">
-      <header className="px-6 pt-[calc(env(safe-area-inset-top,0px)+1rem)] pb-4 flex items-center gap-3 max-w-3xl mx-auto">
+      <header className="px-6 pt-[calc(env(safe-area-inset-top,0px)+1rem)] pb-2 flex items-center gap-3 max-w-3xl mx-auto">
         <Link
           href="/"
           aria-label="Back"
@@ -47,27 +67,67 @@ export default function TrailsPage() {
             <path d="m15 18-6-6 6-6" />
           </svg>
         </Link>
-        <h1 className="ios-title text-2xl text-[#F0E2C2]">Trails & Roads</h1>
+        <div>
+          <h1 className="ios-title text-2xl text-[#F0E2C2]">Trails & Roads</h1>
+          <p className="text-[12px] text-[#B89968] mt-0.5">
+            {features.length} named · {totalMiles.toFixed(1)} mi total
+          </p>
+        </div>
       </header>
+
+      {/* Surface legend */}
+      <div className="px-6 max-w-3xl mx-auto mt-2 mb-5">
+        <ul className="flex flex-wrap gap-2">
+          {Object.entries(SURFACE_META).map(([id, m]) => (
+            <li
+              key={id}
+              className="ios-glass inline-flex items-center gap-2 rounded-full px-3 py-1.5"
+            >
+              <span
+                className="block h-[3px] w-6 rounded-full"
+                style={{ background: m.color, boxShadow: `0 0 6px ${m.color}80` }}
+              />
+              <span className="text-[12px] text-[#F0E2C2]/85 font-semibold">{m.label}</span>
+              <span className="text-[11px] text-[#F0E2C2]/55">· {m.sub}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
 
       <div className="px-6 mx-auto max-w-3xl space-y-3">
         {features.map((t, i) => {
-          const surface = (t.properties.surface ?? "trail") as keyof typeof SURFACE_LABEL;
-          const meta = SURFACE_LABEL[surface] ?? SURFACE_LABEL.trail;
+          const surface = (t.properties.surface ?? "trail") as keyof typeof SURFACE_META;
+          const meta = SURFACE_META[surface] ?? SURFACE_META.trail;
           const miles = lineLengthMiles(t.geometry.coordinates);
+          const name = t.properties.name ?? "Unnamed trail";
+          const slug = slugify(name);
           return (
-            <article key={i} className="ios-glass rounded-3xl p-5">
-              <div className="flex items-start gap-3">
-                <span
-                  className="mt-1 block h-3 w-3 rounded-full flex-shrink-0"
-                  style={{ background: meta.color, boxShadow: `0 0 10px ${meta.color}80` }}
-                />
+            <article key={i} className="ios-glass relative overflow-hidden rounded-3xl">
+              {/* Surface color stripe on the left edge */}
+              <div
+                aria-hidden
+                className="absolute left-0 top-0 bottom-0 w-1"
+                style={{ background: meta.color, boxShadow: `0 0 12px ${meta.color}60` }}
+              />
+              <div className="pl-5 pr-4 py-4 flex items-start gap-3">
                 <div className="flex-1 min-w-0">
-                  <h2 className="ios-headline text-[17px] text-[#F0E2C2]">
-                    {t.properties.name ?? "Unnamed trail"}
-                  </h2>
-                  <p className="text-[11px] uppercase tracking-[0.14em] text-[#B89968] mt-0.5">
-                    {meta.label} · {miles.toFixed(2)} mi
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="ios-headline text-[17px] text-[#F0E2C2] leading-tight">
+                      {name}
+                    </h2>
+                    <span
+                      className="text-[10px] uppercase tracking-[0.14em] font-semibold rounded-full px-2 py-0.5"
+                      style={{
+                        background: `${meta.color}22`,
+                        color: meta.color === "#F0E2C2" ? "#F0E2C2" : meta.color,
+                        border: `1px solid ${meta.color}55`,
+                      }}
+                    >
+                      {meta.label}
+                    </span>
+                  </div>
+                  <p className="text-[11px] uppercase tracking-[0.14em] text-[#B89968] mt-1">
+                    {miles.toFixed(2)} mi · {meta.sub}
                   </p>
                   {t.properties.description && (
                     <p className="text-[14px] text-[#F0E2C2]/80 mt-2 leading-relaxed">
@@ -75,6 +135,18 @@ export default function TrailsPage() {
                     </p>
                   )}
                 </div>
+                <Link
+                  href={`/map?focus=trail-${slug}`}
+                  aria-label={`Show ${name} on the map`}
+                  className="ios-press grid h-9 w-9 place-items-center rounded-full bg-[#F0E2C2]/10 text-[#F0E2C2]/75 hover:text-[#F0E2C2] flex-shrink-0"
+                  title="Show on map"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z" />
+                    <path d="M9 3v15" />
+                    <path d="M15 6v15" />
+                  </svg>
+                </Link>
               </div>
             </article>
           );

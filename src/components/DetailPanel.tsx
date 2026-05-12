@@ -30,6 +30,7 @@ type Props = {
   routeFromName?: string | null;
   onReverseRoute?: () => void;
   onClearRoute?: () => void;
+  onStartNavigation?: () => void;
 };
 
 // Two snap-detents (in svh). The sheet's `top` interpolates between them.
@@ -40,7 +41,7 @@ const DETENT_EXPANDED_SVH = 6;
 // Drag below 70%-down dismisses.
 const DETENT_DISMISS_SVH = 80;
 
-export default function DetailPanel({ item, onClose, onGetDirections, route, routeFromName, onReverseRoute, onClearRoute }: Props) {
+export default function DetailPanel({ item, onClose, onGetDirections, route, routeFromName, onReverseRoute, onClearRoute, onStartNavigation }: Props) {
   const sheetRef = useRef<HTMLDivElement>(null);
   const drag = useRef({
     active: false,
@@ -279,6 +280,7 @@ export default function DetailPanel({ item, onClose, onGetDirections, route, rou
             onGetDirections={onGetDirections}
             onReverseRoute={onReverseRoute}
             onClearRoute={onClearRoute}
+            onStartNavigation={onStartNavigation}
           />
         )}
 
@@ -298,6 +300,7 @@ function DirectionsBlock({
   onGetDirections,
   onReverseRoute,
   onClearRoute,
+  onStartNavigation,
 }: {
   route: Route | null;
   fromName: string | null;
@@ -305,6 +308,7 @@ function DirectionsBlock({
   onGetDirections: () => void;
   onReverseRoute?: () => void;
   onClearRoute?: () => void;
+  onStartNavigation?: () => void;
 }) {
   if (!route) {
     return (
@@ -415,6 +419,18 @@ function DirectionsBlock({
           )}
         </ul>
       </div>
+
+      {onStartNavigation && (
+        <button
+          onClick={onStartNavigation}
+          className="ios-press w-full rounded-2xl bg-[#2E78D2] text-white font-semibold py-3 mt-1 shadow-[0_8px_24px_rgba(46,120,210,0.35)] inline-flex items-center justify-center gap-2"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+          Start
+        </button>
+      )}
     </div>
   );
 }

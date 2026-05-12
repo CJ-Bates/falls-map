@@ -32,6 +32,12 @@ type Props = {
   basemap?: Basemap;
   routeCoords?: [number, number][] | null;
   poiVisibility?: PoiVisibility;
+  // Live-navigation mode: when true, the map auto-pans, rotates to direction
+  // of travel, and pitches. onUserPosition fires on every GPS update.
+  navMode?: boolean;
+  onUserPosition?: (pos: [number, number]) => void;
+  // Initial bounds to fit to (e.g. from a /map?focus= URL param).
+  focusBounds?: [[number, number], [number, number]] | null;
 };
 
 const TOPO_STYLE: maplibregl.StyleSpecification = {
@@ -245,6 +251,9 @@ export default function PropertyMap({
   basemap = "topo",
   routeCoords = null,
   poiVisibility = { cabins: true, spots: true, carvings: true },
+  navMode = false,
+  onUserPosition,
+  focusBounds = null,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
@@ -793,6 +802,22 @@ export default function PropertyMap({
     );
   }, [routeCoords]);
 
+  // Fit map to focus bounds when the prop arrives (e.g. from a URL param
+  // like /map?focus=trail-<slug>). Runs once per non-null bounds.
+  useEffect(() => {
+    const m = mapRef.current;
+    if (!m || !focusBounds) return;
+    const apply = () => {
+      m.fitBounds(focusBounds, {
+        padding: { top: 100, bottom: 200, left: 60, right: 60 },
+        duration: 800,
+        essential: true,
+      });
+    };
+    if (m.isStyleLoaded()) apply();
+    else m.once("idle", apply);
+  }, [focusBounds]);
+
   // Toggle pin visibility based on the poiVisibility prop. Walks the
   // poiMarkersRef and sets each element's display directly — bypasses
   // React render and works even before the map has finished loading.
@@ -820,6 +845,91 @@ export default function PropertyMap({
     if (m.isStyleLoaded()) apply();
     else m.once("idle", apply);
   }, [basemap]);
+
+  // Bearing computed from the last two GPS points — used to rotate the map
+  // in nav mode so "up" is the direction of travel.
+  const lastNavPosRef = useRef<[number, number] | null>(null);
+
+  // Compute great-circle bearing (degrees, 0=N) from point a to b.
+  const bearingBetween = (a: [number, number], b: [number, number]): number => {
+    const f1 = (a[1] * Math.PI) / 180;
+    const f2 = (b[1] * Math.PI) / 180;
+    const dl = ((b[0] - a[0]) * Math.PI) / 180;
+    const y = Math.sin(dl) * Math.cos(f2);
+    const x =
+      Math.cos(f1) * Math.sin(f2) - Math.sin(f1) * Math.cos(f2) * Math.cos(dl);
+    return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+  };
+
+  // Live navigation. When navMode flips on, kick off a high-frequency
+  // GPS watch and ease the map to follow + rotate to direction of travel.
+  useEffect(() => {
+    if (!navMode) return;
+    const map = mapRef.current;
+    if (!map) return;
+    if (!navigator.geolocation) {
+      setLocateError("Geolocation not supported on this device.");
+      return;
+    }
+
+    // Reset bearing tracking on each entry so we don't jump from stale data.
+    lastNavPosRef.current = null;
+
+    const id = navigator.geolocation.watchPosition(
+      (pos) => {
+        const here: [number, number] = [
+          pos.coords.longitude,
+          pos.coords.latitude,
+        ];
+        let bearing: number | null = null;
+        if (lastNavPosRef.current) {
+          // Only update bearing if we\'ve moved enough to read direction.
+          // Tiny stationary jitter would otherwise spin the map.
+          const f1 = (lastNavPosRef.current[1] * Math.PI) / 180;
+          const f2 = (here[1] * Math.PI) / 180;
+          const R = 6371000;
+          const df = ((here[1] - lastNavPosRef.current[1]) * Math.PI) / 180;
+          const dl = ((here[0] - lastNavPosRef.current[0]) * Math.PI) / 180;
+          const h =
+            Math.sin(df / 2) ** 2 +
+            Math.cos(f1) * Math.cos(f2) * Math.sin(dl / 2) ** 2;
+          const dist = 2 * R * Math.asin(Math.sqrt(h));
+          if (dist > 2) {
+            bearing = bearingBetween(lastNavPosRef.current, here);
+          }
+        }
+        lastNavPosRef.current = here;
+        // Drop the GPS dot too — reuse user marker.
+        if (userMarkerRef.current) {
+          userMarkerRef.current.setLngLat(here);
+        } else {
+          userMarkerRef.current = new maplibregl.Marker({
+            element: buildUserDot(),
+            anchor: "center",
+          })
+            .setLngLat(here)
+            .addTo(map);
+        }
+        const easeOpts: maplibregl.EaseToOptions = {
+          center: here,
+          zoom: 17.5,
+          pitch: 35,
+          duration: 700,
+          essential: true,
+        };
+        if (bearing !== null) easeOpts.bearing = bearing;
+        map.easeTo(easeOpts);
+        onUserPosition?.(here);
+      },
+      (err) => setLocateError(err.message || "Couldn\'t get your location."),
+      { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 },
+    );
+    return () => {
+      navigator.geolocation.clearWatch(id);
+      // Restore map to north-up flat view on exit.
+      map.easeTo({ pitch: 0, bearing: 0, duration: 500 });
+    };
+  }, [navMode, onUserPosition]);
 
   // Live location tracking
   useEffect(() => {

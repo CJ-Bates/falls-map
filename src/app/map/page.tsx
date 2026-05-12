@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import PropertyMap, { type SelectedItem, type Basemap, type PoiVisibility } from "@/components/PropertyMap";
 import DetailPanel from "@/components/DetailPanel";
@@ -20,6 +20,9 @@ import {
   type Route,
 } from "@/lib/routing";
 import { publicCabins } from "@/data/cabins";
+import { pois, categoryStyle } from "@/data/pois";
+import { haversine } from "@/lib/routing";
+import trailsData from "@/data/trails.json";
 
 // ---------- basemap thumbnails ------------------------------------------------
 // Tiny SVG previews that hint at each basemap's character. They sit inside
@@ -197,6 +200,47 @@ export default function MapPage() {
     carvings: true,
   });
 
+  // Live navigation
+  const [navigating, setNavigating] = useState(false);
+  const [userPos, setUserPos] = useState<LngLat | null>(null);
+  const [arrived, setArrived] = useState(false);
+
+  // Search
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // URL focus parameter: when /map?focus=trail-<slug>, fit the map to
+  // that trail's bounding box on mount. Done via a state we hand to
+  // PropertyMap as an "initial bounds" hint.
+  const [focusBounds, setFocusBounds] = useState<[[number, number], [number, number]] | null>(null);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const focus = params.get("focus");
+    if (!focus) return;
+    if (focus.startsWith("trail-")) {
+      const slug = focus.slice("trail-".length);
+      const match = (trailsData as unknown as {
+        features: { properties: { name?: string }; geometry: { coordinates: number[][] } }[];
+      }).features.find(
+        (f) =>
+          (f.properties.name ?? "")
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-|-$/g, "") === slug,
+      );
+      if (match) {
+        const lngs = match.geometry.coordinates.map((c) => c[0]);
+        const lats = match.geometry.coordinates.map((c) => c[1]);
+        setFocusBounds([
+          [Math.min(...lngs), Math.min(...lats)],
+          [Math.max(...lngs), Math.max(...lats)],
+        ]);
+      }
+    }
+  }, []);
+
   // Hydrate POI visibility from localStorage on mount + write back on
   // every change.
   useEffect(() => {
@@ -252,6 +296,86 @@ export default function MapPage() {
     buildRoute(routeTo, routeFrom);
   };
 
+  // Distance from current user position to the route destination,
+  // recomputed whenever GPS moves.
+  const distanceRemaining =
+    navigating && userPos && routeTo
+      ? haversine(userPos, routeTo.coord)
+      : null;
+
+  // Arrival detection: within 25m of destination triggers an arrival
+  // toast and auto-exits nav mode after 4s.
+  useEffect(() => {
+    if (!navigating || distanceRemaining === null) return;
+    if (distanceRemaining < 25 && !arrived) {
+      setArrived(true);
+      const t = setTimeout(() => {
+        setNavigating(false);
+        setArrived(false);
+      }, 4000);
+      return () => clearTimeout(t);
+    }
+  }, [navigating, distanceRemaining, arrived]);
+
+  // When user closes routes or arrives, exit nav.
+  useEffect(() => {
+    if (!route) {
+      setNavigating(false);
+      setArrived(false);
+    }
+  }, [route]);
+
+  const startNavigation = () => {
+    setArrived(false);
+    setNavigating(true);
+    // Close detail panel so the nav banner has room.
+    setSelected(null);
+  };
+  const endNavigation = () => {
+    setNavigating(false);
+    setArrived(false);
+  };
+
+  // Search filtering: match name + description (case-insensitive) across
+  // cabins + POIs.
+  const searchResults = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [] as SelectedItem[];
+    const out: SelectedItem[] = [];
+    for (const c of publicCabins) {
+      if (
+        c.name.toLowerCase().includes(q) ||
+        c.description.toLowerCase().includes(q)
+      ) {
+        out.push({ kind: "cabin", data: c });
+      }
+    }
+    for (const p of pois) {
+      if (
+        p.name.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q) ||
+        (p.category as string).toLowerCase().includes(q)
+      ) {
+        out.push({ kind: "poi", data: p });
+      }
+    }
+    return out.slice(0, 8);
+  }, [searchQuery]);
+
+  // Focus the search input when the overlay opens.
+  useEffect(() => {
+    if (searchOpen) {
+      requestAnimationFrame(() => searchInputRef.current?.focus());
+    } else {
+      setSearchQuery("");
+    }
+  }, [searchOpen]);
+
+  const pickSearchResult = (item: SelectedItem) => {
+    setSelected(item);
+    setSearchOpen(false);
+  };
+
   // Close the source-picker when selection changes, but DON'T clear the
   // route — users want it to persist across closing the detail panel.
   useEffect(() => {
@@ -298,9 +422,9 @@ export default function MapPage() {
       </Link>
 
       {/* Floating route chip — visible only when a route is active and
-          the detail panel is closed. Tells the user what's highlighted
-          and gives them a way to dismiss without re-opening the panel. */}
-      {route && !selected && (
+          the detail panel is closed AND we\'re not in nav mode (the nav
+          banner takes its place). */}
+      {route && !selected && !navigating && (
         <div
           className="ios-glass-strong absolute z-10 left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-full pl-3.5 pr-1 py-1 shadow-[0_8px_24px_rgba(0,0,0,0.35)]"
           style={{ top: "calc(env(safe-area-inset-top, 0px) + 0.85rem)" }}
@@ -329,11 +453,33 @@ export default function MapPage() {
         </div>
       )}
 
+      {/* Search button — sits in the top-right while no detail panel /
+          source-picker is open. */}
+      {!selected && !sourcePickerOpen && !navigating && (
+        <button
+          onClick={() => setSearchOpen(true)}
+          aria-label="Search the map"
+          className="ios-glass-strong ios-press absolute z-10 grid h-10 w-10 place-items-center rounded-full text-[#F0E2C2]"
+          style={{
+            top: "calc(env(safe-area-inset-top, 0px) + 0.75rem)",
+            right: "0.75rem",
+          }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="7" />
+            <path d="m20 20-3.5-3.5" />
+          </svg>
+        </button>
+      )}
+
       <PropertyMap
         onSelect={setSelected}
         basemap={basemap}
         routeCoords={route?.coords ?? null}
         poiVisibility={poiVisibility}
+        navMode={navigating}
+        onUserPosition={setUserPos}
+        focusBounds={focusBounds}
       />
 
       {/* Floating layers button — sits right above the live-location FAB
@@ -530,6 +676,131 @@ export default function MapPage() {
           style={{ height: "45svh" }}
         />
       )}
+      {/* Live nav banner — replaces the floating chip during navigation */}
+      {navigating && route && routeTo && (
+        <>
+          <div
+            className="ios-glass-strong absolute z-10 left-1/2 -translate-x-1/2 flex items-center gap-3 rounded-full pl-4 pr-1.5 py-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.45)]"
+            style={{
+              top: "calc(env(safe-area-inset-top, 0px) + 0.85rem)",
+              width: "min(360px, calc(100vw - 1.5rem))",
+            }}
+          >
+            <div className="flex-1 min-w-0">
+              <div className="text-[10px] uppercase tracking-[0.14em] text-[#67B0FF]">Heading to</div>
+              <div className="text-[14px] font-semibold text-[#F0E2C2] mt-0.5 truncate">
+                {routeTo.name}
+              </div>
+              <div className="text-[12px] text-[#F0E2C2]/65 mt-0.5">
+                {distanceRemaining !== null
+                  ? `${(distanceRemaining / 1609.344).toFixed(2)} mi · ${Math.max(1, Math.round(distanceRemaining / 1.25 / 60))} min walk`
+                  : "Acquiring GPS…"}
+              </div>
+            </div>
+            <button
+              onClick={endNavigation}
+              className="ios-press flex-shrink-0 rounded-full bg-[#F0E2C2] text-[#1A1310] px-3.5 py-2 text-[12px] font-bold leading-none"
+            >
+              End
+            </button>
+          </div>
+
+          {/* Arrived toast — appears when distance drops under 25m */}
+          {arrived && (
+            <div
+              className="ios-glass-strong absolute z-[20] left-1/2 -translate-x-1/2 animate-pop-up rounded-3xl px-6 py-5 text-center shadow-[0_18px_44px_rgba(0,0,0,0.55)]"
+              style={{ top: "40%" }}
+            >
+              <div className="text-[10px] uppercase tracking-[0.18em] text-[#7d8f5a] mb-1">Arrived</div>
+              <div className="font-sketch text-2xl text-[#F0E2C2]">{routeTo.name}</div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Search overlay */}
+      {searchOpen && (
+        <>
+          <button
+            aria-label="Close search"
+            onClick={() => setSearchOpen(false)}
+            className="fixed inset-0 z-[25] cursor-default bg-black/40 backdrop-blur-sm"
+          />
+          <div
+            className="ios-glass-strong animate-pop-up absolute z-[26] rounded-3xl text-[#F0E2C2] shadow-[0_18px_44px_rgba(0,0,0,0.55)]"
+            style={{
+              top: "calc(env(safe-area-inset-top, 0px) + 1rem)",
+              left: "0.75rem",
+              right: "0.75rem",
+              maxWidth: "440px",
+              margin: "0 auto",
+              padding: "12px 12px 14px 12px",
+              transformOrigin: "top center",
+            }}
+            role="dialog"
+            aria-label="Search"
+          >
+            <div className="flex items-center gap-2 rounded-2xl bg-[#F0E2C2]/10 px-3 py-2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="text-[#F0E2C2]/70 flex-shrink-0">
+                <circle cx="11" cy="11" r="7" />
+                <path d="m20 20-3.5-3.5" />
+              </svg>
+              <input
+                ref={searchInputRef}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Cabins, firepits, trails, Lou…"
+                className="flex-1 bg-transparent outline-none text-[15px] text-[#F0E2C2] placeholder-[#F0E2C2]/40"
+              />
+              <button
+                onClick={() => setSearchOpen(false)}
+                className="ios-press text-[12px] font-semibold text-[#67B0FF] px-2"
+              >
+                Cancel
+              </button>
+            </div>
+            {searchResults.length > 0 && (
+              <ul className="mt-2 space-y-1">
+                {searchResults.map((r, i) => {
+                  const data = r.data;
+                  const isPoi = r.kind === "poi";
+                  const style = isPoi
+                    ? categoryStyle[(data as { category: string }).category] ??
+                      categoryStyle.pavilion
+                    : categoryStyle.cabin;
+                  return (
+                    <li key={i}>
+                      <button
+                        onClick={() => pickSearchResult(r)}
+                        className="ios-press w-full rounded-2xl bg-[#F0E2C2]/8 hover:bg-[#F0E2C2]/14 transition-colors px-3 py-2.5 text-left flex items-center gap-3"
+                      >
+                        <span
+                          className="h-2.5 w-2.5 rounded-full flex-shrink-0"
+                          style={{ background: style.color, boxShadow: `0 0 8px ${style.color}90` }}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="text-[14px] font-semibold text-[#F0E2C2] leading-tight truncate">
+                            {data.name}
+                          </div>
+                          <div className="text-[11px] text-[#F0E2C2]/55 mt-0.5 truncate uppercase tracking-[0.1em]">
+                            {style.label}
+                          </div>
+                        </div>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            {searchQuery.trim() && searchResults.length === 0 && (
+              <div className="mt-3 px-3 text-[13px] text-[#F0E2C2]/55">
+                Nothing matches that here.
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
       <DetailPanel
         item={selected}
         onClose={() => setSelected(null)}
@@ -538,6 +809,7 @@ export default function MapPage() {
         routeFromName={routeFrom?.name ?? null}
         onReverseRoute={reverseRoute}
         onClearRoute={clearRoute}
+        onStartNavigation={route ? startNavigation : undefined}
       />
 
       {/* Source picker sheet — appears when the user taps "Directions" */}
