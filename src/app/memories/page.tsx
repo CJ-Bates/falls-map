@@ -80,12 +80,44 @@ export default function MemoriesPage() {
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
-    if (f.size > 10 * 1024 * 1024) {
-      setUploadStatus({ state: "error", message: "Photo is over 10 MB — pick a smaller one." });
-      return;
-    }
     setFile(f);
     setUploadStatus({ state: "idle" });
+  };
+
+  // Downscale a photo to at most 2400px on the long edge and re-encode as
+  // JPEG at quality 0.85. A 12 MB iPhone HEIC shrinks to ~500 KB. Modern
+  // phone cameras produce way more pixels than we need for a gallery
+  // thumbnail, so this is purely waste removal.
+  const downscale = async (file: File): Promise<Blob> => {
+    const maxEdge = 2400;
+    const quality = 0.85;
+    const url = URL.createObjectURL(file);
+    try {
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const i = new Image();
+        i.onload = () => resolve(i);
+        i.onerror = () => reject(new Error("Could not read photo"));
+        i.src = url;
+      });
+      const scale = Math.min(1, maxEdge / Math.max(img.width, img.height));
+      const w = Math.max(1, Math.round(img.width * scale));
+      const h = Math.max(1, Math.round(img.height * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Canvas not supported");
+      ctx.drawImage(img, 0, 0, w, h);
+      return await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(
+          (b) => (b ? resolve(b) : reject(new Error("Encode failed"))),
+          "image/jpeg",
+          quality,
+        );
+      });
+    } finally {
+      URL.revokeObjectURL(url);
+    }
   };
 
   const submit = async (e: React.FormEvent) => {
@@ -93,13 +125,23 @@ export default function MemoriesPage() {
     if (!file) return;
     setUploadStatus({ state: "uploading", progress: 0 });
 
-    // Random filename, preserve extension. Keep original mime type.
-    const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-    const path = `${crypto.randomUUID()}.${ext}`;
+    // Resize before upload so iPhone-sized originals don\'t blow past the
+    // bucket\'s size cap (and so the gallery loads fast).
+    let blob: Blob;
+    try {
+      blob = await downscale(file);
+    } catch (err) {
+      setUploadStatus({
+        state: "error",
+        message: err instanceof Error ? err.message : "Couldn\'t process photo",
+      });
+      return;
+    }
 
+    const path = `${crypto.randomUUID()}.jpg`;
     const { error: uploadErr } = await supabase.storage
       .from("memories")
-      .upload(path, file, { cacheControl: "31536000", contentType: file.type });
+      .upload(path, blob, { cacheControl: "31536000", contentType: "image/jpeg" });
 
     if (uploadErr) {
       setUploadStatus({ state: "error", message: uploadErr.message });
