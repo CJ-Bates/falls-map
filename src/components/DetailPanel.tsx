@@ -1,10 +1,11 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { categoryStyle } from "@/data/pois";
 
-// Mirror of the pin icon paths so the detail-panel badge shows the same icon.
-// Kept as a small map of complete SVG <g> fragments so per-icon fills work.
+// Mirror of the pin icon paths so the detail-panel badge shows the same icon
+// as on the map. Smaller, simplified versions for the 40px chip.
 const ICON_PATHS: Record<string, string> = {
   cabin: '<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4.5v3"/><path d="M3 12 12 4l9 8"/><path d="M5 12v9h14v-9"/><path d="M10 21v-5h4v5"/></g>',
   pavilion: '<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 3l9 8"/><path d="M6 11v10"/><path d="M18 11v10"/><path d="M4 21h16"/></g>',
@@ -15,6 +16,7 @@ const ICON_PATHS: Record<string, string> = {
   shack: '<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-9l8-5 8 5v9z"/><circle cx="12" cy="15" r="3.5"/><circle cx="12" cy="15" r="1.5" fill="#F0E2C2" stroke="none"/></g>',
   bear: '<g stroke="#F0E2C2" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"><circle cx="8.5" cy="4.2" r="1.6" fill="#F0E2C2"/><circle cx="15.5" cy="4.2" r="1.6" fill="#F0E2C2"/><circle cx="12" cy="6.5" r="3.6" fill="#F0E2C2"/><ellipse cx="12" cy="14.5" rx="5" ry="6" fill="#F0E2C2"/><circle cx="10.4" cy="6.1" r="0.55" fill="#1f1410" stroke="none"/><circle cx="13.6" cy="6.1" r="0.55" fill="#1f1410" stroke="none"/><ellipse cx="12" cy="8" rx="1.2" ry="0.7" fill="#1f1410" stroke="none"/></g>',
 };
+
 import type { SelectedItem } from "./PropertyMap";
 
 type Props = {
@@ -22,7 +24,35 @@ type Props = {
   onClose: () => void;
 };
 
+// Two snap-detents (in svh). The sheet's `top` interpolates between them.
+// COLLAPSED is the default — shows ~55% of the screen, plenty for a photo +
+// description. EXPANDED gives the user the whole sheet at full reading height.
+const DETENT_COLLAPSED_SVH = 45;
+const DETENT_EXPANDED_SVH = 6;
+// Drag below 70%-down dismisses.
+const DETENT_DISMISS_SVH = 80;
+
 export default function DetailPanel({ item, onClose }: Props) {
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const drag = useRef({
+    active: false,
+    startY: 0,
+    startTime: 0,
+    lastY: 0,
+    lastTime: 0,
+  });
+  const [detent, setDetent] = useState<"collapsed" | "expanded">("collapsed");
+
+  // Reset to collapsed whenever a NEW item is opened.
+  const itemKey = item
+    ? item.kind === "cabin"
+      ? `cabin-${item.data.slug}`
+      : `poi-${item.data.slug}`
+    : null;
+  useEffect(() => {
+    setDetent("collapsed");
+  }, [itemKey]);
+
   if (!item) return null;
 
   const style =
@@ -35,23 +65,98 @@ export default function DetailPanel({ item, onClose }: Props) {
       ? `${item.data.bedrooms} BR · ${item.data.bathrooms} BA`
       : style?.label ?? "Location";
 
-  // Photo source: cabins use coverPhoto; POIs use optional photoUrl
   const photoSrc =
-    item.kind === "cabin"
-      ? item.data.coverPhoto
-      : item.data.photoUrl;
+    item.kind === "cabin" ? item.data.coverPhoto : item.data.photoUrl;
+
+  // Compute current top from detent + any active drag offset.
+  const detentTopSvh =
+    detent === "expanded" ? DETENT_EXPANDED_SVH : DETENT_COLLAPSED_SVH;
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    if (!sheetRef.current) return;
+    drag.current.active = true;
+    drag.current.startY = e.clientY;
+    drag.current.startTime = Date.now();
+    drag.current.lastY = e.clientY;
+    drag.current.lastTime = Date.now();
+    sheetRef.current.style.transition = "none";
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!drag.current.active || !sheetRef.current) return;
+    const dy = e.clientY - drag.current.startY;
+    drag.current.lastY = e.clientY;
+    drag.current.lastTime = Date.now();
+
+    // Apply drag offset directly to the DOM — bypass React render.
+    sheetRef.current.style.transform = `translateY(${dy}px)`;
+  };
+
+  const onPointerUp = (e: React.PointerEvent) => {
+    if (!drag.current.active || !sheetRef.current) return;
+    drag.current.active = false;
+
+    const dy = e.clientY - drag.current.startY;
+    const dt = Math.max(1, Date.now() - drag.current.startTime);
+    const velocity = dy / dt; // px/ms, positive = downward, negative = upward
+
+    // Snap target decision — driven by drag distance AND velocity.
+    // Velocity threshold ~0.5 px/ms = a clear flick.
+    let nextDetent: "collapsed" | "expanded" | "dismiss" = detent;
+
+    if (detent === "collapsed") {
+      if (dy > 140 || velocity > 0.6) nextDetent = "dismiss";
+      else if (dy < -60 || velocity < -0.4) nextDetent = "expanded";
+    } else {
+      // expanded
+      if (dy > 260 || velocity > 0.9) nextDetent = "dismiss";
+      else if (dy > 80 || velocity > 0.4) nextDetent = "collapsed";
+    }
+
+    // Reset inline transform so React's className-based top/height applies.
+    sheetRef.current.style.transition =
+      "transform 280ms cubic-bezier(0.2, 0.85, 0.25, 1.02), top 280ms cubic-bezier(0.2, 0.85, 0.25, 1.02)";
+    sheetRef.current.style.transform = "";
+
+    if (nextDetent === "dismiss") {
+      // Slide off the bottom then close — let CSS do the animation.
+      sheetRef.current.style.transform = `translateY(100vh)`;
+      setTimeout(onClose, 220);
+    } else if (nextDetent !== detent) {
+      setDetent(nextDetent);
+    }
+  };
 
   return (
     <div
-      className="ios-glass-strong animate-slide-up fixed inset-x-0 bottom-0 z-20 max-h-[55svh] overflow-y-auto rounded-t-[28px] text-[#F0E2C2] shadow-[0_-12px_40px_rgba(0,0,0,0.55)]"
-      style={{ paddingBottom: "max(env(safe-area-inset-bottom), 16px)" }}
+      ref={sheetRef}
+      className="ios-glass-strong fixed inset-x-0 bottom-0 z-20 flex flex-col rounded-t-[28px] text-[#F0E2C2] shadow-[0_-12px_40px_rgba(0,0,0,0.55)]"
+      style={{
+        top: `${detentTopSvh}svh`,
+        transition:
+          "transform 280ms cubic-bezier(0.2, 0.85, 0.25, 1.02), top 280ms cubic-bezier(0.2, 0.85, 0.25, 1.02)",
+        paddingBottom: "max(env(safe-area-inset-bottom), 16px)",
+        willChange: "transform, top",
+      }}
     >
-      {/* iOS sheet drag handle */}
-      <div className="sticky top-0 z-10 bg-transparent pt-2 pb-1">
-        <div className="mx-auto h-1.5 w-10 rounded-full bg-[#F0E2C2]/30" />
+      {/* Drag handle — pointer events live here. Larger hit zone (whole
+          top strip) so a thumb on the grabber works even if it's a bit
+          off. The grabber itself is the visible dash. */}
+      <div
+        className="flex-shrink-0 cursor-grab touch-none select-none active:cursor-grabbing"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+        style={{ paddingTop: 10, paddingBottom: 6 }}
+        aria-label="Drag to expand or dismiss"
+      >
+        <div className="mx-auto h-1.5 w-10 rounded-full bg-[#F0E2C2]/35" />
       </div>
 
-      <div className="flex items-center gap-3 px-5 py-3 border-b border-[#B89968]/15">
+      {/* Header with badge + title + close button */}
+      <div className="flex items-center gap-3 px-5 py-2 border-b border-[#B89968]/15 flex-shrink-0">
         <div
           className="h-10 w-10 rounded-full grid place-items-center border-2 border-[#F0E2C2] flex-shrink-0"
           style={{ background: style?.color ?? "#7A5A2F" }}
@@ -80,11 +185,8 @@ export default function DetailPanel({ item, onClose }: Props) {
         </button>
       </div>
 
-      <div className="px-5 py-4 space-y-4">
-        {/* Photo block. Cabins use a 16:10 cover-crop (Hostaway gallery
-            shots are uniformly landscape). POIs preserve their natural
-            aspect ratio inside a max-height bound, so portrait shots
-            like Big Lou show head-to-toe. */}
+      {/* Scrollable content area — gets the remaining height. */}
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 py-4 space-y-4">
         {photoSrc && item.kind === "cabin" && (
           <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-[#2A1F18]">
             <Image

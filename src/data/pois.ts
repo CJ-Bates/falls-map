@@ -7,7 +7,9 @@ export const pois: Poi[] = [
     category: "pavilion",
     zone: "cabin-ridge",
     description:
-      "Pavilion overlooking the main lake. Great for family meals, gatherings, or shade after a swim.",
+      "Open-air pavilion right by the main lake. Picnic-table seating and easy access to the beach, the firepit, the swimming, and the dock.",
+    story:
+      "Pull up here for the afternoon — picnic, splash, fish, plug in an amp. With the beach firepit a few steps away, the night writes itself.",
     lat: 38.407201,
     lng: -90.45736,
   },
@@ -39,7 +41,10 @@ export const pois: Poi[] = [
     name: "Nature Barn",
     category: "barn",
     zone: "cabin-ridge",
-    description: "TBD",
+    description:
+      "Storage shed with a row of weathered animal skulls hanging on the outside wall. Looks haunted, isn't.",
+    story:
+      "Don't let the skulls fool you — they're just old finds the family hung up over the years. The barn itself is where the lawn mowers live. Worth a walk-by if you like the rustic-spooky look.",
     lat: 38.411086,
     lng: -90.459722,
   },
@@ -48,7 +53,10 @@ export const pois: Poi[] = [
     name: "Shooting Shack",
     category: "shack",
     zone: "cabin-ridge",
-    description: "TBD",
+    description:
+      "Tiny pavilion where the family shoots. Picnic table underneath (the birds get to it before guests do).",
+    story:
+      "Spent shell casings glitter in the grass around it. Bring ear protection if you're putting it to use; otherwise it's still a quiet seat with a view — if the table's clean.",
     lat: 38.406099,
     lng: -90.45972,
   },
@@ -58,9 +66,9 @@ export const pois: Poi[] = [
     category: "pavilion",
     zone: "the-13",
     description:
-      "Heavy-timber pavilion on the shore of The 13\'s lake. Stone columns and a full chimney, antler chandelier overhead, picnic tables under the roof, sconces that warm the whole place after dark.",
+      "Heavy-timber pavilion on the shore of The 13's lake. Stone columns and a full chimney, antler chandelier overhead, picnic tables under the roof, sconces that warm the whole place after dark.",
     story:
-      "The crown jewel of The 13. Stone foundations, hand-hewn beams, antler chandelier overhead — built to last a century. Pull a chair up to the chimney on a cool fall evening and you\'ll understand why it\'s the table everybody fights over.",
+      "The crown jewel of The 13. Stone foundations, hand-hewn beams, antler chandelier overhead — built to last a century. Pull a chair up to the chimney on a cool fall evening and you'll understand why it's the table everybody fights over.",
     lat: 38.399841,
     lng: -90.4618,
     photoUrl: "/photos/the-13-pavilion.jpg",
@@ -70,7 +78,10 @@ export const pois: Poi[] = [
     name: "The 13 Firepit",
     category: "firepit",
     zone: "the-13",
-    description: "Firepit at The 13.",
+    description:
+      "Massive stone-and-mortar fireplace right at the water's edge, just down the steps from the pavilion. Walkways connect it to the dock; the treehouse looks down from the hill.",
+    story:
+      "The best bonfire seat on the property. Pour a drink, drop into a chair, and watch the lake while somebody else worries about the fishing.",
     lat: 38.399964,
     lng: -90.461554,
   },
@@ -79,7 +90,10 @@ export const pois: Poi[] = [
     name: "The 13 Dock",
     category: "lake-feature",
     zone: "the-13",
-    description: "Dock at The 13's lake.",
+    description:
+      "Fishing and swimming dock at the south lake. Lay out in the sun, fish off the end, or just jump in.",
+    story:
+      "Heads up: water snakes hang around the rocks at the base. Harmless but startling — give them a beat and they'll move along.",
     lat: 38.400464,
     lng: -90.46106,
   },
@@ -88,7 +102,10 @@ export const pois: Poi[] = [
     name: "Treehouse",
     category: "treehouse",
     zone: "the-13",
-    description: "TBD",
+    description:
+      "Single room with a deck wrapped around it, perched up the hill from The 13 Pavilion. Best for a moment of quiet — not really a gathering spot.",
+    story:
+      "Steep walk up from the pavilion, but the deck looks out over the pond and the whole south parcel. Worth the climb if you've got fifteen quiet minutes.",
     lat: 38.399401,
     lng: -90.460676,
   },
@@ -98,9 +115,9 @@ export const pois: Poi[] = [
     category: "bear",
     zone: "cabin-ridge",
     description:
-      "Chainsaw-carved black bear standing watch over the main lake. Holding the same fish for years — won\'t let go for anybody.",
+      "Chainsaw-carved black bear standing watch over the main lake. Holding the same fish for years — won't let go for anybody.",
     story:
-      "They say Lou was the friendliest black bear ever to wander these woods — showed up at the lake most evenings, fished for a while, and ambled home without bothering a soul. Guests still claim to spot him down by the water from time to time, though biologists insist Missouri black bears don\'t roam this far north. Lou begs to differ.",
+      "They say Lou was the friendliest black bear ever to wander these woods — showed up at the lake most evenings, fished for a while, and ambled home without bothering a soul. Guests still claim to spot him down by the water from time to time, though biologists insist Missouri black bears don't roam this far north. Lou begs to differ.",
     lat: 38.40763,
     lng: -90.45747,
     photoUrl: "/photos/bear-carving.jpg",
