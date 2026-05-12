@@ -1,13 +1,13 @@
 // public/sw.js — caches the app shell + map tiles + photos for offline use.
 // Registered by /src/components/RegisterSW.tsx on the home page.
 
-const VERSION = "v29";
+const VERSION = "v30";
 const APP_SHELL = `falls-app-${VERSION}`;
 const RUNTIME = `falls-runtime-${VERSION}`;
 const TILES = `falls-tiles-${VERSION}`;
 const IMAGES = `falls-images-${VERSION}`;
 
-const SHELL_URLS = ["/", "/map", "/cabins", "/trails", "/manual", "/manifest.webmanifest", "/logo-round.png"];
+const SHELL_URLS = ["/", "/map", "/cabins", "/trails", "/manual", "/memories", "/manifest.webmanifest", "/logo-round.png"];
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();

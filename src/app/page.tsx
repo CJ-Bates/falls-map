@@ -78,6 +78,19 @@ const TILES: { label: string; sub: string; href: string; gradient: string; icon:
     ),
   },
   {
+    label: "Memories",
+    sub: "Share photos from your stay",
+    href: "/memories",
+    gradient: "linear-gradient(135deg, #cdac7d 0%, #6B4423 100%)",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="5" width="18" height="14" rx="2"/>
+        <circle cx="8.5" cy="10.5" r="1.5"/>
+        <path d="m21 16-5-5L5 21"/>
+      </svg>
+    ),
+  },
+  {
     label: "House manual",
     sub: "Wi-Fi, codes, more",
     href: "/manual",
