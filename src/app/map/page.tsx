@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import PropertyMap, { type SelectedItem, type Basemap } from "@/components/PropertyMap";
 import DetailPanel from "@/components/DetailPanel";
@@ -12,6 +12,14 @@ import {
   type PrefetchProgress,
   type OfflineStatus,
 } from "@/lib/offlineTiles";
+import {
+  getTrailGraph,
+  shortestPath,
+  snapToGraph,
+  type LngLat,
+  type Route,
+} from "@/lib/routing";
+import { publicCabins } from "@/data/cabins";
 
 // ---------- basemap thumbnails ------------------------------------------------
 // Tiny SVG previews that hint at each basemap's character. They sit inside
@@ -76,6 +84,31 @@ function LayersIcon({ className = "" }: { className?: string }) {
 }
 
 // Pretty-print a Date as a relative-time string for the offline-status caption.
+function SourceOption({
+  label,
+  sub,
+  onClick,
+}: {
+  label: string;
+  sub: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="ios-press w-full rounded-2xl bg-[#F0E2C2]/8 hover:bg-[#F0E2C2]/14 transition-colors px-4 py-3 text-left flex items-center justify-between gap-3"
+    >
+      <div className="min-w-0">
+        <div className="text-[14px] font-semibold text-[#F0E2C2] leading-tight truncate">{label}</div>
+        <div className="text-[12px] text-[#F0E2C2]/60 mt-0.5 truncate">{sub}</div>
+      </div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="text-[#F0E2C2]/40 flex-shrink-0">
+        <path d="m9 6 6 6-6 6" />
+      </svg>
+    </button>
+  );
+}
+
 function formatAgo(ms: number): string {
   const delta = Date.now() - ms;
   const min = Math.floor(delta / 60_000);
@@ -95,6 +128,33 @@ export default function MapPage() {
   const [layersOpen, setLayersOpen] = useState(false);
   const [offlineStatus, setOfflineStatus] = useState<OfflineStatus | null>(null);
   const [downloading, setDownloading] = useState<PrefetchProgress | null>(null);
+  const [route, setRoute] = useState<Route | null>(null);
+  const [sourcePickerOpen, setSourcePickerOpen] = useState(false);
+
+  // Build the trail-network graph once. Memoized so it doesn't rebuild on
+  // every render.
+  const graph = useMemo(() => getTrailGraph(), []);
+
+  // Compute a route from a source (lng,lat) to the currently-selected
+  // item, by snapping both to graph vertices and running Dijkstra.
+  const computeRoute = (fromLngLat: LngLat) => {
+    if (!selected) return;
+    const toLngLat: LngLat =
+      selected.kind === "cabin"
+        ? [selected.data.lng, selected.data.lat]
+        : [selected.data.lng, selected.data.lat];
+    const from = snapToGraph(graph, fromLngLat);
+    const to = snapToGraph(graph, toLngLat);
+    const r = shortestPath(graph, from.node, to.node);
+    setRoute(r);
+    setSourcePickerOpen(false);
+  };
+
+  // Clear route when the selected item changes or panel closes.
+  useEffect(() => {
+    setRoute(null);
+    setSourcePickerOpen(false);
+  }, [selected]);
 
   // Hydrate offline status on mount.
   useEffect(() => {
@@ -129,7 +189,11 @@ export default function MapPage() {
         </svg>
       </Link>
 
-      <PropertyMap onSelect={setSelected} basemap={basemap} />
+      <PropertyMap
+        onSelect={setSelected}
+        basemap={basemap}
+        routeCoords={route?.coords ?? null}
+      />
 
       {/* Floating layers button — sits right above the live-location FAB
           (which lives inside PropertyMap at bottom-6 right-4). */}
@@ -297,7 +361,70 @@ export default function MapPage() {
           style={{ height: "45svh" }}
         />
       )}
-      <DetailPanel item={selected} onClose={() => setSelected(null)} />
+      <DetailPanel
+        item={selected}
+        onClose={() => setSelected(null)}
+        onGetDirections={() => setSourcePickerOpen(true)}
+        route={route}
+        onClearRoute={() => setRoute(null)}
+      />
+
+      {/* Source picker sheet — appears when the user taps "Directions" */}
+      {sourcePickerOpen && selected && (
+        <>
+          <button
+            aria-label="Cancel directions"
+            onClick={() => setSourcePickerOpen(false)}
+            className="fixed inset-0 z-[25] cursor-default bg-black/40 backdrop-blur-sm"
+          />
+          <div
+            className="ios-glass-strong animate-pop-up fixed left-1/2 -translate-x-1/2 z-[26] rounded-3xl text-[#F0E2C2] shadow-[0_18px_44px_rgba(0,0,0,0.55)] p-4"
+            style={{
+              bottom: "calc(env(safe-area-inset-bottom, 0px) + 20vh)",
+              width: "min(360px, calc(100vw - 2rem))",
+              transformOrigin: "center",
+            }}
+            role="dialog"
+            aria-label="Pick directions starting point"
+          >
+            <h3 className="text-[10px] uppercase tracking-[0.14em] text-[#B89968] mb-2">Directions from</h3>
+            <p className="text-[14px] text-[#F0E2C2]/90 mb-3">
+              Where are you starting from?
+            </p>
+            <div className="space-y-1.5">
+              <SourceOption
+                label="My current location"
+                sub="Uses GPS"
+                onClick={() => {
+                  navigator.geolocation.getCurrentPosition(
+                    (pos) =>
+                      computeRoute([pos.coords.longitude, pos.coords.latitude]),
+                    () =>
+                      alert(
+                        "Couldn\'t get your location. Pick a cabin instead.",
+                      ),
+                    { enableHighAccuracy: true, timeout: 10000 },
+                  );
+                }}
+              />
+              {publicCabins.map((c) => (
+                <SourceOption
+                  key={c.slug}
+                  label={c.name}
+                  sub={`${c.bedrooms} BR · ${c.bathrooms} BA`}
+                  onClick={() => computeRoute([c.lng, c.lat])}
+                />
+              ))}
+            </div>
+            <button
+              onClick={() => setSourcePickerOpen(false)}
+              className="ios-press w-full mt-3 rounded-2xl bg-[#F0E2C2]/10 py-2.5 text-[14px] font-semibold text-[#F0E2C2]/85"
+            >
+              Cancel
+            </button>
+          </div>
+        </>
+      )}
     </main>
   );
 }

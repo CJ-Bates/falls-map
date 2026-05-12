@@ -19,10 +19,15 @@ const ICON_PATHS: Record<string, string> = {
 };
 
 import type { SelectedItem } from "./PropertyMap";
+import type { Route, Surface } from "@/lib/routing";
 
 type Props = {
   item: SelectedItem | null;
   onClose: () => void;
+  // Directions support — wired up by the map page.
+  onGetDirections?: () => void;
+  route?: Route | null;
+  onClearRoute?: () => void;
 };
 
 // Two snap-detents (in svh). The sheet's `top` interpolates between them.
@@ -33,7 +38,7 @@ const DETENT_EXPANDED_SVH = 6;
 // Drag below 70%-down dismisses.
 const DETENT_DISMISS_SVH = 80;
 
-export default function DetailPanel({ item, onClose }: Props) {
+export default function DetailPanel({ item, onClose, onGetDirections, route, onClearRoute }: Props) {
   const sheetRef = useRef<HTMLDivElement>(null);
   const drag = useRef({
     active: false,
@@ -261,10 +266,127 @@ export default function DetailPanel({ item, onClose }: Props) {
           </>
         )}
 
+        {/* Directions panel — shows the Directions button (when no route)
+            or a route summary card with distance + ETAs + surface breakdown
+            (when one is active). */}
+        {onGetDirections && (
+          <DirectionsBlock
+            route={route ?? null}
+            onGetDirections={onGetDirections}
+            onClearRoute={onClearRoute}
+          />
+        )}
+
         <div className="pt-2 text-[11px] text-[#B89968]/70 border-t border-[#B89968]/15">
           {item.data.lat.toFixed(5)}°N, {Math.abs(item.data.lng).toFixed(5)}°W
         </div>
       </div>
     </div>
   );
+}
+
+// Directions affordance + route summary card.
+function DirectionsBlock({
+  route,
+  onGetDirections,
+  onClearRoute,
+}: {
+  route: Route | null;
+  onGetDirections: () => void;
+  onClearRoute?: () => void;
+}) {
+  if (!route) {
+    return (
+      <button
+        onClick={onGetDirections}
+        className="ios-press w-full rounded-2xl bg-[#2E78D2] text-white font-semibold py-3.5 mt-2 shadow-[0_8px_24px_rgba(46,120,210,0.35)] inline-flex items-center justify-center gap-2"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 11 21 3l-8 18-2-7-8-3z"/>
+        </svg>
+        Directions
+      </button>
+    );
+  }
+
+  const miles = route.distance / 1609.344;
+  const walkMin = Math.max(1, Math.round(route.distance / 1.25 / 60));
+  const driveMin = Math.max(1, Math.round(route.distance / 6.7 / 60));
+
+  return (
+    <div className="rounded-2xl bg-[#2E78D2]/12 border border-[#2E78D2]/30 p-3.5 space-y-3">
+      <div className="flex items-baseline justify-between gap-2">
+        <div className="flex items-baseline gap-3">
+          <div>
+            <div className="text-[22px] font-bold leading-none text-[#F0E2C2]">
+              {miles.toFixed(2)}
+              <span className="text-[12px] font-semibold text-[#F0E2C2]/55 ml-1">mi</span>
+            </div>
+          </div>
+          <div className="flex items-baseline gap-2 text-[#F0E2C2]/85 text-[13px]">
+            <span>{walkMin} min walk</span>
+            <span className="text-[#F0E2C2]/30">·</span>
+            <span>{driveMin} min 4WD</span>
+          </div>
+        </div>
+        {onClearRoute && (
+          <button
+            onClick={onClearRoute}
+            className="ios-press text-[12px] text-[#67B0FF] font-semibold whitespace-nowrap"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
+      {/* Surface breakdown — stacked bar visualization */}
+      <div className="space-y-1.5">
+        <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-[#F0E2C2]/10">
+          {route.segments.map((s, i) => (
+            <div
+              key={i}
+              style={{
+                width: `${(s.distance / route.distance) * 100}%`,
+                background: SURFACE_COLOR[s.surface] ?? "#C9A974",
+              }}
+              title={`${s.trailName} · ${(s.distance / 1609.344).toFixed(2)} mi`}
+            />
+          ))}
+        </div>
+        <ul className="text-[12px] text-[#F0E2C2]/85 space-y-0.5">
+          {collapseSegments(route).slice(0, 4).map((s, i) => (
+            <li key={i} className="flex items-center gap-2">
+              <span
+                className="h-1.5 w-3 rounded-full flex-shrink-0"
+                style={{ background: SURFACE_COLOR[s.surface] ?? "#C9A974" }}
+              />
+              <span className="truncate">{s.trailName}</span>
+              <span className="text-[#F0E2C2]/55 ml-auto whitespace-nowrap">
+                {(s.distance / 1609.344).toFixed(2)} mi
+              </span>
+            </li>
+          ))}
+          {collapseSegments(route).length > 4 && (
+            <li className="text-[#F0E2C2]/55 pl-5">
+              + {collapseSegments(route).length - 4} more
+            </li>
+          )}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+const SURFACE_COLOR: Record<Surface, string> = {
+  paved:  "#3D3022",
+  gravel: "#C9A974",
+  "4wd":  "#D9531E",
+  trail:  "#F0E2C2",
+};
+
+// Collapse same-trail-name adjacent segments for the legend (the route
+// itself already collapses by trail-name + surface, but the bar uses raw
+// segments).
+function collapseSegments(route: Route) {
+  return route.segments;
 }

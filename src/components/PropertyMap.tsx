@@ -24,6 +24,7 @@ export type Basemap = "topo" | "satellite" | "apple";
 type Props = {
   onSelect: (item: SelectedItem | null) => void;
   basemap?: Basemap;
+  routeCoords?: [number, number][] | null;
 };
 
 const TOPO_STYLE: maplibregl.StyleSpecification = {
@@ -232,7 +233,7 @@ function buildUserDot(): HTMLDivElement {
   return wrap;
 }
 
-export default function PropertyMap({ onSelect, basemap = "topo" }: Props) {
+export default function PropertyMap({ onSelect, basemap = "topo", routeCoords = null }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const userMarkerRef = useRef<Marker | null>(null);
@@ -590,6 +591,79 @@ export default function PropertyMap({ onSelect, basemap = "topo" }: Props) {
       mapRef.current = null;
     };
   }, [onSelect]);
+
+  // Render the routing result (when present) as a highlighted polyline.
+  // Uses two stacked line layers (halo + bright top) for an iOS-ish glow.
+  useEffect(() => {
+    const m = mapRef.current;
+    if (!m) return;
+    const apply = () => {
+      const data = routeCoords && routeCoords.length > 1
+        ? {
+            type: "Feature" as const,
+            properties: {},
+            geometry: {
+              type: "LineString" as const,
+              coordinates: routeCoords,
+            },
+          }
+        : null;
+
+      const src = m.getSource("route") as maplibregl.GeoJSONSource | undefined;
+      if (!src) {
+        m.addSource("route", {
+          type: "geojson",
+          data: data ?? { type: "FeatureCollection", features: [] },
+        });
+        m.addLayer({
+          id: "route-halo",
+          type: "line",
+          source: "route",
+          paint: {
+            "line-color": "#2E78D2",
+            "line-width": 10,
+            "line-opacity": 0.35,
+            "line-blur": 3,
+          },
+          layout: { "line-join": "round", "line-cap": "round" },
+        });
+        m.addLayer({
+          id: "route-line",
+          type: "line",
+          source: "route",
+          paint: {
+            "line-color": "#67B0FF",
+            "line-width": 4.5,
+            "line-opacity": 0.98,
+          },
+          layout: { "line-join": "round", "line-cap": "round" },
+        });
+      } else {
+        src.setData(data ?? { type: "FeatureCollection", features: [] });
+      }
+    };
+    if (m.isStyleLoaded()) apply();
+    else m.once("idle", apply);
+  }, [routeCoords]);
+
+  // Fit the map to the route bounds when a new route arrives.
+  useEffect(() => {
+    const m = mapRef.current;
+    if (!m || !routeCoords || routeCoords.length < 2) return;
+    const lngs = routeCoords.map((c) => c[0]);
+    const lats = routeCoords.map((c) => c[1]);
+    m.fitBounds(
+      [
+        [Math.min(...lngs), Math.min(...lats)],
+        [Math.max(...lngs), Math.max(...lats)],
+      ],
+      {
+        padding: { top: 120, bottom: Math.round(window.innerHeight * 0.5), left: 60, right: 60 },
+        duration: 700,
+        essential: true,
+      },
+    );
+  }, [routeCoords]);
 
   // Apply basemap selection by toggling visibility on the 4 base raster
   // layers. Topo mode uses two stacked layers (opentopomap + voyager deep
