@@ -78,19 +78,6 @@ const TILES: { label: string; sub: string; href: string; gradient: string; icon:
     ),
   },
   {
-    label: "Memories",
-    sub: "Share photos from your stay",
-    href: "/memories",
-    gradient: "linear-gradient(135deg, #cdac7d 0%, #6B4423 100%)",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="5" width="18" height="14" rx="2"/>
-        <circle cx="8.5" cy="10.5" r="1.5"/>
-        <path d="m21 16-5-5L5 21"/>
-      </svg>
-    ),
-  },
-  {
     label: "House manual",
     sub: "Wi-Fi, codes, more",
     href: "/manual",
@@ -185,6 +172,35 @@ export default function Home() {
         <div className="mx-auto max-w-md">
           <TodayWidget />
         </div>
+      </section>
+
+      {/* Memories — full-width secondary CTA so guests notice it */}
+      <section className="mt-6 px-6">
+        <Link
+          href="/memories"
+          className="ios-press group relative mx-auto block max-w-md overflow-hidden rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.35)]"
+          style={{
+            background:
+              "linear-gradient(135deg, #cdac7d 0%, #6B4423 100%)",
+          }}
+        >
+          <div className="px-6 py-5 flex items-center gap-3 text-[#F0E2C2]">
+            <span className="grid h-10 w-10 place-items-center rounded-full bg-[#1A1310]/40 text-[#F0E2C2] flex-shrink-0">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="5" width="18" height="14" rx="2"/>
+                <circle cx="8.5" cy="10.5" r="1.5"/>
+                <path d="m21 16-5-5L5 21"/>
+              </svg>
+            </span>
+            <span className="flex-1 text-left">
+              <span className="ios-headline block text-[15px]">Share a photo from your stay</span>
+              <span className="block text-[12px] text-[#F0E2C2]/75">Add to the guest album · see everyone else\'s</span>
+            </span>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-active:translate-x-0.5 flex-shrink-0">
+              <path d="m9 6 6 6-6 6" />
+            </svg>
+          </div>
+        </Link>
       </section>
 
       {/* What to do tile grid */}
