@@ -170,7 +170,6 @@ export default function MemoriesPage() {
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              capture="environment"
               onChange={onFileChange}
               className="sr-only"
             />
