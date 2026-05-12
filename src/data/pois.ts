@@ -110,6 +110,19 @@ export const pois: Poi[] = [
     lng: -90.460676,
   },
   {
+    slug: "the-13-bobcat",
+    name: "Bobby",
+    category: "bobcat",
+    zone: "the-13",
+    description:
+      "Chainsaw-carved bobcat perched on the painted '13' post along the road south, pointing the way to The 13.",
+    story:
+      "Unlike Lou, this one\'s a believable Missouri local — the state actually does have bobcats. The family swears one walked through the property at dawn a few summers back. By the next afternoon, Bobby was carved into a stump pointing the way home.",
+    lat: 38.40482,
+    lng: -90.45662,
+    photoUrl: "/photos/the-13-bobcat.jpg",
+  },
+  {
     slug: "lake-bear",
     name: "Big Lou",
     category: "bear",
@@ -137,6 +150,7 @@ export const categoryStyle: Record<
   treehouse: { label: "Treehouse", color: "#3F6B2A", emoji: "🌳" },
   shack: { label: "Shack", color: "#5A4A3A", emoji: "🎯" },
   bear: { label: "Bear Carving", color: "#1f1410", emoji: "🐻" },
+  bobcat: { label: "Bobcat Carving", color: "#5C4E3B", emoji: "🐈" },
   trailhead: { label: "Trailhead", color: "#4A6B3A", emoji: "🥾" },
   parking: { label: "Parking", color: "#555", emoji: "🅿️" },
   "scenic-viewpoint": { label: "Viewpoint", color: "#8C6E2A", emoji: "🔭" },

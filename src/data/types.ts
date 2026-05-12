@@ -15,6 +15,7 @@ export type PoiCategory =
   | "scenic-viewpoint"
   | "waterfall"
   | "bear"
+  | "bobcat"
   | "cabin";
 
 export type Cabin = {

@@ -15,6 +15,7 @@ const ICON_PATHS: Record<string, string> = {
   treehouse: '<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="5.5"/><path d="M10.5 14v7M13.5 14v7"/><path d="M10.5 16h3M10.5 19h3"/></g>',
   shack: '<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-9l8-5 8 5v9z"/><circle cx="12" cy="15" r="3.5"/><circle cx="12" cy="15" r="1.5" fill="#F0E2C2" stroke="none"/></g>',
   bear: '<g stroke="#F0E2C2" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"><circle cx="8.5" cy="4.2" r="1.6" fill="#F0E2C2"/><circle cx="15.5" cy="4.2" r="1.6" fill="#F0E2C2"/><circle cx="12" cy="6.5" r="3.6" fill="#F0E2C2"/><ellipse cx="12" cy="14.5" rx="5" ry="6" fill="#F0E2C2"/><circle cx="10.4" cy="6.1" r="0.55" fill="#1f1410" stroke="none"/><circle cx="13.6" cy="6.1" r="0.55" fill="#1f1410" stroke="none"/><ellipse cx="12" cy="8" rx="1.2" ry="0.7" fill="#1f1410" stroke="none"/></g>',
+  bobcat: '<g stroke="#F0E2C2" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"><path d="M8.5 2.5 L7.5 5.5 L10.2 4.8 Z" fill="#F0E2C2"/><path d="M15.5 2.5 L16.5 5.5 L13.8 4.8 Z" fill="#F0E2C2"/><ellipse cx="12" cy="7" rx="3.4" ry="3" fill="#F0E2C2"/><ellipse cx="12" cy="14.5" rx="3.7" ry="6" fill="#F0E2C2"/><circle cx="10.6" cy="6.6" r="0.5" fill="#1f1410" stroke="none"/><circle cx="13.4" cy="6.6" r="0.5" fill="#1f1410" stroke="none"/></g>',
 };
 
 import type { SelectedItem } from "./PropertyMap";

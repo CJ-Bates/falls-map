@@ -137,6 +137,22 @@ const ICON_PATHS: Record<string, string> = {
     <ellipse cx="9" cy="20.5" rx="1.3" ry="1" fill="#F0E2C2"/>
     <ellipse cx="15" cy="20.5" rx="1.3" ry="1" fill="#F0E2C2"/>
   </g>`,
+  // Sitting bobcat — tufted pointed ears, slim head, alert upright body,
+  // dark eyes + nose, a couple of spot accents. Smaller / leaner than the
+  // bear silhouette so the two read as different animals at a glance.
+  bobcat: `<g stroke="#F0E2C2" stroke-width="1" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M8.5 2.5 L7.5 5.5 L10.2 4.8 Z" fill="#F0E2C2"/>
+    <path d="M15.5 2.5 L16.5 5.5 L13.8 4.8 Z" fill="#F0E2C2"/>
+    <ellipse cx="12" cy="7" rx="3.4" ry="3" fill="#F0E2C2"/>
+    <ellipse cx="12" cy="14.5" rx="3.7" ry="6" fill="#F0E2C2"/>
+    <path d="M15.5 17 c2.3 -0.7 2.5 1.5 0.5 2.2" fill="#F0E2C2"/>
+    <circle cx="10.6" cy="6.6" r="0.5" fill="#1f1410" stroke="none"/>
+    <circle cx="13.4" cy="6.6" r="0.5" fill="#1f1410" stroke="none"/>
+    <path d="M11.5 7.8 L12.5 7.8 L12 8.6 Z" fill="#1f1410" stroke="none"/>
+    <circle cx="10.5" cy="12.5" r="0.45" fill="#3a2d22" stroke="none"/>
+    <circle cx="13.5" cy="13.5" r="0.45" fill="#3a2d22" stroke="none"/>
+    <circle cx="12" cy="16" r="0.4" fill="#3a2d22" stroke="none"/>
+  </g>`,
   trailhead: `<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M9 7l-3 3 3 3M15 7l3 3-3 3"/>
     <path d="M6 10h12"/>
