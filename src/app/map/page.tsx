@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import PropertyMap, { type SelectedItem, type Basemap } from "@/components/PropertyMap";
+import PropertyMap, { type SelectedItem, type Basemap, type PoiVisibility } from "@/components/PropertyMap";
 import DetailPanel from "@/components/DetailPanel";
 import {
   prefetchAll,
@@ -109,6 +109,65 @@ function SourceOption({
   );
 }
 
+function PoiToggleRow({
+  label,
+  count,
+  color,
+  active,
+  onToggle,
+}: {
+  label: string;
+  count: number;
+  color: string;
+  active: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <li>
+      <button
+        onClick={onToggle}
+        aria-pressed={active}
+        className="ios-press w-full flex items-center gap-3 py-1.5"
+      >
+        <span
+          className="block h-3 w-3 rounded-full flex-shrink-0"
+          style={{
+            background: color,
+            boxShadow: active ? `0 0 8px ${color}80` : "none",
+            opacity: active ? 1 : 0.35,
+          }}
+        />
+        <span
+          className={
+            "flex-1 text-left text-[13px] font-semibold leading-none transition-colors " +
+            (active ? "text-[#F0E2C2]" : "text-[#F0E2C2]/45")
+          }
+        >
+          {label}
+        </span>
+        <span
+          className={
+            "text-[11px] tabular-nums transition-colors " +
+            (active ? "text-[#F0E2C2]/55" : "text-[#F0E2C2]/30")
+          }
+        >
+          {count}
+        </span>
+        {/* iOS-style toggle pill */}
+        <span
+          className="relative inline-flex h-6 w-10 flex-shrink-0 rounded-full transition-colors"
+          style={{ background: active ? "#7d8f5a" : "rgba(240, 226, 194, 0.18)" }}
+        >
+          <span
+            className="absolute top-0.5 h-5 w-5 rounded-full bg-[#F0E2C2] shadow-md transition-transform"
+            style={{ left: 2, transform: active ? "translateX(16px)" : "translateX(0)" }}
+          />
+        </span>
+      </button>
+    </li>
+  );
+}
+
 function formatAgo(ms: number): string {
   const delta = Date.now() - ms;
   const min = Math.floor(delta / 60_000);
@@ -132,6 +191,30 @@ export default function MapPage() {
   const [routeFrom, setRouteFrom] = useState<{ coord: LngLat; name: string } | null>(null);
   const [routeTo, setRouteTo] = useState<{ coord: LngLat; name: string } | null>(null);
   const [sourcePickerOpen, setSourcePickerOpen] = useState(false);
+  const [poiVisibility, setPoiVisibility] = useState<PoiVisibility>({
+    cabins: true,
+    spots: true,
+    carvings: true,
+  });
+
+  // Hydrate POI visibility from localStorage on mount + write back on
+  // every change.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("falls-poi-visibility");
+      if (raw) {
+        const parsed = JSON.parse(raw) as PoiVisibility;
+        setPoiVisibility((v) => ({ ...v, ...parsed }));
+      }
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try {
+      localStorage.setItem("falls-poi-visibility", JSON.stringify(poiVisibility));
+    } catch {}
+  }, [poiVisibility]);
+  const togglePoi = (k: keyof PoiVisibility) =>
+    setPoiVisibility((v) => ({ ...v, [k]: !v[k] }));
 
   // Build the trail-network graph once. Memoized so it doesn't rebuild on
   // every render.
@@ -250,6 +333,7 @@ export default function MapPage() {
         onSelect={setSelected}
         basemap={basemap}
         routeCoords={route?.coords ?? null}
+        poiVisibility={poiVisibility}
       />
 
       {/* Floating layers button — sits right above the live-location FAB
@@ -346,6 +430,34 @@ export default function MapPage() {
                     <span className="text-[12px] text-[#F0E2C2]/60">· {row.sublabel}</span>
                   </li>
                 ))}
+              </ul>
+            </div>
+
+            {/* Points of interest */}
+            <div className="pt-3 mt-3 border-t border-[#B89968]/15">
+              <h3 className="text-[10px] uppercase tracking-[0.14em] text-[#B89968] mb-2">Points</h3>
+              <ul className="space-y-1.5">
+                <PoiToggleRow
+                  label="Cabins"
+                  count={4}
+                  color="#B23A1F"
+                  active={poiVisibility.cabins}
+                  onToggle={() => togglePoi("cabins")}
+                />
+                <PoiToggleRow
+                  label="Spots"
+                  count={8}
+                  color="#D9531E"
+                  active={poiVisibility.spots}
+                  onToggle={() => togglePoi("spots")}
+                />
+                <PoiToggleRow
+                  label="Carvings"
+                  count={2}
+                  color="#1f1410"
+                  active={poiVisibility.carvings}
+                  onToggle={() => togglePoi("carvings")}
+                />
               </ul>
             </div>
 

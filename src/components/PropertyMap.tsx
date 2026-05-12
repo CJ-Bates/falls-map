@@ -21,10 +21,17 @@ export type SelectedItem =
 
 export type Basemap = "topo" | "satellite" | "apple";
 
+export type PoiVisibility = {
+  cabins: boolean;
+  spots: boolean;
+  carvings: boolean;
+};
+
 type Props = {
   onSelect: (item: SelectedItem | null) => void;
   basemap?: Basemap;
   routeCoords?: [number, number][] | null;
+  poiVisibility?: PoiVisibility;
 };
 
 const TOPO_STYLE: maplibregl.StyleSpecification = {
@@ -233,11 +240,19 @@ function buildUserDot(): HTMLDivElement {
   return wrap;
 }
 
-export default function PropertyMap({ onSelect, basemap = "topo", routeCoords = null }: Props) {
+export default function PropertyMap({
+  onSelect,
+  basemap = "topo",
+  routeCoords = null,
+  poiVisibility = { cabins: true, spots: true, carvings: true },
+}: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const userMarkerRef = useRef<Marker | null>(null);
   const watchIdRef = useRef<number | null>(null);
+  // All POI/cabin marker elements, kept so we can toggle visibility on
+  // poiVisibility prop changes without rebuilding the map.
+  const poiMarkersRef = useRef<{ kind: "cabins" | "spots" | "carvings"; el: HTMLElement }[]>([]);
   const [tracking, setTracking] = useState(false);
   const [locateError, setLocateError] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
@@ -508,6 +523,7 @@ export default function PropertyMap({ onSelect, basemap = "topo", routeCoords = 
     publicCabins.forEach((c) => {
       const el = buildPinElement(categoryStyle.cabin.color, "cabin", c.slug);
       el.title = c.name;
+      el.dataset.pinKind = "cabins";
       el.addEventListener("click", (e) => {
         e.stopPropagation();
         e.preventDefault();
@@ -523,11 +539,15 @@ export default function PropertyMap({ onSelect, basemap = "topo", routeCoords = 
       });
       new maplibregl.Marker({ element: el, anchor: "center" })
         .setLngLat([c.lng, c.lat]).addTo(map);
+      poiMarkersRef.current.push({ kind: "cabins", el });
     });
     pois.forEach((p) => {
       const style = categoryStyle[p.category] ?? categoryStyle.pavilion;
       const el = buildPinElement(style.color, p.category, p.slug);
       el.title = p.name;
+      const kind: "carvings" | "spots" =
+        p.category === "bear" || p.category === "bobcat" ? "carvings" : "spots";
+      el.dataset.pinKind = kind;
       el.addEventListener("click", (e) => {
         e.stopPropagation();
         e.preventDefault();
@@ -541,6 +561,7 @@ export default function PropertyMap({ onSelect, basemap = "topo", routeCoords = 
       });
       new maplibregl.Marker({ element: el, anchor: "center" })
         .setLngLat([p.lng, p.lat]).addTo(map);
+      poiMarkersRef.current.push({ kind, el });
     });
 
     // Area labels go LAST so they paint on top of the icons. The chunky cream
@@ -589,6 +610,7 @@ export default function PropertyMap({ onSelect, basemap = "topo", routeCoords = 
       ro.disconnect();
       map.remove();
       mapRef.current = null;
+      poiMarkersRef.current = [];
     };
   }, [onSelect]);
 
@@ -770,6 +792,15 @@ export default function PropertyMap({ onSelect, basemap = "topo", routeCoords = 
       },
     );
   }, [routeCoords]);
+
+  // Toggle pin visibility based on the poiVisibility prop. Walks the
+  // poiMarkersRef and sets each element's display directly — bypasses
+  // React render and works even before the map has finished loading.
+  useEffect(() => {
+    poiMarkersRef.current.forEach(({ kind, el }) => {
+      el.style.display = poiVisibility[kind] ? "" : "none";
+    });
+  }, [poiVisibility]);
 
   // Apply basemap selection by toggling visibility on the 4 base raster
   // layers. Topo mode uses two stacked layers (opentopomap + voyager deep
