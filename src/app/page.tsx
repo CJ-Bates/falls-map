@@ -289,8 +289,51 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Connect + footer */}
+      <section className="mt-12 px-6">
+        <div className="mx-auto max-w-md grid grid-cols-3 gap-3">
+          <Link
+            href="/story"
+            className="ios-glass ios-press rounded-2xl p-3.5 text-center"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#cdac7d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-1">
+              <path d="M4 19.5v-15a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v15"/>
+              <path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20"/>
+              <path d="M8 7h8M8 11h8M8 15h5"/>
+            </svg>
+            <div className="text-[12px] font-semibold text-[#F0E2C2]">Our story</div>
+          </Link>
+          <a
+            href="https://www.thefallsatlionsden.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ios-glass ios-press rounded-2xl p-3.5 text-center"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#cdac7d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-1">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M2 12h20"/>
+              <path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/>
+            </svg>
+            <div className="text-[12px] font-semibold text-[#F0E2C2]">Website</div>
+          </a>
+          <a
+            href="https://www.instagram.com/thefallsatlionsden/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ios-glass ios-press rounded-2xl p-3.5 text-center"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#cdac7d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-1">
+              <rect x="2" y="2" width="20" height="20" rx="5"/>
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+            </svg>
+            <div className="text-[12px] font-semibold text-[#F0E2C2]">Instagram</div>
+          </a>
+        </div>
+      </section>
+
       {/* Footer */}
-      <footer className="mt-16 px-6 text-center">
+      <footer className="mt-12 px-6 text-center">
         <p className="text-xs text-[#F0E2C2]/45">
           Made for guests of The Falls at Lions Den · Imperial, MO
         </p>
