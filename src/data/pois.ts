@@ -117,7 +117,7 @@ export const pois: Poi[] = [
     description:
       "Chainsaw-carved bobcat perched on the painted '13' post along the road south, pointing the way to The 13.",
     story:
-      "Unlike Lou, this one\'s a believable Missouri local — the state actually does have bobcats. The family swears one walked through the property at dawn a few summers back. By the next afternoon, Bobby was carved into a stump pointing the way home.",
+      "For years a real bobcat used to run this trail ahead of anyone heading down to The 13 — vanishing into the brush whenever you looked, turning up at the next bend like he was making sure you didn\'t take the wrong fork. He\'s mostly retired these days, but sharp-eyed guests still catch a flash of spots through the trees. Bobby just makes sure the post is in the right place.",
     lat: 38.40482,
     lng: -90.45662,
     photoUrl: "/photos/the-13-bobcat.jpg",
