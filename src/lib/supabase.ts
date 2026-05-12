@@ -34,3 +34,13 @@ export type Memory = {
 export function publicPhotoUrl(storagePath: string): string {
   return `${SUPABASE_URL}/storage/v1/object/public/memories/${storagePath}`;
 }
+
+// Each upload produces TWO files in the bucket:
+//   <id>.jpg         — the full-resolution original (max 25 MB)
+//   <id>-thumb.jpg   — a 1200px-edge gallery thumbnail
+// The DB row only stores the original path; the thumb is derived by
+// inserting "-thumb" before ".jpg".
+export function thumbPhotoUrl(storagePath: string): string {
+  const thumbPath = storagePath.replace(/\.jpg$/i, "-thumb.jpg");
+  return publicPhotoUrl(thumbPath);
+}

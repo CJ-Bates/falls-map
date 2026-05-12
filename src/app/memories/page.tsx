@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { supabase, publicPhotoUrl, type Memory } from "@/lib/supabase";
+import { supabase, publicPhotoUrl, thumbPhotoUrl, type Memory } from "@/lib/supabase";
 import { publicCabins } from "@/data/cabins";
 import { pois } from "@/data/pois";
 
@@ -84,13 +84,14 @@ export default function MemoriesPage() {
     setUploadStatus({ state: "idle" });
   };
 
-  // Downscale a photo to at most 2400px on the long edge and re-encode as
-  // JPEG at quality 0.85. A 12 MB iPhone HEIC shrinks to ~500 KB. Modern
-  // phone cameras produce way more pixels than we need for a gallery
-  // thumbnail, so this is purely waste removal.
-  const downscale = async (file: File): Promise<Blob> => {
-    const maxEdge = 2400;
-    const quality = 0.85;
+  // Re-encode a photo as JPEG via canvas. maxEdge = Infinity preserves the
+  // source resolution; quality is 0..1. Used twice: once for the full-res
+  // original, once for the gallery thumb.
+  const encodeImage = async (
+    file: File,
+    maxEdge: number,
+    quality: number,
+  ): Promise<Blob> => {
     const url = URL.createObjectURL(file);
     try {
       const img = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -125,11 +126,18 @@ export default function MemoriesPage() {
     if (!file) return;
     setUploadStatus({ state: "uploading", progress: 0 });
 
-    // Resize before upload so iPhone-sized originals don\'t blow past the
-    // bucket\'s size cap (and so the gallery loads fast).
-    let blob: Blob;
+    // Build BOTH versions in parallel:
+    //   - Full-res original (no resize, quality 0.92) for the lightbox and
+    //     for anyone who wants to download / reprint the shot later.
+    //   - 1200-px thumb (quality 0.80) for the gallery grid so the page
+    //     stays fast and Supabase egress stays low.
+    let original: Blob;
+    let thumb: Blob;
     try {
-      blob = await downscale(file);
+      [original, thumb] = await Promise.all([
+        encodeImage(file, Infinity, 0.92),
+        encodeImage(file, 1200, 0.8),
+      ]);
     } catch (err) {
       setUploadStatus({
         state: "error",
@@ -138,10 +146,19 @@ export default function MemoriesPage() {
       return;
     }
 
-    const path = `${crypto.randomUUID()}.jpg`;
+    const id = crypto.randomUUID();
+    const path = `${id}.jpg`;
+    const thumbPath = `${id}-thumb.jpg`;
     const { error: uploadErr } = await supabase.storage
       .from("memories")
-      .upload(path, blob, { cacheControl: "31536000", contentType: "image/jpeg" });
+      .upload(path, original, { cacheControl: "31536000", contentType: "image/jpeg" });
+    if (!uploadErr) {
+      // Best-effort thumb upload. If this fails (rare — same bucket / same
+      // policies), the gallery falls back to the original via onError.
+      await supabase.storage
+        .from("memories")
+        .upload(thumbPath, thumb, { cacheControl: "31536000", contentType: "image/jpeg" });
+    }
 
     if (uploadErr) {
       setUploadStatus({ state: "error", message: uploadErr.message });
@@ -327,10 +344,17 @@ export default function MemoriesPage() {
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={publicPhotoUrl(m.storage_path)}
+                  src={thumbPhotoUrl(m.storage_path)}
                   alt={m.caption ?? "Guest photo"}
                   loading="lazy"
                   className="absolute inset-0 h-full w-full object-cover"
+                  onError={(e) => {
+                    // Legacy entry uploaded before we started saving thumbs —
+                    // fall back to the original file.
+                    const target = e.currentTarget as HTMLImageElement;
+                    const fallback = publicPhotoUrl(m.storage_path);
+                    if (target.src !== fallback) target.src = fallback;
+                  }}
                 />
                 {(m.caption || m.guest_name) && (
                   <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/85 to-transparent" />
