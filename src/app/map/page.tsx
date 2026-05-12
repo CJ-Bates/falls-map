@@ -1,9 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import PropertyMap, { type SelectedItem, type Basemap } from "@/components/PropertyMap";
 import DetailPanel from "@/components/DetailPanel";
+import {
+  prefetchAll,
+  propertyTileCoords,
+  readOfflineStatus,
+  writeOfflineStatus,
+  type PrefetchProgress,
+  type OfflineStatus,
+} from "@/lib/offlineTiles";
 
 // ---------- basemap thumbnails ------------------------------------------------
 // Tiny SVG previews that hint at each basemap's character. They sit inside
@@ -67,11 +75,42 @@ function LayersIcon({ className = "" }: { className?: string }) {
   );
 }
 
+// Pretty-print a Date as a relative-time string for the offline-status caption.
+function formatAgo(ms: number): string {
+  const delta = Date.now() - ms;
+  const min = Math.floor(delta / 60_000);
+  if (min < 1) return "just now";
+  if (min < 60) return `${min}m ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr}h ago`;
+  const day = Math.floor(hr / 24);
+  if (day < 7) return `${day}d ago`;
+  return `${Math.floor(day / 7)}w ago`;
+}
+
 // ---------- page --------------------------------------------------------------
 export default function MapPage() {
   const [selected, setSelected] = useState<SelectedItem | null>(null);
   const [basemap, setBasemap] = useState<Basemap>("topo");
   const [layersOpen, setLayersOpen] = useState(false);
+  const [offlineStatus, setOfflineStatus] = useState<OfflineStatus | null>(null);
+  const [downloading, setDownloading] = useState<PrefetchProgress | null>(null);
+
+  // Hydrate offline status on mount.
+  useEffect(() => {
+    setOfflineStatus(readOfflineStatus());
+  }, []);
+
+  const startOfflineDownload = async () => {
+    if (downloading) return;
+    const coords = propertyTileCoords(14, 17);
+    setDownloading({ total: 0, done: 0, failed: 0 });
+    const final = await prefetchAll(coords, (p) => setDownloading(p));
+    const status: OfflineStatus = { cachedAt: Date.now(), totalTiles: final.total };
+    writeOfflineStatus(status);
+    setOfflineStatus(status);
+    setDownloading(null);
+  };
 
   return (
     <main className="fixed inset-0 w-full overflow-hidden bg-[#2A1F18]" style={{ height: "100dvh" }}>
@@ -187,6 +226,64 @@ export default function MapPage() {
                   </li>
                 ))}
               </ul>
+            </div>
+
+            {/* Offline pre-cache */}
+            <div className="pt-3 mt-3 border-t border-[#B89968]/15">
+              <h3 className="text-[10px] uppercase tracking-[0.14em] text-[#B89968] mb-2">Offline</h3>
+              {downloading ? (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-[12px] text-[#F0E2C2]/80 leading-none">
+                    <span>Downloading tiles…</span>
+                    <span>
+                      {downloading.total === 0
+                        ? "preparing"
+                        : `${Math.round((downloading.done / downloading.total) * 100)}%`}
+                    </span>
+                  </div>
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#F0E2C2]/15">
+                    <div
+                      className="h-full bg-[#F0E2C2] transition-all"
+                      style={{
+                        width:
+                          downloading.total === 0
+                            ? "8%"
+                            : `${(downloading.done / downloading.total) * 100}%`,
+                        transition: "width 120ms linear",
+                      }}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={startOfflineDownload}
+                  className="ios-press w-full rounded-2xl bg-[#F0E2C2]/10 px-3.5 py-2.5 text-left transition-colors hover:bg-[#F0E2C2]/15"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="text-[13px] font-semibold text-[#F0E2C2] leading-tight">
+                        {offlineStatus ? "Refresh offline tiles" : "Save for offline"}
+                      </div>
+                      <div className="text-[11px] text-[#F0E2C2]/60 mt-0.5 truncate">
+                        {offlineStatus
+                          ? `Available offline · saved ${formatAgo(offlineStatus.cachedAt)}`
+                          : "Use the map without cell signal at the property"}
+                      </div>
+                    </div>
+                    {offlineStatus ? (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7d8f5a" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                    ) : (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#F0E2C2]/70">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                      </svg>
+                    )}
+                  </div>
+                </button>
+              )}
             </div>
           </div>
         </>
