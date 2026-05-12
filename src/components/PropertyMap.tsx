@@ -155,18 +155,41 @@ const ICON_PATHS: Record<string, string> = {
   // Sitting bobcat — tufted pointed ears, slim head, alert upright body,
   // dark eyes + nose, a couple of spot accents. Smaller / leaner than the
   // bear silhouette so the two read as different animals at a glance.
-  bobcat: `<g stroke="#F0E2C2" stroke-width="1" stroke-linejoin="round" stroke-linecap="round">
-    <path d="M8.5 2.5 L7.5 5.5 L10.2 4.8 Z" fill="#F0E2C2"/>
-    <path d="M15.5 2.5 L16.5 5.5 L13.8 4.8 Z" fill="#F0E2C2"/>
-    <ellipse cx="12" cy="7" rx="3.4" ry="3" fill="#F0E2C2"/>
-    <ellipse cx="12" cy="14.5" rx="3.7" ry="6" fill="#F0E2C2"/>
-    <path d="M15.5 17 c2.3 -0.7 2.5 1.5 0.5 2.2" fill="#F0E2C2"/>
-    <circle cx="10.6" cy="6.6" r="0.5" fill="#1f1410" stroke="none"/>
-    <circle cx="13.4" cy="6.6" r="0.5" fill="#1f1410" stroke="none"/>
-    <path d="M11.5 7.8 L12.5 7.8 L12 8.6 Z" fill="#1f1410" stroke="none"/>
-    <circle cx="10.5" cy="12.5" r="0.45" fill="#3a2d22" stroke="none"/>
-    <circle cx="13.5" cy="13.5" r="0.45" fill="#3a2d22" stroke="none"/>
-    <circle cx="12" cy="16" r="0.4" fill="#3a2d22" stroke="none"/>
+  bobcat: `<g stroke="#F0E2C2" stroke-width="1" stroke-linejoin="round" stroke-linecap="round" fill="none">
+    <!-- Body (compact crouched cat) -->
+    <path d="M7 14 Q6 16 6 18 Q6 20.5 7.5 21 L16.5 21 Q18 20.5 18 18 Q18 16 17 14 L16 12 L8 12 Z" fill="#F0E2C2"/>
+    <!-- Bobbed tail (the namesake stub) -->
+    <path d="M17 15.5 Q19.5 15 19.2 17.5 Q18.5 18.5 17 18" fill="#F0E2C2"/>
+    <!-- Tufted ears (defining feature) -->
+    <path d="M6.5 5 L8 1 L11 5 Z" fill="#F0E2C2"/>
+    <line x1="7.8" y1="1.3" x2="7.4" y2="0" stroke-width="0.6"/>
+    <line x1="8.4" y1="1.5" x2="8.6" y2="0.2" stroke-width="0.6"/>
+    <path d="M17.5 5 L16 1 L13 5 Z" fill="#F0E2C2"/>
+    <line x1="16.2" y1="1.3" x2="16.6" y2="0" stroke-width="0.6"/>
+    <line x1="15.6" y1="1.5" x2="15.4" y2="0.2" stroke-width="0.6"/>
+    <!-- Head with integrated cheek-ruff flares -->
+    <path d="M7.5 7 Q6.8 9.5 7.5 11 L6.2 11.5 L8 12 Q9 12.8 12 12.8 Q15 12.8 16 12 L17.8 11.5 L16.5 11 Q17.2 9.5 16.5 7 Q15.5 5 13.8 4.5 Q12 4 10.2 4.5 Q8.5 5 7.5 7 Z" fill="#F0E2C2"/>
+    <!-- Front paws -->
+    <ellipse cx="9.5" cy="21.3" rx="1.1" ry="0.5" fill="#F0E2C2"/>
+    <ellipse cx="14.5" cy="21.3" rx="1.1" ry="0.5" fill="#F0E2C2"/>
+    <!-- Cat-like almond eyes -->
+    <ellipse cx="10" cy="8.2" rx="0.6" ry="0.85" fill="#1f1410" stroke="none"/>
+    <ellipse cx="14" cy="8.2" rx="0.6" ry="0.85" fill="#1f1410" stroke="none"/>
+    <!-- Nose -->
+    <path d="M11.4 9.9 L12.6 9.9 L12 10.7 Z" fill="#1f1410" stroke="none"/>
+    <!-- Mouth philtrum line -->
+    <path d="M12 10.7 L12 11.4" stroke="#1f1410" stroke-width="0.5" fill="none"/>
+    <!-- Whiskers -->
+    <line x1="8.6" y1="10.4" x2="5.8" y2="10" stroke-width="0.4"/>
+    <line x1="8.6" y1="11" x2="5.8" y2="11.3" stroke-width="0.4"/>
+    <line x1="15.4" y1="10.4" x2="18.2" y2="10" stroke-width="0.4"/>
+    <line x1="15.4" y1="11" x2="18.2" y2="11.3" stroke-width="0.4"/>
+    <!-- Body spots -->
+    <circle cx="9.5" cy="15.5" r="0.45" fill="#3a2d22" stroke="none"/>
+    <circle cx="12" cy="16.5" r="0.45" fill="#3a2d22" stroke="none"/>
+    <circle cx="14.5" cy="15.5" r="0.45" fill="#3a2d22" stroke="none"/>
+    <circle cx="10.5" cy="18.5" r="0.35" fill="#3a2d22" stroke="none"/>
+    <circle cx="13.5" cy="18.5" r="0.35" fill="#3a2d22" stroke="none"/>
   </g>`,
   trailhead: `<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M9 7l-3 3 3 3M15 7l3 3-3 3"/>
