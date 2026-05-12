@@ -27,6 +27,8 @@ type Props = {
   // Directions support — wired up by the map page.
   onGetDirections?: () => void;
   route?: Route | null;
+  routeFromName?: string | null;
+  onReverseRoute?: () => void;
   onClearRoute?: () => void;
 };
 
@@ -38,7 +40,7 @@ const DETENT_EXPANDED_SVH = 6;
 // Drag below 70%-down dismisses.
 const DETENT_DISMISS_SVH = 80;
 
-export default function DetailPanel({ item, onClose, onGetDirections, route, onClearRoute }: Props) {
+export default function DetailPanel({ item, onClose, onGetDirections, route, routeFromName, onReverseRoute, onClearRoute }: Props) {
   const sheetRef = useRef<HTMLDivElement>(null);
   const drag = useRef({
     active: false,
@@ -272,7 +274,10 @@ export default function DetailPanel({ item, onClose, onGetDirections, route, onC
         {onGetDirections && (
           <DirectionsBlock
             route={route ?? null}
+            fromName={routeFromName ?? null}
+            toName={item.data.name}
             onGetDirections={onGetDirections}
+            onReverseRoute={onReverseRoute}
             onClearRoute={onClearRoute}
           />
         )}
@@ -288,11 +293,17 @@ export default function DetailPanel({ item, onClose, onGetDirections, route, onC
 // Directions affordance + route summary card.
 function DirectionsBlock({
   route,
+  fromName,
+  toName,
   onGetDirections,
+  onReverseRoute,
   onClearRoute,
 }: {
   route: Route | null;
+  fromName: string | null;
+  toName: string;
   onGetDirections: () => void;
+  onReverseRoute?: () => void;
   onClearRoute?: () => void;
 }) {
   if (!route) {
@@ -315,13 +326,44 @@ function DirectionsBlock({
 
   return (
     <div className="rounded-2xl bg-[#2E78D2]/12 border border-[#2E78D2]/30 p-3.5 space-y-3">
-      <div className="flex items-baseline justify-between gap-2">
+      {/* From → To header */}
+      <div className="flex items-center gap-2.5">
+        <div className="flex flex-col gap-1 items-center pt-0.5">
+          <span className="block h-2 w-2 rounded-full bg-[#7d8f5a] ring-2 ring-[#7d8f5a]/30" />
+          <span className="block h-3 w-px bg-[#F0E2C2]/30" />
+          <span className="block h-2 w-2 rounded-full bg-[#2E78D2] ring-2 ring-[#2E78D2]/30" />
+        </div>
+        <div className="flex-1 min-w-0 space-y-1">
+          <div className="text-[13px] text-[#F0E2C2]/85 leading-tight truncate">
+            {fromName ?? "Start"}
+          </div>
+          <div className="text-[13px] font-semibold text-[#F0E2C2] leading-tight truncate">
+            {toName}
+          </div>
+        </div>
+        {onReverseRoute && (
+          <button
+            onClick={onReverseRoute}
+            aria-label="Reverse direction"
+            className="ios-press grid h-9 w-9 place-items-center rounded-full bg-[#F0E2C2]/10 text-[#67B0FF] hover:bg-[#F0E2C2]/15 flex-shrink-0"
+            title="Reverse"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m17 3 4 4-4 4"/>
+              <path d="M21 7H8a4 4 0 0 0-4 4"/>
+              <path d="m7 21-4-4 4-4"/>
+              <path d="M3 17h13a4 4 0 0 0 4-4"/>
+            </svg>
+          </button>
+        )}
+      </div>
+
+      {/* Distance + ETAs */}
+      <div className="flex items-baseline justify-between gap-2 pt-1">
         <div className="flex items-baseline gap-3">
-          <div>
-            <div className="text-[22px] font-bold leading-none text-[#F0E2C2]">
-              {miles.toFixed(2)}
-              <span className="text-[12px] font-semibold text-[#F0E2C2]/55 ml-1">mi</span>
-            </div>
+          <div className="text-[22px] font-bold leading-none text-[#F0E2C2]">
+            {miles.toFixed(2)}
+            <span className="text-[12px] font-semibold text-[#F0E2C2]/55 ml-1">mi</span>
           </div>
           <div className="flex items-baseline gap-2 text-[#F0E2C2]/85 text-[13px]">
             <span>{walkMin} min walk</span>

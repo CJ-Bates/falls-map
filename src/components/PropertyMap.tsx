@@ -592,33 +592,44 @@ export default function PropertyMap({ onSelect, basemap = "topo", routeCoords = 
     };
   }, [onSelect]);
 
-  // Render the routing result (when present) as a highlighted polyline.
-  // Uses two stacked line layers (halo + bright top) for an iOS-ish glow.
+  // Render the routing result (when present) as a highlighted polyline with
+  // animated dashes flowing from start to end + green/blue endpoint dots.
+  // The animation is driven by a requestAnimationFrame loop that cycles
+  // the line-dasharray on route-line every ~70ms.
   useEffect(() => {
     const m = mapRef.current;
     if (!m) return;
     const apply = () => {
-      const data = routeCoords && routeCoords.length > 1
-        ? {
-            type: "Feature" as const,
-            properties: {},
-            geometry: {
-              type: "LineString" as const,
-              coordinates: routeCoords,
-            },
-          }
-        : null;
+      // Build the GeoJSON: a LineString plus two Points for the endpoints,
+      // tagged with a "kind" property so each gets its own layer style.
+      const features: GeoJSON.Feature[] = [];
+      if (routeCoords && routeCoords.length > 1) {
+        features.push({
+          type: "Feature",
+          properties: { kind: "line" },
+          geometry: { type: "LineString", coordinates: routeCoords },
+        });
+        features.push({
+          type: "Feature",
+          properties: { kind: "start" },
+          geometry: { type: "Point", coordinates: routeCoords[0] },
+        });
+        features.push({
+          type: "Feature",
+          properties: { kind: "end" },
+          geometry: { type: "Point", coordinates: routeCoords[routeCoords.length - 1] },
+        });
+      }
+      const data: GeoJSON.FeatureCollection = { type: "FeatureCollection", features };
 
       const src = m.getSource("route") as maplibregl.GeoJSONSource | undefined;
       if (!src) {
-        m.addSource("route", {
-          type: "geojson",
-          data: data ?? { type: "FeatureCollection", features: [] },
-        });
+        m.addSource("route", { type: "geojson", data });
         m.addLayer({
           id: "route-halo",
           type: "line",
           source: "route",
+          filter: ["==", ["get", "kind"], "line"],
           paint: {
             "line-color": "#2E78D2",
             "line-width": 10,
@@ -631,6 +642,7 @@ export default function PropertyMap({ onSelect, basemap = "topo", routeCoords = 
           id: "route-line",
           type: "line",
           source: "route",
+          filter: ["==", ["get", "kind"], "line"],
           paint: {
             "line-color": "#67B0FF",
             "line-width": 4.5,
@@ -638,12 +650,97 @@ export default function PropertyMap({ onSelect, basemap = "topo", routeCoords = 
           },
           layout: { "line-join": "round", "line-cap": "round" },
         });
+        m.addLayer({
+          id: "route-endpoint-start-halo",
+          type: "circle",
+          source: "route",
+          filter: ["==", ["get", "kind"], "start"],
+          paint: {
+            "circle-radius": 11,
+            "circle-color": "#7d8f5a",
+            "circle-opacity": 0.3,
+            "circle-blur": 0.4,
+          },
+        });
+        m.addLayer({
+          id: "route-endpoint-start",
+          type: "circle",
+          source: "route",
+          filter: ["==", ["get", "kind"], "start"],
+          paint: {
+            "circle-radius": 6,
+            "circle-color": "#7d8f5a",
+            "circle-stroke-color": "#F0E2C2",
+            "circle-stroke-width": 2,
+          },
+        });
+        m.addLayer({
+          id: "route-endpoint-end-halo",
+          type: "circle",
+          source: "route",
+          filter: ["==", ["get", "kind"], "end"],
+          paint: {
+            "circle-radius": 12,
+            "circle-color": "#2E78D2",
+            "circle-opacity": 0.35,
+            "circle-blur": 0.4,
+          },
+        });
+        m.addLayer({
+          id: "route-endpoint-end",
+          type: "circle",
+          source: "route",
+          filter: ["==", ["get", "kind"], "end"],
+          paint: {
+            "circle-radius": 7,
+            "circle-color": "#2E78D2",
+            "circle-stroke-color": "#F0E2C2",
+            "circle-stroke-width": 2.5,
+          },
+        });
       } else {
-        src.setData(data ?? { type: "FeatureCollection", features: [] });
+        src.setData(data);
       }
     };
     if (m.isStyleLoaded()) apply();
     else m.once("idle", apply);
+  }, [routeCoords]);
+
+  // Animate the route's line-dasharray so dashes appear to flow from start
+  // to end. Runs only while a route is active.
+  useEffect(() => {
+    const m = mapRef.current;
+    if (!m || !routeCoords || routeCoords.length < 2) return;
+    let raf = 0;
+    let step = 0;
+    // 8-frame cycle. The pattern (gap, dash) shifts one unit per tick.
+    const cycle: [number, number, number, number][] = [
+      [0, 0.5, 3, 1.5],
+      [0, 1.0, 3, 1.0],
+      [0, 1.5, 3, 0.5],
+      [0, 2.0, 3, 0.0],
+      [0.5, 2.0, 2.5, 0.0],
+      [1.0, 2.0, 2.0, 0.0],
+      [1.5, 2.0, 1.5, 0.0],
+      [2.0, 2.0, 1.0, 0.0],
+    ];
+    let last = 0;
+    const tick = (t: number) => {
+      if (t - last > 70) {
+        last = t;
+        if (m.getLayer("route-line")) {
+          m.setPaintProperty(
+            "route-line",
+            "line-dasharray",
+            cycle[step % cycle.length] as never,
+          );
+        }
+        step++;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
   }, [routeCoords]);
 
   // Fit the map to the route bounds when a new route arrives.

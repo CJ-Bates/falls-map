@@ -129,7 +129,8 @@ export default function MapPage() {
   const [offlineStatus, setOfflineStatus] = useState<OfflineStatus | null>(null);
   const [downloading, setDownloading] = useState<PrefetchProgress | null>(null);
   const [route, setRoute] = useState<Route | null>(null);
-  const [routeToName, setRouteToName] = useState<string | null>(null);
+  const [routeFrom, setRouteFrom] = useState<{ coord: LngLat; name: string } | null>(null);
+  const [routeTo, setRouteTo] = useState<{ coord: LngLat; name: string } | null>(null);
   const [sourcePickerOpen, setSourcePickerOpen] = useState(false);
 
   // Build the trail-network graph once. Memoized so it doesn't rebuild on
@@ -138,15 +139,34 @@ export default function MapPage() {
 
   // Compute a route from a source (lng,lat) to the currently-selected
   // item, by snapping both to graph vertices and running Dijkstra.
-  const computeRoute = (fromLngLat: LngLat) => {
-    if (!selected) return;
-    const toLngLat: LngLat = [selected.data.lng, selected.data.lat];
-    const from = snapToGraph(graph, fromLngLat);
-    const to = snapToGraph(graph, toLngLat);
-    const r = shortestPath(graph, from.node, to.node);
+  const buildRoute = (
+    from: { coord: LngLat; name: string },
+    to: { coord: LngLat; name: string },
+  ) => {
+    const a = snapToGraph(graph, from.coord);
+    const b = snapToGraph(graph, to.coord);
+    const r = shortestPath(graph, a.node, b.node);
     setRoute(r);
-    setRouteToName(selected.data.name);
+    setRouteFrom(from);
+    setRouteTo(to);
+  };
+
+  // Called from the source-picker — the destination comes from `selected`.
+  const computeRoute = (fromLngLat: LngLat, fromName: string) => {
+    if (!selected) return;
+    buildRoute(
+      { coord: fromLngLat, name: fromName },
+      {
+        coord: [selected.data.lng, selected.data.lat],
+        name: selected.data.name,
+      },
+    );
     setSourcePickerOpen(false);
+  };
+
+  const reverseRoute = () => {
+    if (!routeFrom || !routeTo) return;
+    buildRoute(routeTo, routeFrom);
   };
 
   // Close the source-picker when selection changes, but DON'T clear the
@@ -157,7 +177,8 @@ export default function MapPage() {
 
   const clearRoute = () => {
     setRoute(null);
-    setRouteToName(null);
+    setRouteFrom(null);
+    setRouteTo(null);
   };
 
   // Hydrate offline status on mount.
@@ -207,7 +228,7 @@ export default function MapPage() {
           <div className="leading-none">
             <div className="text-[10px] uppercase tracking-[0.14em] text-[#B89968]">Route to</div>
             <div className="text-[13px] font-semibold text-[#F0E2C2] mt-0.5">
-              {routeToName ?? "destination"}{" · "}
+              {routeTo?.name ?? "destination"}{" · "}
               <span className="text-[#F0E2C2]/65">
                 {(route.distance / 1609.344).toFixed(2)} mi
               </span>
@@ -402,6 +423,8 @@ export default function MapPage() {
         onClose={() => setSelected(null)}
         onGetDirections={() => setSourcePickerOpen(true)}
         route={route}
+        routeFromName={routeFrom?.name ?? null}
+        onReverseRoute={reverseRoute}
         onClearRoute={clearRoute}
       />
 
@@ -434,7 +457,10 @@ export default function MapPage() {
                 onClick={() => {
                   navigator.geolocation.getCurrentPosition(
                     (pos) =>
-                      computeRoute([pos.coords.longitude, pos.coords.latitude]),
+                      computeRoute(
+                        [pos.coords.longitude, pos.coords.latitude],
+                        "My location",
+                      ),
                     () =>
                       alert(
                         "Couldn\'t get your location. Pick a cabin instead.",
@@ -448,7 +474,7 @@ export default function MapPage() {
                   key={c.slug}
                   label={c.name}
                   sub={`${c.bedrooms} BR · ${c.bathrooms} BA`}
-                  onClick={() => computeRoute([c.lng, c.lat])}
+                  onClick={() => computeRoute([c.lng, c.lat], c.name)}
                 />
               ))}
             </div>
