@@ -57,9 +57,13 @@ export const pois: Poi[] = [
     name: "The 13 Pavilion",
     category: "pavilion",
     zone: "the-13",
-    description: "Pavilion at The 13 — south parcel.",
+    description:
+      "Heavy-timber pavilion on the shore of The 13\'s lake. Stone columns and a full chimney, antler chandelier overhead, picnic tables under the roof, sconces that warm the whole place after dark.",
+    story:
+      "The crown jewel of The 13. Stone foundations, hand-hewn beams, antler chandelier overhead — built to last a century. Pull a chair up to the chimney on a cool fall evening and you\'ll see why it took most of a year to put up.",
     lat: 38.399841,
     lng: -90.4618,
+    photoUrl: "/photos/the-13-pavilion.jpg",
   },
   {
     slug: "the-13-firepit",
