@@ -20,6 +20,7 @@ const ICON_PATHS: Record<string, string> = {
 
 import type { SelectedItem } from "./PropertyMap";
 import type { Route, Surface } from "@/lib/routing";
+import PoiPhotos from "./PoiPhotos";
 
 type Props = {
   item: SelectedItem | null;
@@ -284,6 +285,7 @@ export default function DetailPanel({ item, onClose, onGetDirections, route, rou
                 </p>
               </div>
             )}
+            <PoiPhotos slug={item.data.slug} />
           </>
         )}
 
