@@ -279,8 +279,10 @@ export default function MapPage() {
   };
 
   // Called from the source-picker — the destination comes from `selected`.
+  // Only cabin/POI selections have direct lng/lat; trails aren't valid
+  // destinations for routing.
   const computeRoute = (fromLngLat: LngLat, fromName: string) => {
-    if (!selected) return;
+    if (!selected || selected.kind === "trail") return;
     buildRoute(
       { coord: fromLngLat, name: fromName },
       {

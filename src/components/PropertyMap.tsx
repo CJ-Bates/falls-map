@@ -7,7 +7,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { property, worldRing } from "@/data/property";
 import { publicCabins } from "@/data/cabins";
 import { pois, categoryStyle } from "@/data/pois";
-import type { Cabin, Poi } from "@/data/types";
+import type { Cabin, Poi, TrailMeta } from "@/data/types";
 import parcelsData from "@/data/parcels.json";
 import waterData from "@/data/water.json";
 import trailsData from "@/data/trails.json";
@@ -17,7 +17,8 @@ import ownedBoundary from "@/data/owned-boundary.json";
 
 export type SelectedItem =
   | { kind: "cabin"; data: Cabin }
-  | { kind: "poi"; data: Poi };
+  | { kind: "poi"; data: Poi }
+  | { kind: "trail"; data: TrailMeta };
 
 export type Basemap = "topo" | "satellite" | "apple";
 
@@ -517,6 +518,59 @@ export default function PropertyMap({
           "text-halo-color": "#F0E2C2",
           "text-halo-width": 2,
         },
+      });
+
+      // Trails are tap-targets: clicking the line opens the detail panel
+      // with the trail's info (no pin needed). Cursor changes on hover.
+      type TrailFeatureProps = { name?: string; surface?: string; description?: string };
+      const slugify = (n: string) =>
+        n.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      const haversineM = (a: [number, number], b: [number, number]) => {
+        const R = 6371000;
+        const f1 = (a[1] * Math.PI) / 180;
+        const f2 = (b[1] * Math.PI) / 180;
+        const df = ((b[1] - a[1]) * Math.PI) / 180;
+        const dl = ((b[0] - a[0]) * Math.PI) / 180;
+        const h =
+          Math.sin(df / 2) ** 2 +
+          Math.cos(f1) * Math.cos(f2) * Math.sin(dl / 2) ** 2;
+        return 2 * R * Math.asin(Math.sqrt(h));
+      };
+      map.on("click", "trails-line", (e) => {
+        const feat = e.features?.[0];
+        if (!feat) return;
+        const props = feat.properties as TrailFeatureProps;
+        const name = props.name ?? "Trail";
+        const surface = (props.surface ?? "trail") as TrailMeta["surface"];
+        // Re-look up the trail's full coordinate list from our source data
+        // (the click feature might be a clipped tile fragment).
+        const fullCoords = (trailsData as unknown as {
+          features: { properties: { name?: string }; geometry: { coordinates: number[][] } }[];
+        }).features.find((f) => f.properties.name === name)?.geometry.coordinates ?? [];
+        let lengthM = 0;
+        for (let i = 1; i < fullCoords.length; i++) {
+          lengthM += haversineM(
+            fullCoords[i - 1] as [number, number],
+            fullCoords[i] as [number, number],
+          );
+        }
+        onSelect({
+          kind: "trail",
+          data: {
+            slug: slugify(name),
+            name,
+            surface,
+            description: props.description,
+            coords: fullCoords,
+            lengthM,
+          },
+        });
+      });
+      map.on("mouseenter", "trails-line", () => {
+        map.getCanvas().style.cursor = "pointer";
+      });
+      map.on("mouseleave", "trails-line", () => {
+        map.getCanvas().style.cursor = "";
       });
 
       // Auto-fit to all parcels

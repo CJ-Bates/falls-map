@@ -64,18 +64,32 @@ export default function DetailPanel({ item, onClose, onGetDirections, route, rou
 
   if (!item) return null;
 
+  const TRAIL_SURFACE_COLOR: Record<string, string> = {
+    paved:  "#3D3022",
+    gravel: "#C9A974",
+    "4wd":  "#D9531E",
+    trail:  "#F0E2C2",
+  };
   const style =
     item.kind === "cabin"
       ? categoryStyle.cabin
-      : categoryStyle[item.data.category];
+      : item.kind === "trail"
+        ? { label: "Trail", color: TRAIL_SURFACE_COLOR[item.data.surface] ?? "#C9A974", emoji: "🥾" }
+        : categoryStyle[item.data.category];
 
   const subtitle =
     item.kind === "cabin"
       ? `${item.data.bedrooms} BR · ${item.data.bathrooms} BA`
-      : style?.label ?? "Location";
+      : item.kind === "trail"
+        ? `${(item.data.lengthM / 1609.344).toFixed(2)} mi · ${item.data.surface === "trail" ? "Walking" : item.data.surface === "4wd" ? "4WD" : item.data.surface === "gravel" ? "Gravel" : "Paved"}`
+        : style?.label ?? "Location";
 
   const photoSrc =
-    item.kind === "cabin" ? item.data.coverPhoto : item.data.photoUrl;
+    item.kind === "cabin"
+      ? item.data.coverPhoto
+      : item.kind === "poi"
+        ? item.data.photoUrl
+        : undefined;
 
   // Compute current top from detent + any active drag offset.
   const detentTopSvh =
@@ -171,7 +185,11 @@ export default function DetailPanel({ item, onClose, onGetDirections, route, rou
           style={{ background: style?.color ?? "#7A5A2F" }}
           dangerouslySetInnerHTML={{
             __html: `<svg width="22" height="22" viewBox="0 0 24 24">${
-              ICON_PATHS[item.kind === "cabin" ? "cabin" : item.data.category] ?? ""
+              item.kind === "cabin"
+                ? ICON_PATHS.cabin
+                : item.kind === "trail"
+                  ? '<g fill="none" stroke="#F0E2C2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 L7 9 L11 13 L8 17 L11 20"/><path d="M14 4 L17 8 L13 12 L17 16 L15 20"/></g>'
+                  : ICON_PATHS[item.data.category] ?? ""
             }</svg>`,
           }}
         />
@@ -269,10 +287,41 @@ export default function DetailPanel({ item, onClose, onGetDirections, route, rou
           </>
         )}
 
+        {item.kind === "trail" && (
+          <>
+            {item.data.description && (
+              <p className="text-[15px] leading-relaxed text-[#F0E2C2]/85">
+                {item.data.description}
+              </p>
+            )}
+            <div className="flex gap-2 flex-wrap">
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em]"
+                style={{
+                  background: `${(TRAIL_SURFACE_COLOR[item.data.surface] ?? "#C9A974")}22`,
+                  color: TRAIL_SURFACE_COLOR[item.data.surface] === "#F0E2C2" ? "#F0E2C2" : (TRAIL_SURFACE_COLOR[item.data.surface] ?? "#C9A974"),
+                  border: `1px solid ${(TRAIL_SURFACE_COLOR[item.data.surface] ?? "#C9A974")}55`,
+                }}
+              >
+                <span
+                  className="block h-[3px] w-5 rounded-full"
+                  style={{ background: TRAIL_SURFACE_COLOR[item.data.surface] ?? "#C9A974" }}
+                />
+                {item.data.surface === "trail" ? "Walking only" :
+                 item.data.surface === "4wd" ? "4WD" :
+                 item.data.surface === "gravel" ? "Any vehicle" : "Paved"}
+              </span>
+              <span className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#F0E2C2]/75 bg-[#F0E2C2]/8">
+                {(item.data.lengthM / 1609.344).toFixed(2)} mi
+              </span>
+            </div>
+          </>
+        )}
+
         {/* Directions panel — shows the Directions button (when no route)
             or a route summary card with distance + ETAs + surface breakdown
             (when one is active). */}
-        {onGetDirections && (
+        {onGetDirections && item.kind !== "trail" && (
           <DirectionsBlock
             route={route ?? null}
             fromName={routeFromName ?? null}
@@ -285,7 +334,9 @@ export default function DetailPanel({ item, onClose, onGetDirections, route, rou
         )}
 
         <div className="pt-2 text-[11px] text-[#B89968]/70 border-t border-[#B89968]/15">
-          {item.data.lat.toFixed(5)}°N, {Math.abs(item.data.lng).toFixed(5)}°W
+          {item.kind === "trail"
+            ? `${item.data.coords[0]?.[1].toFixed(5)}°N, ${Math.abs(item.data.coords[0]?.[0] ?? 0).toFixed(5)}°W`
+            : `${item.data.lat.toFixed(5)}°N, ${Math.abs(item.data.lng).toFixed(5)}°W`}
         </div>
       </div>
     </div>

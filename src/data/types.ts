@@ -51,6 +51,15 @@ export type Poi = {
   story?: string;
 };
 
+export type TrailMeta = {
+  slug: string;
+  name: string;
+  surface: "paved" | "gravel" | "4wd" | "trail";
+  description?: string;
+  coords: number[][];
+  lengthM: number;
+};
+
 export type Property = {
   name: string;
   tagline: string;
