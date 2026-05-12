@@ -28,6 +28,7 @@ export type Memory = {
   guest_name: string | null;
   poi_slug: string | null;
   cabin_slug: string | null;
+  trail_slug: string | null;
   created_at: string;
 };
 

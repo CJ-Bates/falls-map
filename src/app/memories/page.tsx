@@ -5,6 +5,23 @@ import { useEffect, useRef, useState } from "react";
 import { supabase, publicPhotoUrl, thumbPhotoUrl, type Memory } from "@/lib/supabase";
 import { publicCabins } from "@/data/cabins";
 import { pois } from "@/data/pois";
+import trails from "@/data/trails.json";
+
+// Kebab-case slug from a trail's name. Matches the convention used in
+// /map?focus=trail-<slug> deep-links elsewhere in the app.
+function trailSlug(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
+// De-duplicated list of trail names (multiple GeoJSON segments can share a
+// name when a single trail is split into pieces).
+const TRAIL_NAMES: string[] = Array.from(
+  new Set(
+    (trails.features as Array<{ properties: { name?: string } }>)
+      .map((f) => f.properties?.name)
+      .filter((n): n is string => !!n),
+  ),
+).sort((a, b) => a.localeCompare(b));
 
 type UploadStatus =
   | { state: "idle" }
@@ -26,9 +43,10 @@ function timeAgo(iso: string): string {
 }
 
 // Place options for the optional "tag a place" dropdown.
-const PLACE_OPTIONS: { value: string; label: string; kind: "cabin" | "poi" }[] = [
+const PLACE_OPTIONS: { value: string; label: string; kind: "cabin" | "poi" | "trail" }[] = [
   ...publicCabins.map((c) => ({ value: `cabin:${c.slug}`, label: c.name, kind: "cabin" as const })),
   ...pois.map((p) => ({ value: `poi:${p.slug}`, label: p.name, kind: "poi" as const })),
+  ...TRAIL_NAMES.map((name) => ({ value: `trail:${trailSlug(name)}`, label: name, kind: "trail" as const })),
 ];
 
 function placeLabel(memory: Memory): string | null {
@@ -37,6 +55,9 @@ function placeLabel(memory: Memory): string | null {
   }
   if (memory.poi_slug) {
     return pois.find((p) => p.slug === memory.poi_slug)?.name ?? null;
+  }
+  if (memory.trail_slug) {
+    return TRAIL_NAMES.find((n) => trailSlug(n) === memory.trail_slug) ?? null;
   }
   return null;
 }
@@ -167,6 +188,7 @@ export default function MemoriesPage() {
 
     const cabinSlug = place.startsWith("cabin:") ? place.slice("cabin:".length) : null;
     const poiSlug = place.startsWith("poi:") ? place.slice("poi:".length) : null;
+    const trailSlugVal = place.startsWith("trail:") ? place.slice("trail:".length) : null;
 
     const { data: row, error: insertErr } = await supabase
       .from("memories")
@@ -176,6 +198,7 @@ export default function MemoriesPage() {
         guest_name: name.trim() || null,
         cabin_slug: cabinSlug,
         poi_slug: poiSlug,
+        trail_slug: trailSlugVal,
       })
       .select()
       .single();
@@ -254,10 +277,13 @@ export default function MemoriesPage() {
                   </span>
                 </>
               ) : (
-                <div className="text-[#F0E2C2]/70">
-                  <div className="text-[28px]">📷</div>
-                  <div className="text-[13px] font-semibold mt-1">Tap to pick a photo</div>
-                  <div className="text-[11px] text-[#F0E2C2]/50 mt-0.5">Up to 10 MB</div>
+                <div className="text-[#F0E2C2]/75 flex flex-col items-center gap-1.5">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#cdac7d" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                    <circle cx="12" cy="13" r="4" />
+                  </svg>
+                  <div className="text-[13px] font-semibold">Take a photo or pick one</div>
+                  <div className="text-[11px] text-[#F0E2C2]/50">From camera, library, or files</div>
                 </div>
               )}
             </div>
@@ -294,6 +320,13 @@ export default function MemoriesPage() {
             </optgroup>
             <optgroup label="Spots">
               {PLACE_OPTIONS.filter((o) => o.kind === "poi").map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="Trails">
+              {PLACE_OPTIONS.filter((o) => o.kind === "trail").map((o) => (
                 <option key={o.value} value={o.value}>
                   {o.label}
                 </option>
