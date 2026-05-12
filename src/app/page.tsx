@@ -4,6 +4,7 @@ import { publicCabins } from "@/data/cabins";
 import { property } from "@/data/property";
 import TodayWidget from "@/components/TodayWidget";
 import InstallAppButton from "@/components/InstallAppButton";
+import WelcomeCarousel from "@/components/WelcomeCarousel";
 import trails from "@/data/trails.json";
 import { pois } from "@/data/pois";
 
@@ -338,6 +339,7 @@ export default function Home() {
           Made for guests of The Falls at Lions Den · Imperial, MO
         </p>
       </footer>
+      <WelcomeCarousel />
     </main>
   );
 }

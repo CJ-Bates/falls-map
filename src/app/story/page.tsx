@@ -1,4 +1,5 @@
 import Link from "next/link";
+import StoryPhotos from "@/components/StoryPhotos";
 
 export const metadata = { title: "Our Story · The Falls at Lions Den" };
 
@@ -79,6 +80,8 @@ export default function StoryPage() {
             — Chris &amp; Stephanie Bates
           </p>
         </section>
+
+        <StoryPhotos />
 
         <div className="grid grid-cols-2 gap-3 mt-2">
           <a

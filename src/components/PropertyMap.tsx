@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import maplibregl, { Map as MapLibreMap, Marker } from "maplibre-gl";
+import { supabase } from "@/lib/supabase";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 import { property, worldRing } from "@/data/property";
@@ -221,6 +222,7 @@ function tiltFromSeed(seed: string): number {
   return ((Math.abs(h) % 1000) / 1000) * 10 - 5;
 }
 
+
 function buildPinElement(color: string, category: string, seed: string = category): HTMLDivElement {
   // OUTER WRAP — MapLibre owns this element's transform (uses it for
   // translate(...) positioning). Do NOT touch wrap.style.transform anywhere.
@@ -285,7 +287,7 @@ export default function PropertyMap({
   const watchIdRef = useRef<number | null>(null);
   // All POI/cabin marker elements, kept so we can toggle visibility on
   // poiVisibility prop changes without rebuilding the map.
-  const poiMarkersRef = useRef<{ kind: "cabins" | "spots" | "carvings"; el: HTMLElement }[]>([]);
+  const poiMarkersRef = useRef<{ kind: "cabins" | "spots" | "carvings"; el: HTMLElement; poiSlug?: string }[]>([]);
   const [tracking, setTracking] = useState(false);
   const [locateError, setLocateError] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
@@ -647,7 +649,7 @@ export default function PropertyMap({
       });
       new maplibregl.Marker({ element: el, anchor: "center" })
         .setLngLat([p.lng, p.lat]).addTo(map);
-      poiMarkersRef.current.push({ kind, el });
+      poiMarkersRef.current.push({ kind, el, poiSlug: p.slug });
     });
 
     // Area labels go LAST so they paint on top of the icons. The chunky cream
@@ -1048,6 +1050,31 @@ export default function PropertyMap({
       mapRef.current.flyTo({ center: userLocation, zoom: 17 });
     }
   }
+
+  // Fetch which POIs have guest photos, then stamp a small camera badge on
+  // those pins so guests can SEE which spots have memories before tapping.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("memories")
+        .select("poi_slug")
+        .not("poi_slug", "is", null);
+      if (cancelled || error || !data) return;
+      const slugs = new Set(data.map((r) => r.poi_slug as string));
+      poiMarkersRef.current.forEach(({ el, poiSlug }) => {
+        if (!poiSlug || !slugs.has(poiSlug)) return;
+        if (el.querySelector("[data-photo-badge]")) return;
+        el.style.position = "relative";
+        const badge = document.createElement("div");
+        badge.setAttribute("data-photo-badge", "true");
+        badge.style.cssText = `position: absolute; top: -3px; right: -3px; width: 16px; height: 16px; background: #cdac7d; border: 1.5px solid #1A1310; border-radius: 50%; display: grid; place-items: center; z-index: 2; pointer-events: none; box-shadow: 0 1px 3px rgba(0,0,0,0.4);`;
+        badge.innerHTML = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#1A1310" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="3"/></svg>`;
+        el.appendChild(badge);
+      });
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <>
