@@ -85,19 +85,29 @@ export default function StoryPage() {
             href="https://www.thefallsatlionsden.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="ios-glass ios-press rounded-2xl p-4 text-center"
+            className="ios-glass ios-press rounded-2xl p-4 flex flex-col items-center justify-center text-center"
           >
-            <div className="text-[10px] uppercase tracking-[0.16em] text-[#B89968] mb-1">Website</div>
-            <div className="text-[13px] font-semibold text-[#F0E2C2]">thefallsatlionsden.com</div>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#cdac7d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1.5">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M2 12h20"/>
+              <path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/>
+            </svg>
+            <div className="text-[13px] font-semibold text-[#F0E2C2] leading-tight">Visit website</div>
+            <div className="text-[10px] text-[#F0E2C2]/55 mt-0.5">thefallsatlionsden.com</div>
           </a>
           <a
             href="https://www.instagram.com/thefallsatlionsden/"
             target="_blank"
             rel="noopener noreferrer"
-            className="ios-glass ios-press rounded-2xl p-4 text-center"
+            className="ios-glass ios-press rounded-2xl p-4 flex flex-col items-center justify-center text-center"
           >
-            <div className="text-[10px] uppercase tracking-[0.16em] text-[#B89968] mb-1">Instagram</div>
-            <div className="text-[13px] font-semibold text-[#F0E2C2]">@thefallsatlionsden</div>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#cdac7d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1.5">
+              <rect x="2" y="2" width="20" height="20" rx="5"/>
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+            </svg>
+            <div className="text-[13px] font-semibold text-[#F0E2C2] leading-tight">Follow on Instagram</div>
+            <div className="text-[10px] text-[#F0E2C2]/55 mt-0.5">@thefallsatlionsden</div>
           </a>
         </div>
       </article>
