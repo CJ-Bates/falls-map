@@ -3,6 +3,7 @@ import Image from "next/image";
 import { publicCabins } from "@/data/cabins";
 import { property } from "@/data/property";
 import TodayWidget from "@/components/TodayWidget";
+import InstallAppButton from "@/components/InstallAppButton";
 import trails from "@/data/trails.json";
 import { pois } from "@/data/pois";
 
@@ -94,8 +95,15 @@ export default function Home() {
   return (
     <main className="hero-radial min-h-[100svh] w-full pb-16">
       {/* Hero */}
-      <section className="relative pt-[calc(env(safe-area-inset-top,0px)+3.5rem)] px-6">
+      <section className="relative pt-[calc(env(safe-area-inset-top,0px)+1.5rem)] px-6">
         <div className="mx-auto max-w-2xl text-center">
+          {/* Install-as-app button — auto-hides when running as a PWA.
+              On Android it triggers the native install prompt; on iOS it
+              opens a Share->Add-to-Home-Screen walkthrough. */}
+          <div className="mb-6">
+            <InstallAppButton />
+          </div>
+
           {/* Round logo as the hero mark */}
           <div className="mx-auto mb-6 h-24 w-24 sm:h-28 sm:w-28">
             <Image
