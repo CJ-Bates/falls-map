@@ -51,7 +51,7 @@ export default function ArrivalPage() {
           </div>
           <p className="text-[14px] leading-relaxed text-[#F0E2C2]/85">
             Most phones will try to route you in via <strong className="text-[#F0E2C2]">Sunny Creek Rd</strong>{" "}
-            — that&apos;s the old Cub Scouts camp entrance and it <em>doesn&apos;t connect</em> to our cabins. If you end up at a locked gate, you&apos;ve gone the wrong way.
+            — that&apos;s the Living Well Village entrance and it <em>doesn&apos;t connect</em> to our cabins. If you end up at a locked gate, you&apos;ve gone the wrong way.
           </p>
         </section>
 
