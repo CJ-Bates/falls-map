@@ -12,8 +12,9 @@ const SEEN_KEY = "falls-legend-seen-v1";
 type LegendItem = { sample: React.ReactElement; label: string };
 
 const PIN_ITEMS: LegendItem[] = [
+  // Colors here mirror categoryStyle in src/data/pois.ts.
   {
-    sample: <span className="block h-4 w-4 rounded-full bg-[#8a5a3b] border-2 border-[#F0E2C2]" />,
+    sample: <span className="block h-4 w-4 rounded-full bg-[#B23A1F] border-2 border-[#F0E2C2]" />,
     label: "Cabin",
   },
   {
@@ -21,15 +22,23 @@ const PIN_ITEMS: LegendItem[] = [
     label: "Firepit",
   },
   {
-    sample: <span className="block h-4 w-4 rounded-full bg-[#7d8f5a] border-2 border-[#F0E2C2]" />,
-    label: "Pavilion / structure",
+    sample: <span className="block h-4 w-4 rounded-full bg-[#7A5A2F] border-2 border-[#F0E2C2]" />,
+    label: "Pavilion",
+  },
+  {
+    sample: <span className="block h-4 w-4 rounded-full bg-[#6B4423] border-2 border-[#F0E2C2]" />,
+    label: "Barn / shack",
+  },
+  {
+    sample: <span className="block h-4 w-4 rounded-full bg-[#3F6B2A] border-2 border-[#F0E2C2]" />,
+    label: "Treehouse",
   },
   {
     sample: <span className="block h-4 w-4 rounded-full bg-[#2E6FA0] border-2 border-[#F0E2C2]" />,
-    label: "Lake feature",
+    label: "Lake / dock",
   },
   {
-    sample: <span className="block h-4 w-4 rounded-full bg-[#3a2d22] border-2 border-[#F0E2C2]" />,
+    sample: <span className="block h-4 w-4 rounded-full bg-[#1f1410] border-2 border-[#F0E2C2]" />,
     label: "Bear / bobcat carving",
   },
 ];
@@ -37,11 +46,11 @@ const PIN_ITEMS: LegendItem[] = [
 const TRAIL_ITEMS: LegendItem[] = [
   {
     sample: <span className="block h-[5px] w-7 rounded-full" style={{ background: "#C9A974" }} />,
-    label: "Gravel road",
+    label: "Gravel road (any vehicle)",
   },
   {
     sample: <span className="block h-[5px] w-7 rounded-full" style={{ background: "#D9531E" }} />,
-    label: "4-wheeler trail",
+    label: "4WD trail (truck or SUV)",
   },
   {
     sample: (
@@ -49,12 +58,12 @@ const TRAIL_ITEMS: LegendItem[] = [
         className="block h-[4px] w-7"
         style={{
           backgroundImage:
-            "linear-gradient(to right, #F0E2C2 50%, transparent 50%)",
-          backgroundSize: "8px 100%",
+            "linear-gradient(to right, #F0E2C2 60%, transparent 60%)",
+          backgroundSize: "6px 100%",
         }}
       />
     ),
-    label: "Walking trail",
+    label: "Walking trail (on foot)",
   },
   {
     sample: <span className="block h-[5px] w-7 rounded-full" style={{ background: "#3D3022" }} />,
@@ -125,7 +134,7 @@ export default function MapLegend({ hidden = false }: { hidden?: boolean }) {
             ? "bg-[#F0E2C2] text-[#1A1310] shadow-[0_8px_24px_rgba(184,153,104,0.45)]"
             : "ios-glass-strong")
         }
-        style={{ bottom: "9rem", right: "1rem" }}
+        style={{ bottom: "12.75rem", right: "1rem" }}
       >
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="10" />
@@ -147,7 +156,7 @@ export default function MapLegend({ hidden = false }: { hidden?: boolean }) {
             className="ios-glass-strong animate-pop-up absolute z-[12] rounded-3xl text-[#F0E2C2] shadow-[0_18px_44px_rgba(0,0,0,0.45)]"
             style={{
               right: "1rem",
-              bottom: "12.25rem",
+              bottom: "16rem",
               width: "min(320px, calc(100vw - 2rem))",
               padding: "16px 16px 14px 16px",
               transformOrigin: "bottom right",

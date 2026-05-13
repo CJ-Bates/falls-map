@@ -457,7 +457,6 @@ export default function PropertyMap({
             "case",
             ["==", ["get", "approximate"], true], ["literal", [2, 1.5]],
             ["==", ["get", "surface"], "trail"],  ["literal", [1.2, 1.4]],
-            ["==", ["get", "surface"], "4wd"],    ["literal", [3, 1.6]],
             ["literal", [1, 0]],
           ] as never,
         },

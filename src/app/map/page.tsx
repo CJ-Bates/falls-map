@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import PropertyMap, { type SelectedItem, type Basemap, type PoiVisibility } from "@/components/PropertyMap";
 import MapLegend from "@/components/MapLegend";
+import OfflineButton from "@/components/OfflineButton";
 import DetailPanel from "@/components/DetailPanel";
 import {
   prefetchAll,
@@ -68,12 +69,6 @@ const BASEMAPS: { id: Basemap; label: string; Thumb: () => React.ReactElement }[
   { id: "topo",      label: "Topo",      Thumb: ThumbTopo },
   { id: "satellite", label: "Satellite", Thumb: ThumbSatellite },
   { id: "apple",     label: "Standard",  Thumb: ThumbStandard },
-];
-
-const LEGEND: { color: string; label: string; sublabel: string }[] = [
-  { color: "#C9A974", label: "Gravel",  sublabel: "any vehicle" },
-  { color: "#D9531E", label: "4WD",     sublabel: "truck or SUV" },
-  { color: "#F0E2C2", label: "Walking", sublabel: "on foot only" },
 ];
 
 // ---------- icons -------------------------------------------------------------
@@ -485,8 +480,18 @@ export default function MapPage() {
         focusBounds={focusBounds}
       />
 
-      {/* Floating Legend button — between Layers and the top of the screen.
-          Auto-opens on first visit and dismisses itself after a few seconds. */}
+      {/* Floating Offline-save button — its own popover, separate from Layers
+          so the most important pre-trip action is one tap from the map. */}
+      {!selected && !layersOpen && (
+        <OfflineButton
+          offlineStatus={offlineStatus}
+          downloading={downloading}
+          onDownload={startOfflineDownload}
+        />
+      )}
+
+      {/* Floating Legend button — sits above the Offline button. Auto-opens
+          on first visit and dismisses itself after a few seconds. */}
       {!selected && !layersOpen && <MapLegend />}
 
       {/* Floating layers button — sits right above the live-location FAB
@@ -569,23 +574,6 @@ export default function MapPage() {
               </div>
             </div>
 
-            {/* Trails legend */}
-            <div className="pt-3 border-t border-[#B89968]/15">
-              <h3 className="text-[10px] uppercase tracking-[0.14em] text-[#B89968] mb-2">Trails</h3>
-              <ul className="space-y-2">
-                {LEGEND.map((row) => (
-                  <li key={row.label} className="flex items-center gap-2.5 leading-none">
-                    <span
-                      className="block h-[3px] w-7 rounded-full flex-shrink-0"
-                      style={{ background: row.color, boxShadow: `0 0 6px ${row.color}80` }}
-                    />
-                    <span className="text-[13px] font-semibold text-[#F0E2C2]">{row.label}</span>
-                    <span className="text-[12px] text-[#F0E2C2]/60">· {row.sublabel}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
             {/* Points of interest */}
             <div className="pt-3 mt-3 border-t border-[#B89968]/15">
               <h3 className="text-[10px] uppercase tracking-[0.14em] text-[#B89968] mb-2">Points</h3>
@@ -614,63 +602,6 @@ export default function MapPage() {
               </ul>
             </div>
 
-            {/* Offline pre-cache */}
-            <div className="pt-3 mt-3 border-t border-[#B89968]/15">
-              <h3 className="text-[10px] uppercase tracking-[0.14em] text-[#B89968] mb-2">Offline</h3>
-              {downloading ? (
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-[12px] text-[#F0E2C2]/80 leading-none">
-                    <span>Downloading tiles…</span>
-                    <span>
-                      {downloading.total === 0
-                        ? "preparing"
-                        : `${Math.round((downloading.done / downloading.total) * 100)}%`}
-                    </span>
-                  </div>
-                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#F0E2C2]/15">
-                    <div
-                      className="h-full bg-[#F0E2C2] transition-all"
-                      style={{
-                        width:
-                          downloading.total === 0
-                            ? "8%"
-                            : `${(downloading.done / downloading.total) * 100}%`,
-                        transition: "width 120ms linear",
-                      }}
-                    />
-                  </div>
-                </div>
-              ) : (
-                <button
-                  onClick={startOfflineDownload}
-                  className="ios-press w-full rounded-2xl bg-[#F0E2C2]/10 px-3.5 py-2.5 text-left transition-colors hover:bg-[#F0E2C2]/15"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0">
-                      <div className="text-[13px] font-semibold text-[#F0E2C2] leading-tight">
-                        {offlineStatus ? "Refresh offline tiles" : "Save for offline"}
-                      </div>
-                      <div className="text-[11px] text-[#F0E2C2]/60 mt-0.5 truncate">
-                        {offlineStatus
-                          ? `Available offline · saved ${formatAgo(offlineStatus.cachedAt)}`
-                          : "Use the map without cell signal at the property"}
-                      </div>
-                    </div>
-                    {offlineStatus ? (
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7d8f5a" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M20 6 9 17l-5-5" />
-                      </svg>
-                    ) : (
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#F0E2C2]/70">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                        <polyline points="7 10 12 15 17 10" />
-                        <line x1="12" y1="15" x2="12" y2="3" />
-                      </svg>
-                    )}
-                  </div>
-                </button>
-              )}
-            </div>
           </div>
         </>
       )}
