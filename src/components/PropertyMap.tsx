@@ -465,6 +465,16 @@ export default function PropertyMap({
         },
         layout: { "line-join": "round", "line-cap": "round" },
       });
+      // Wide invisible "hit" layer above the visible trail line so taps within
+      // a generous radius register. Without this the click target is the
+      // 4–5px rendered stroke, which is fiddly on touch.
+      map.addLayer({
+        id: "trails-hit",
+        type: "line",
+        source: "trails",
+        paint: { "line-color": "#000", "line-opacity": 0, "line-width": 22 },
+        layout: { "line-join": "round", "line-cap": "round" },
+      });
       map.addLayer({
         id: "trails-labels",
         type: "symbol",
@@ -581,7 +591,7 @@ export default function PropertyMap({
           Math.cos(f1) * Math.cos(f2) * Math.sin(dl / 2) ** 2;
         return 2 * R * Math.asin(Math.sqrt(h));
       };
-      map.on("click", "trails-line", (e) => {
+      map.on("click", "trails-hit", (e) => {
         const feat = e.features?.[0];
         if (!feat) return;
         const props = feat.properties as TrailFeatureProps;
@@ -613,10 +623,10 @@ export default function PropertyMap({
           },
         });
       });
-      map.on("mouseenter", "trails-line", () => {
+      map.on("mouseenter", "trails-hit", () => {
         map.getCanvas().style.cursor = "pointer";
       });
-      map.on("mouseleave", "trails-line", () => {
+      map.on("mouseleave", "trails-hit", () => {
         map.getCanvas().style.cursor = "";
       });
 
