@@ -1,13 +1,31 @@
 // public/sw.js — caches the app shell + map tiles + photos for offline use.
 // Registered by /src/components/RegisterSW.tsx on the home page.
 
-const VERSION = "v70";
+const VERSION = "v71";
 const APP_SHELL = `falls-app-${VERSION}`;
 const RUNTIME = `falls-runtime-${VERSION}`;
 const TILES = `falls-tiles-${VERSION}`;
 const IMAGES = `falls-images-${VERSION}`;
 
-const SHELL_URLS = ["/", "/map", "/cabins", "/trails", "/manual", "/memories", "/manifest.webmanifest", "/logo-round.png"];
+const SHELL_URLS = [
+  "/",
+  "/map",
+  "/cabins",
+  "/trails",
+  "/manual",
+  "/memories",
+  "/nearby",
+  "/story",
+  "/arrival",
+  "/welcome/cabin-1",
+  "/welcome/cabin-2",
+  "/welcome/cabin-3a",
+  "/welcome/cabin-3b",
+  "/welcome/cabin-5",
+  "/manifest.webmanifest",
+  "/logo-round.png",
+  "/og-image.png",
+];
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -79,8 +97,4 @@ async function staleWhileRevalidate(cacheName, req) {
 async function cacheFirst(cacheName, req) {
   const cache = await caches.open(cacheName);
   const cached = await cache.match(req);
-  if (cached) return cached;
-  const fresh = await fetch(req).catch(() => undefined);
-  if (fresh && fresh.status === 200) cache.put(req, fresh.clone());
-  return fresh || new Response("offline", { status: 503 });
-}
+  if (cached) return cached

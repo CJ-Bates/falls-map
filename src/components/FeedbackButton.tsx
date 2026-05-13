@@ -99,7 +99,7 @@ export default function FeedbackButton() {
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
         </svg>
-        Need something / send feedback
+        Send feedback
       </button>
 
       {open && (
@@ -123,7 +123,7 @@ export default function FeedbackButton() {
                 </div>
                 <h2 className="ios-title text-2xl mt-4">Sent &mdash; thanks!</h2>
                 <p className="text-[13px] text-[#F0E2C2]/70 mt-1 leading-snug max-w-[260px]">
-                  Your note&apos;s on its way. Someone will see it shortly.
+                  Your note&apos;s on its way. We&apos;ll take a look.
                 </p>
                 <button
                   type="button"
