@@ -93,6 +93,18 @@ const TILES: { label: string; sub: string; href: string; gradient: string; icon:
       </svg>
     ),
   },
+  {
+    label: "Off-property",
+    sub: "CJ\u2019s nearby food, gas, parks",
+    href: "/nearby",
+    gradient: "linear-gradient(135deg, #cdac7d 0%, #5a4a1f 100%)",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+        <circle cx="12" cy="10" r="3"/>
+      </svg>
+    ),
+  },
 ];
 
 export default function Home() {
