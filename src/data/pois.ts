@@ -154,8 +154,8 @@ export const pois: Poi[] = [
     zone: "cabin-ridge",
     description:
       "Sunny Creek Rd is the OLD Cub Scouts camp entrance. It does not connect to the cabins. Turn around and take Lefarth Dr instead.",
-    lat: 38.4135,
-    lng: -90.4515,
+    lat: 38.41438,
+    lng: -90.45221,
   },
 ];
 
