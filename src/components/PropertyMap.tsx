@@ -372,20 +372,21 @@ export default function PropertyMap({
 
       // Single soft halo around the OUTER union of owned parcels (no internal seams)
       map.addSource("owned-boundary", { type: "geojson", data: ownedBoundary as never });
-      // Crisp dashed line that matches the sample in MapLegend. Skipping the
-      // soft halo glow keeps the boundary clean and consistent with how the
-      // legend shows it.
+      // Chunky dashed cream boundary so the property line reads as the same
+      // "ribbon" shown in the legend swatch — 6px-wide stripe, equal dashes.
+      // MapLibre multiplies dasharray by line-width, so [1,1] at width 6 gives
+      // 6px on / 6px off, matching the legend's 6px-stripe pattern.
       map.addLayer({
         id: "owned-line",
         type: "line",
         source: "owned-boundary",
         paint: {
           "line-color": "#F0E2C2",
-          "line-width": 2,
-          "line-opacity": 0.92,
-          "line-dasharray": [3, 3],
+          "line-width": 6,
+          "line-opacity": 0.88,
+          "line-dasharray": [1, 1],
         },
-        layout: { "line-join": "round", "line-cap": "round" },
+        layout: { "line-join": "round", "line-cap": "butt" },
       });
 
       // Bodies of water
