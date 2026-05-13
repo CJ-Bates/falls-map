@@ -144,8 +144,8 @@ export const pois: Poi[] = [
       "The correct way in. Turn off Lions Den Rd onto Lefarth Dr — it becomes Valley Lakes Trail at the gate.",
     story:
       "GPS will sometimes try to route you through the Cub Scouts camp via Sunny Creek. Don't trust it — that road doesn't connect. Lefarth Dr is the only way in.",
-    lat: 38.4068,
-    lng: -90.4450,
+    lat: 38.4116821,
+    lng: -90.4479641,
   },
   {
     slug: "sunny-creek-wrong-way",
