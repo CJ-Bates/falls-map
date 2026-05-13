@@ -3,6 +3,7 @@ import "./globals.css";
 import RegisterSW from "@/components/RegisterSW";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://app.thefallsatlionsden.com"),
   title: "The Falls at Lions Den",
   description:
     "Guest hub for The Falls at Lions Den. Cabins, lakes, trails, firepits, and more in Imperial, MO.",
@@ -12,6 +13,32 @@ export const metadata: Metadata = {
     capable: true,
     title: "Falls",
     statusBarStyle: "black-translucent",
+  },
+  // Link previews \u2014 iMessage, Slack, etc. pull these. Without an explicit
+  // og:image they were scraping the first big image on the page (a cabin
+  // photo). The custom 1200x630 banner lives at /public/og-image.png.
+  openGraph: {
+    type: "website",
+    siteName: "The Falls at Lions Den",
+    title: "The Falls at Lions Den",
+    description:
+      "Guide for your stay \u2014 map, cabins, trails, lakes, and how to find your way in.",
+    url: "https://app.thefallsatlionsden.com",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "The Falls at Lions Den \u2014 Imperial, Missouri",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "The Falls at Lions Den",
+    description:
+      "Guide for your stay \u2014 map, cabins, trails, lakes, and how to find your way in.",
+    images: ["/og-image.png"],
   },
 };
 
