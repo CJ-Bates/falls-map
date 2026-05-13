@@ -287,7 +287,7 @@ export default function DetailPanel({ item, onClose, onGetDirections, route, rou
                 </p>
               </div>
             )}
-            <PoiPhotos slug={item.data.slug} />
+            {item.data.category !== "warn" && <PoiPhotos slug={item.data.slug} />}
           </>
         )}
 
@@ -325,7 +325,7 @@ export default function DetailPanel({ item, onClose, onGetDirections, route, rou
         {/* Directions panel — shows the Directions button (when no route)
             or a route summary card with distance + ETAs + surface breakdown
             (when one is active). */}
-        {onGetDirections && item.kind !== "trail" && (
+        {onGetDirections && item.kind !== "trail" && !(item.kind === "poi" && item.data.category === "warn") && (
           <DirectionsBlock
             route={route ?? null}
             fromName={routeFromName ?? null}
