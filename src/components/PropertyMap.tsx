@@ -367,7 +367,7 @@ export default function PropertyMap({
         type: "fill",
         source: "owned-parcels",
         filter: ["==", ["get", "tier"], "owned"],
-        paint: { "fill-color": "#F0E2C2", "fill-opacity": 0.10 },
+        paint: { "fill-color": "#F0E2C2", "fill-opacity": 0.16 },
       });
 
       // Single soft halo around the OUTER union of owned parcels (no internal seams)
@@ -378,10 +378,25 @@ export default function PropertyMap({
         source: "owned-boundary",
         paint: {
           "line-color": "#F0E2C2",
-          "line-width": 6,
-          "line-opacity": 0.22,
-          "line-blur": 5,
+          "line-width": 8,
+          "line-opacity": 0.30,
+          "line-blur": 6,
         },
+      });
+      // Crisp dashed line on top of the soft halo so the boundary reads at a
+      // glance — important since the property has multiple non-contiguous
+      // parcels rather than a single big polygon.
+      map.addLayer({
+        id: "owned-line",
+        type: "line",
+        source: "owned-boundary",
+        paint: {
+          "line-color": "#F0E2C2",
+          "line-width": 1.8,
+          "line-opacity": 0.85,
+          "line-dasharray": [4, 2.5],
+        },
+        layout: { "line-join": "round", "line-cap": "round" },
       });
 
       // Bodies of water
@@ -455,7 +470,7 @@ export default function PropertyMap({
         layout: {
           "symbol-placement": "line",
           "text-field": ["get", "name"],
-          "text-size": 14,
+          "text-size": 16,
           "text-letter-spacing": 0.04,
           "text-anchor": "center",
           "text-offset": [0, -0.8],
@@ -464,8 +479,8 @@ export default function PropertyMap({
         paint: {
           "text-color": "#2A1F18",
           "text-halo-color": "#F5E8C9",
-          "text-halo-width": 2.2,
-          "text-halo-blur": 0.4,
+          "text-halo-width": 3.2,
+          "text-halo-blur": 0.3,
         },
       });
 
@@ -658,25 +673,27 @@ export default function PropertyMap({
     // Positions chosen near each cluster, in the clearer space adjacent to
     // the pins, not directly on top of them.
     const AREA_LABELS: { lng: number; lat: number; label: string; size?: number; rotate?: number }[] = [
-      { lng: -90.4567,  lat: 38.4124,  label: "Cabin Ridge",   size: 30, rotate: -4 },
-      { lng: -90.45741, lat: 38.40679, label: "Main Lake",     size: 26, rotate: 2 },
-      { lng: -90.46040, lat: 38.39880, label: "The 13",        size: 34, rotate: -3 },
-      { lng: -90.45029, lat: 38.40857, label: "Horse Pasture", size: 28, rotate: -2 },
+      { lng: -90.4567,  lat: 38.4124,  label: "Cabin Ridge",   size: 35, rotate: -4 },
+      { lng: -90.45741, lat: 38.40679, label: "Main Lake",     size: 30, rotate: 2 },
+      { lng: -90.46040, lat: 38.39880, label: "The 13",        size: 40, rotate: -3 },
+      { lng: -90.45029, lat: 38.40857, label: "Horse Pasture", size: 32, rotate: -2 },
     ];
     AREA_LABELS.forEach((a) => {
       const el = document.createElement("div");
       el.style.cssText = `
         font-family: "Caveat", "Cabin Sketch", cursive;
         font-weight: 700;
-        font-size: ${a.size ?? 26}px;
-        color: #2A1F18;
+        font-size: ${a.size ?? 30}px;
+        color: #1A1310;
         text-shadow:
-          0 0 10px #F5E8C9,
+          0 0 12px #F5E8C9,
+          0 0 12px #F5E8C9,
           0 0 10px #F5E8C9,
           0 0 8px #F5E8C9,
-          0 0 6px #F5E8C9,
-          1px 1px 0 rgba(245, 232, 201, 1);
-        opacity: 0.92;
+          0 0 4px #F5E8C9,
+          1.5px 1.5px 0 rgba(245, 232, 201, 1),
+          -1px -1px 0 rgba(245, 232, 201, 1);
+        opacity: 1;
         white-space: nowrap;
         pointer-events: none;
         user-select: none;

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import PropertyMap, { type SelectedItem, type Basemap, type PoiVisibility } from "@/components/PropertyMap";
+import MapLegend from "@/components/MapLegend";
 import DetailPanel from "@/components/DetailPanel";
 import {
   prefetchAll,
@@ -483,6 +484,10 @@ export default function MapPage() {
         onUserPosition={setUserPos}
         focusBounds={focusBounds}
       />
+
+      {/* Floating Legend button — between Layers and the top of the screen.
+          Auto-opens on first visit and dismisses itself after a few seconds. */}
+      {!selected && !layersOpen && <MapLegend />}
 
       {/* Floating layers button — sits right above the live-location FAB
           (which lives inside PropertyMap at bottom-6 right-4). */}
