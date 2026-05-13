@@ -40,7 +40,12 @@ export default function PoiPhotos({ slug }: { slug: string }) {
   if (photos.length === 0) {
     return (
       <div className="rounded-2xl bg-[#F0E2C2]/5 border border-[#F0E2C2]/10 p-3 flex items-center gap-3">
-        <span className="text-[20px]">📸</span>
+        <span className="grid h-9 w-9 place-items-center rounded-full bg-[#F0E2C2]/10 flex-shrink-0" aria-hidden>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#cdac7d" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+            <circle cx="12" cy="13" r="4" />
+          </svg>
+        </span>
         <div className="flex-1 min-w-0">
           <div className="text-[13px] text-[#F0E2C2]/85 leading-tight">
             No guest photos here yet.
@@ -61,9 +66,21 @@ export default function PoiPhotos({ slug }: { slug: string }) {
 
   return (
     <div>
-      <h3 className="text-[10px] uppercase tracking-[0.16em] text-[#B89968] mb-2">
-        Guest photos · {photos.length}
-      </h3>
+      <div className="flex items-baseline justify-between mb-2">
+        <h3 className="text-[10px] uppercase tracking-[0.16em] text-[#B89968]">
+          Guest photos · {photos.length}
+        </h3>
+        <Link
+          href="/memories"
+          className="ios-press inline-flex items-center gap-1 text-[11px] font-semibold text-[#cdac7d] uppercase tracking-[0.14em] rounded-full bg-[#F0E2C2]/10 px-3 py-1"
+        >
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          Add
+        </Link>
+      </div>
       <div className="grid grid-cols-3 gap-1.5">
         {photos.map((m) => (
           <button
