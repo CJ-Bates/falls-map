@@ -135,6 +135,28 @@ export const pois: Poi[] = [
     lng: -90.45747,
     photoUrl: "/photos/bear-carving.jpg",
   },
+  {
+    slug: "property-entrance",
+    name: "Property Entrance",
+    category: "entrance",
+    zone: "cabin-ridge",
+    description:
+      "The correct way in. Turn off Lions Den Rd onto Lefarth Dr — it becomes Valley Lakes Trail at the gate.",
+    story:
+      "GPS will sometimes try to route you through the Cub Scouts camp via Sunny Creek. Don't trust it — that road doesn't connect. Lefarth Dr is the only way in.",
+    lat: 38.4068,
+    lng: -90.4450,
+  },
+  {
+    slug: "sunny-creek-wrong-way",
+    name: "Not the way in",
+    category: "warn",
+    zone: "cabin-ridge",
+    description:
+      "Sunny Creek Rd is the OLD Cub Scouts camp entrance. It does not connect to the cabins. Turn around and take Lefarth Dr instead.",
+    lat: 38.4135,
+    lng: -90.4515,
+  },
 ];
 
 // Style metadata per category — used to color pins on the map
@@ -151,6 +173,8 @@ export const categoryStyle: Record<
   shack: { label: "Shack", color: "#5A4A3A", emoji: "🎯" },
   bear: { label: "Bear Carving", color: "#1f1410", emoji: "🐻" },
   bobcat: { label: "Bobcat Carving", color: "#1f1410", emoji: "🐈" },
+  entrance: { label: "Property Entrance", color: "#7d8f5a", emoji: "🚪" },
+  warn: { label: "Heads up", color: "#B23A1F", emoji: "⚠️" },
   trailhead: { label: "Trailhead", color: "#4A6B3A", emoji: "🥾" },
   parking: { label: "Parking", color: "#555", emoji: "🅿️" },
   "scenic-viewpoint": { label: "Viewpoint", color: "#8C6E2A", emoji: "🔭" },

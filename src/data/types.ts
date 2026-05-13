@@ -16,6 +16,8 @@ export type PoiCategory =
   | "waterfall"
   | "bear"
   | "bobcat"
+  | "entrance"
+  | "warn"
   | "cabin";
 
 export type Cabin = {

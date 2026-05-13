@@ -192,6 +192,21 @@ const ICON_PATHS: Record<string, string> = {
     <circle cx="10.5" cy="18.5" r="0.35" fill="#3a2d22" stroke="none"/>
     <circle cx="13.5" cy="18.5" r="0.35" fill="#3a2d22" stroke="none"/>
   </g>`,
+  // Gate / entrance icon — clearly indicates "enter here".
+  entrance: `<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="4" y="11" width="4" height="10" />
+    <rect x="16" y="11" width="4" height="10" />
+    <path d="M4 11l8-7 8 7" />
+    <path d="M10 21v-5h4v5" />
+  </g>`,
+  // Warning triangle with exclamation — for the wrong-way marker.
+  warn: `<g fill="none" stroke="#F0E2C2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 3.5l9.5 16h-19z" fill="#B23A1F"/>
+    <line x1="12" y1="10" x2="12" y2="14.5" stroke-width="2.4"/>
+    <circle cx="12" cy="17.2" r="0.4" fill="#F0E2C2" stroke="none"/>
+    <circle cx="12" cy="17.2" r="0.4" fill="#F0E2C2" stroke="none"/>
+    <path d="M12 17v0.4" stroke-width="1.5"/>
+  </g>`,
   trailhead: `<g fill="none" stroke="#F0E2C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M9 7l-3 3 3 3M15 7l3 3-3 3"/>
     <path d="M6 10h12"/>

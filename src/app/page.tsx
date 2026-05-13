@@ -101,9 +101,22 @@ export default function Home() {
           {/* Install-as-app button — auto-hides when running as a PWA.
               On Android it triggers the native install prompt; on iOS it
               opens a Share->Add-to-Home-Screen walkthrough. */}
-          <div className="mb-6">
+          <div className="mb-3 flex justify-center">
             <InstallAppButton />
           </div>
+
+          {/* Coming for the first time? Don't trust GPS — tap to see the right way in. */}
+          <Link
+            href="/arrival"
+            className="ios-press mx-auto mb-5 inline-flex items-center gap-2 rounded-full bg-[#D9531E]/15 border border-[#D9531E]/40 px-4 py-1.5 text-[12px] font-semibold text-[#F0E2C2]"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D9531E" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 3.5l9.5 16h-19z" fill="#B23A1F" />
+              <line x1="12" y1="10" x2="12" y2="14.5" stroke="#F0E2C2" strokeWidth="2.4" />
+              <circle cx="12" cy="17.2" r="0.45" fill="#F0E2C2" stroke="none" />
+            </svg>
+            First time here? Tap for the right way in
+          </Link>
 
           {/* Round logo as the hero mark */}
           <div className="mx-auto mb-6 h-24 w-24 sm:h-28 sm:w-28">
