@@ -372,29 +372,18 @@ export default function PropertyMap({
 
       // Single soft halo around the OUTER union of owned parcels (no internal seams)
       map.addSource("owned-boundary", { type: "geojson", data: ownedBoundary as never });
-      map.addLayer({
-        id: "owned-halo",
-        type: "line",
-        source: "owned-boundary",
-        paint: {
-          "line-color": "#F0E2C2",
-          "line-width": 8,
-          "line-opacity": 0.30,
-          "line-blur": 6,
-        },
-      });
-      // Crisp dashed line on top of the soft halo so the boundary reads at a
-      // glance — important since the property has multiple non-contiguous
-      // parcels rather than a single big polygon.
+      // Crisp dashed line that matches the sample in MapLegend. Skipping the
+      // soft halo glow keeps the boundary clean and consistent with how the
+      // legend shows it.
       map.addLayer({
         id: "owned-line",
         type: "line",
         source: "owned-boundary",
         paint: {
           "line-color": "#F0E2C2",
-          "line-width": 1.8,
-          "line-opacity": 0.85,
-          "line-dasharray": [4, 2.5],
+          "line-width": 2,
+          "line-opacity": 0.92,
+          "line-dasharray": [3, 3],
         },
         layout: { "line-join": "round", "line-cap": "round" },
       });
