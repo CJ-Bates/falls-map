@@ -108,13 +108,15 @@ export default function MapLegend({ hidden = false }: { hidden?: boolean }) {
             ref={popoverRef}
             className={"ios-glass-strong absolute z-[12] rounded-3xl text-[#F0E2C2] shadow-[0_18px_44px_rgba(0,0,0,0.45)] flex flex-col " + (closing ? "" : "animate-pop-up")}
             style={{
-              right: "1rem",
-              top: "calc(env(safe-area-inset-top, 0px) + 4.5rem)",
-              maxHeight: "calc(100svh - env(safe-area-inset-top, 0px) - 18rem)",
-              width: "min(320px, calc(100vw - 2rem))",
-              padding: "14px 16px 12px 16px",
+              // Sit JUST LEFT of the right-edge button stack (buttons at right:1rem,
+              // 3rem wide). 5rem gives a clean visual gap so the buttons remain
+              // visible while the legend is open and the panel never needs to scroll.
+              right: "5rem",
+              top: "calc(env(safe-area-inset-top, 0px) + 1rem)",
+              maxHeight: "calc(100svh - env(safe-area-inset-top, 0px) - 4rem)",
+              width: "min(290px, calc(100vw - 6rem))",
+              padding: "14px 14px 12px 14px",
               transformOrigin: "top right",
-              overflowY: "auto",
               willChange: "transform, opacity",
             }}
             role="dialog"

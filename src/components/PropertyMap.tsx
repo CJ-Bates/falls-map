@@ -508,7 +508,9 @@ export default function PropertyMap({
         paint: { "line-color": "#2A1F18", "line-width": 1.5 },
       });
 
-      // Permission parcel (horse pasture access) — soft tan fill, NO border
+      // Permission parcel (horse pasture access) — soft tan fill PLUS the same
+      // dashed cream boundary used around owned parcels, so the property line
+      // is consistent across everything guests are welcome on.
       map.addSource("parcels-source", { type: "geojson", data: parcelsData as never });
       map.addLayer({
         id: "permission-fill",
@@ -516,6 +518,19 @@ export default function PropertyMap({
         source: "parcels-source",
         filter: ["==", ["get", "tier"], "permission"],
         paint: { "fill-color": "#B89968", "fill-opacity": 0.10 },
+      });
+      map.addLayer({
+        id: "permission-line",
+        type: "line",
+        source: "parcels-source",
+        filter: ["==", ["get", "tier"], "permission"],
+        paint: {
+          "line-color": "#F0E2C2",
+          "line-width": 8,
+          "line-opacity": 0.92,
+          "line-dasharray": [1, 1],
+        },
+        layout: { "line-join": "round", "line-cap": "butt" },
       });
 
       // Inner FENCED horse pasture — punchier sage-tan fill so it stands out
