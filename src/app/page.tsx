@@ -7,6 +7,7 @@ import InstallAppButton from "@/components/InstallAppButton";
 import WelcomeCarousel from "@/components/WelcomeCarousel";
 import ShareButton from "@/components/ShareButton";
 import FeedbackButton from "@/components/FeedbackButton";
+import PhotoOfTheWeek from "@/components/PhotoOfTheWeek";
 import trails from "@/data/trails.json";
 import { pois } from "@/data/pois";
 
@@ -198,6 +199,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Photo of the week — renders nothing on empty weeks */}
+      <PhotoOfTheWeek />
+
       {/* Memories — full-width secondary CTA so guests notice it */}
       <section className="mt-6 px-6">
         <Link
@@ -355,7 +359,6 @@ export default function Home() {
           <FeedbackButton />
         </div>
       </section>
-
       {/* Footer */}
       <footer className="mt-10 px-6 text-center">
         <p className="text-xs text-[#F0E2C2]/45">

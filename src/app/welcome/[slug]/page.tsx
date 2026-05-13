@@ -5,6 +5,7 @@ import { cabinInfo, cabinInfoBySlug } from "@/data/cabin-info";
 import { cabins } from "@/data/cabins";
 import InstallAppButton from "@/components/InstallAppButton";
 import CopyChip from "@/components/CopyChip";
+import FeedbackButton from "@/components/FeedbackButton";
 
 export const dynamic = "force-static";
 
@@ -15,8 +16,8 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const info = cabinInfoBySlug(slug);
-  if (!info) return { title: "Welcome · The Falls at Lions Den" };
-  return { title: `Welcome to ${info.shortName} · The Falls at Lions Den` };
+  if (!info) return { title: "Welcome \u00b7 The Falls at Lions Den" };
+  return { title: `Welcome to ${info.shortName} \u00b7 The Falls at Lions Den` };
 }
 
 export default async function CabinWelcomePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -82,21 +83,32 @@ export default async function CabinWelcomePage({ params }: { params: Promise<{ s
               </svg>
               <h2 className="ios-headline text-[15px] text-[#cdac7d]">Wi-Fi</h2>
             </div>
-            {info.wifi.ssid && info.wifi.password ? (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[12px] uppercase tracking-[0.12em] text-[#F0E2C2]/55">Network</span>
-                  <CopyChip text={info.wifi.ssid} />
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[12px] uppercase tracking-[0.12em] text-[#F0E2C2]/55">Password</span>
-                  <CopyChip text={info.wifi.password} mono />
-                </div>
-              </div>
-            ) : (
+            {info.wifi.length === 0 ? (
               <p className="text-[13px] text-[#F0E2C2]/65">
                 Wi-Fi details will be posted before your arrival.
               </p>
+            ) : (
+              <div className="space-y-4">
+                {info.wifi.map((net, idx) => (
+                  <div key={net.ssid} className={idx > 0 ? "pt-3 border-t border-[#F0E2C2]/10" : ""}>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-[12px] uppercase tracking-[0.12em] text-[#F0E2C2]/55">Network</span>
+                        <CopyChip text={net.ssid} />
+                      </div>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-[12px] uppercase tracking-[0.12em] text-[#F0E2C2]/55">Password</span>
+                        <CopyChip text={net.password} mono />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {info.wifiNote && (
+                  <p className="text-[11px] text-[#F0E2C2]/55 leading-snug pt-1">
+                    {info.wifiNote}
+                  </p>
+                )}
+              </div>
             )}
           </section>
 
@@ -115,8 +127,8 @@ export default async function CabinWelcomePage({ params }: { params: Promise<{ s
                 <CopyChip text={info.doorCode} mono big />
               </div>
             ) : (
-              <p className="text-[13px] text-[#F0E2C2]/65">
-                Your door code will be sent before check-in.
+              <p className="text-[13px] text-[#F0E2C2]/70 leading-relaxed">
+                Your unique code was in your welcome email. Codes are different for every stay so the next guest can&apos;t reuse yours.
               </p>
             )}
           </section>
@@ -155,14 +167,20 @@ export default async function CabinWelcomePage({ params }: { params: Promise<{ s
               href={cabin ? `/map?cabin=${cabin.slug}` : "/map"}
               className="ios-glass ios-press rounded-2xl p-4 text-center"
             >
-              <div className="text-[24px] mb-1">🗺️</div>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#cdac7d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-1">
+                <path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/>
+                <path d="M9 3v15"/>
+                <path d="M15 6v15"/>
+              </svg>
               <div className="text-[13px] font-semibold text-[#F0E2C2]">Map &amp; trails</div>
             </Link>
             <Link
               href="/manual"
               className="ios-glass ios-press rounded-2xl p-4 text-center"
             >
-              <div className="text-[24px] mb-1">📖</div>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#cdac7d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-1">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+              </svg>
               <div className="text-[13px] font-semibold text-[#F0E2C2]">House manual</div>
             </Link>
             <Link
@@ -170,9 +188,18 @@ export default async function CabinWelcomePage({ params }: { params: Promise<{ s
               className="ios-glass ios-press rounded-2xl p-4 text-center col-span-2"
               style={{ background: "linear-gradient(135deg, rgba(205,172,125,0.18), rgba(107,68,35,0.18))" }}
             >
-              <div className="text-[24px] mb-1">📸</div>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#cdac7d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-1">
+                <rect x="3" y="5" width="18" height="14" rx="2"/>
+                <circle cx="8.5" cy="10.5" r="1.5"/>
+                <path d="m21 16-5-5L5 21"/>
+              </svg>
               <div className="text-[13px] font-semibold text-[#F0E2C2]">Share a photo from your stay</div>
             </Link>
+          </div>
+
+          {/* Need something? */}
+          <div className="mt-4 flex justify-center">
+            <FeedbackButton />
           </div>
 
           <p className="text-center text-[11px] text-[#F0E2C2]/40 mt-4">

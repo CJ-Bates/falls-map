@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
 // Proxies feedback notifications to ntfy.sh so CJ gets a push on his phone.
-// The topic name is server-side only (Vercel env var NTFY_TOPIC) so guests
-// can't see it in client-side source.
-//
-// Setup:
-//   1. Vercel -> Project -> Settings -> Environment Variables
-//      Add NTFY_TOPIC = some-long-random-string  (e.g. falls-fb-7k3n9x2p)
-//   2. Install ntfy.sh app on phone, subscribe to that exact topic
-//   3. Test from /admin or by sending feedback
+// Topic name is server-side only (NTFY_TOPIC env var) so guests can't see
+// it in client-side source. Category goes in the notification title so CJ
+// can triage at a glance.
 
 export const runtime = "edge";
 
@@ -16,12 +11,21 @@ type Body = {
   message?: string;
   email?: string | null;
   page?: string | null;
+  category?: string | null;
+};
+
+const CATEGORY_TITLES: Record<string, string> = {
+  firewood: "Firewood request",
+  towels: "Towels / linens",
+  repair: "Broken — needs repair",
+  trash: "Trash",
+  other: "Guest request",
+  note: "Feedback",
 };
 
 export async function POST(req: NextRequest) {
   const topic = process.env.NTFY_TOPIC;
   if (!topic) {
-    // Not configured — silently succeed so the client UX still feels good.
     return NextResponse.json({ ok: true, notified: false });
   }
 
@@ -39,14 +43,17 @@ export async function POST(req: NextRequest) {
 
   const from = body.email ? body.email : "anonymous";
   const page = body.page ? body.page : "(home)";
+  const cat = (body.category ?? "note").toLowerCase();
+  const titlePrefix = CATEGORY_TITLES[cat] ?? "Feedback";
+  const title = `${titlePrefix} · The Falls`;
 
   try {
     await fetch(`https://ntfy.sh/${encodeURIComponent(topic)}`, {
       method: "POST",
       headers: {
-        Title: "Feedback \u00b7 The Falls",
-        Priority: "default",
-        Tags: "speech_balloon",
+        Title: title,
+        Priority: cat === "repair" ? "high" : "default",
+        Tags: cat === "repair" ? "warning,tools" : "speech_balloon",
         Click: "https://app.thefallsatlionsden.com/admin/cj-falls-ops-2026",
         "Content-Type": "text/plain; charset=utf-8",
       },
