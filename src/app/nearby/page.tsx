@@ -73,10 +73,16 @@ const CATEGORY_META: Record<
   },
 };
 
-// Direct deep-link to native maps app via address search
-function mapsLink(rec: { name: string; address: string }) {
+// Direct deep-links to either map app via address search. iOS users tap
+// Apple Maps, Android users tap Google Maps \u2014 both render in their
+// native app via universal URL handlers.
+function googleMapsLink(rec: { name: string; address: string }) {
   const q = encodeURIComponent(`${rec.name}, ${rec.address}`);
   return `https://maps.google.com/?q=${q}`;
+}
+function appleMapsLink(rec: { name: string; address: string }) {
+  const q = encodeURIComponent(`${rec.name}, ${rec.address}`);
+  return `https://maps.apple.com/?q=${q}`;
 }
 
 // Group recs by category for sectioned rendering
@@ -160,7 +166,7 @@ export default function NearbyPage() {
                       )}
                       <div className="mt-3 flex flex-wrap items-center gap-2 text-[12px]">
                         <a
-                          href={mapsLink(rec)}
+                          href={appleMapsLink(rec)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="ios-press inline-flex items-center gap-1.5 rounded-full bg-[#F0E2C2]/10 border border-[#F0E2C2]/18 px-3 py-1.5 font-semibold text-[#F0E2C2]"
@@ -169,7 +175,19 @@ export default function NearbyPage() {
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
                             <circle cx="12" cy="10" r="3"/>
                           </svg>
-                          Open in Maps
+                          Apple Maps
+                        </a>
+                        <a
+                          href={googleMapsLink(rec)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ios-press inline-flex items-center gap-1.5 rounded-full bg-[#F0E2C2]/10 border border-[#F0E2C2]/18 px-3 py-1.5 font-semibold text-[#F0E2C2]"
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                          </svg>
+                          Google Maps
                         </a>
                         {rec.url && (
                           <a

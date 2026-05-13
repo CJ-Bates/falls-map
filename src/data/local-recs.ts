@@ -49,6 +49,7 @@ export const LOCAL_RECS: LocalRec[] = [
     blurb: "Closer-to-property bar & grill. Casual and easy.",
     address: "2855 Seckman Rd, Imperial, MO 63052",
     lat: 38.39615, lng: -90.39203, approximate: true,
+    url: "http://detourgrillandbar.com/",
   },
   {
     slug: "star-cafe",
@@ -58,6 +59,7 @@ export const LOCAL_RECS: LocalRec[] = [
     blurb: "Coffee + light bites. Closest cafe to the property.",
     address: "2868 Seckman Rd, Imperial, MO 63052",
     lat: 38.39641, lng: -90.39241, approximate: true,
+    url: "https://www.starcafeseckman.com/",
   },
 
   // ===== FOOD — Kimmswick =====
@@ -80,6 +82,7 @@ export const LOCAL_RECS: LocalRec[] = [
     blurb: "Cozy Kimmswick cafe \u2014 pizza and more. Christmas-charm vibe.",
     address: "216 Market St, Kimmswick, MO 63053",
     lat: 38.36668, lng: -90.36245, approximate: true,
+    url: "https://www.gokimmswick.com/business-directory/dough-depot-cafe/",
   },
   {
     slug: "lachance-winery",
@@ -89,6 +92,7 @@ export const LOCAL_RECS: LocalRec[] = [
     blurb: "Wine + dinner in the historic Old House. Evening destination.",
     address: "6035 Second St, Kimmswick, MO 63053",
     lat: 38.36625, lng: -90.36213, approximate: true,
+    url: "https://lachancevineyards.com/",
   },
 
   // ===== FOOD — Arnold =====
@@ -132,6 +136,7 @@ export const LOCAL_RECS: LocalRec[] = [
     blurb: "Small market with a great butcher. Fresh meats.",
     address: "1015 W Main St, Imperial, MO 63052",
     lat: 38.36833, lng: -90.38700, approximate: true,
+    url: "https://www.facebook.com/HerrellsMarket/",
   },
   {
     slug: "schnucks-arnold-richardson",
@@ -141,6 +146,7 @@ export const LOCAL_RECS: LocalRec[] = [
     blurb: "Closest full-size supermarket. Has gas at most locations.",
     address: "3900 Vogel Rd, Arnold, MO 63010",
     lat: 38.41922, lng: -90.37705, approximate: true,
+    url: "https://schnucks.com/locations/mo-arnold-127",
   },
   {
     slug: "dierbergs-arnold-commons",
@@ -150,6 +156,7 @@ export const LOCAL_RECS: LocalRec[] = [
     blurb: "The other big regional grocer. Slightly premium feel.",
     address: "860 Arnold Commons Dr, Arnold, MO 63010",
     lat: 38.43572, lng: -90.37798, approximate: true,
+    url: "https://www.dierbergs.com/store-locations/arnold-commons",
   },
   {
     slug: "walmart-arnold",
@@ -159,6 +166,7 @@ export const LOCAL_RECS: LocalRec[] = [
     blurb: "One-stop for anything you forgot.",
     address: "2201 Michigan Ave, Arnold, MO 63010",
     lat: 38.43389, lng: -90.37352, approximate: true,
+    url: "https://www.walmart.com/store/1514-arnold-mo",
   },
 
   // ===== FUEL =====
