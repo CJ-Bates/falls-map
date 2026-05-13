@@ -42,16 +42,15 @@ export default function ArrivalPage() {
       <article className="px-6 mx-auto max-w-2xl space-y-5 mt-4 text-[#F0E2C2]">
         <section className="ios-glass-strong rounded-3xl p-6 space-y-3">
           <div className="flex items-center gap-3">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#D9531E" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
-              <path d="M12 3.5l9.5 16h-19z" fill="#B23A1F" />
-              <line x1="12" y1="10" x2="12" y2="14.5" stroke="#F0E2C2" strokeWidth="2.4" />
-              <circle cx="12" cy="17.2" r="0.4" fill="#F0E2C2" stroke="none" />
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#D9531E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
+              <path d="M12 3l10 18H2z" fill="#B23A1F" />
+              <line x1="12" y1="9" x2="12" y2="13.5" stroke="#F0E2C2" strokeWidth="2.4" />
+              <circle cx="12" cy="17" r="1.1" fill="#F0E2C2" stroke="none" />
             </svg>
             <h2 className="ios-headline text-[18px] text-[#F0E2C2]">Don&apos;t trust your GPS</h2>
           </div>
           <p className="text-[14px] leading-relaxed text-[#F0E2C2]/85">
-            Most phones will try to route you in via <strong className="text-[#F0E2C2]">Sunny Creek Rd</strong>{" "}
-            — that&apos;s the Living Well Village entrance and it <em>doesn&apos;t connect</em> to our cabins. If you end up at a locked gate, you&apos;ve gone the wrong way.
+            Some phones will try to route you in via <strong className="text-[#F0E2C2]">Sunny Creek Rd</strong> — that&apos;s the Living Well Village entrance, and it <em>doesn&apos;t connect</em> to our cabins. If you end up at a locked gate, you&apos;ve gone the wrong way.
           </p>
         </section>
 
@@ -67,13 +66,13 @@ export default function ArrivalPage() {
             <li className="flex items-start gap-3">
               <span className="grid h-7 w-7 place-items-center rounded-full bg-[#F0E2C2] text-[#1A1310] text-[13px] font-bold flex-shrink-0">2</span>
               <p className="text-[14px] leading-relaxed text-[#F0E2C2]/90">
-                Turn onto <strong className="text-[#F0E2C2]">Lefarth Dr</strong>. It&apos;s a gravel road that winds west into the woods.
+                Turn onto <strong className="text-[#F0E2C2]">Lefarth Dr</strong> — a straight gravel road that heads southwest along the horse pasture.
               </p>
             </li>
             <li className="flex items-start gap-3">
               <span className="grid h-7 w-7 place-items-center rounded-full bg-[#F0E2C2] text-[#1A1310] text-[13px] font-bold flex-shrink-0">3</span>
               <p className="text-[14px] leading-relaxed text-[#F0E2C2]/90">
-                Lefarth becomes <strong className="text-[#F0E2C2]">Valley Lakes Trail</strong> at our gate. Stay on it — it&apos;ll take you right to the cabins.
+                Near the end of Lefarth, take a left onto <strong className="text-[#F0E2C2]">Valley Lakes Trail</strong> at our gate. It&apos;s a windy gravel road that runs right to the cabins.
               </p>
             </li>
           </ol>
