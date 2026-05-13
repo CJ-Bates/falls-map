@@ -72,9 +72,9 @@ export const cabins: Cabin[] = [
     amenities: ["Kitchenette", "Full bathroom", "Washer/dryer"],
     description:
       "Half of Ridge Cabin 3 — split into 3A (King) and 3B (Twin) sides. Cozy retreat with kitchenette, bath, and W/D.",
-    // Same physical building as 3B — nudged slightly north for map readability.
-    lat: 38.411517,
-    lng: -90.456591,
+    // Same physical building as 3B — pinned at the SW corner of the cabin.
+    lat: 38.411445,
+    lng: -90.456637,
     coverPhoto:
       "https://bookingenginecdn.hostaway.com/listing/121272-313511-FieC-Al-0UGZxm0wXkbT17IxW0BOgPBkyBZwWjNQdYs-68ac9fc2a1607",
     photoCount: null,
@@ -95,9 +95,9 @@ export const cabins: Cabin[] = [
     amenities: ["Kitchenette", "Full bathroom", "Washer/dryer"],
     description:
       "Half of Ridge Cabin 3 — split into 3A (King) and 3B (Twin) sides. Cozy retreat with kitchenette, bath, and W/D.",
-    // Same physical building as 3A — nudged slightly south for map readability.
-    lat: 38.411445,
-    lng: -90.456591,
+    // Same physical building as 3A — pinned at the NE corner of the cabin.
+    lat: 38.411517,
+    lng: -90.456545,
     coverPhoto:
       "https://bookingenginecdn.hostaway.com/listing/121272-313512-r--G944i4fotZ-Daf1sgTzfjZhaIZRKb2jjX6s--l9GCc-68ac9ff9564c1",
     photoCount: null,
