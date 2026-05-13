@@ -372,18 +372,18 @@ export default function PropertyMap({
 
       // Single soft halo around the OUTER union of owned parcels (no internal seams)
       map.addSource("owned-boundary", { type: "geojson", data: ownedBoundary as never });
-      // Chunky dashed cream boundary so the property line reads as the same
-      // "ribbon" shown in the legend swatch — 6px-wide stripe, equal dashes.
-      // MapLibre multiplies dasharray by line-width, so [1,1] at width 6 gives
-      // 6px on / 6px off, matching the legend's 6px-stripe pattern.
+      // Dashed cream boundary engineered to match the legend swatch 1:1.
+      // The swatch is 8px tall with a 16px-stripe (8 on / 8 off) pattern; this
+      // line is 8px wide with dasharray [1,1], which MapLibre multiplies by
+      // line-width to give the same 8 on / 8 off cadence.
       map.addLayer({
         id: "owned-line",
         type: "line",
         source: "owned-boundary",
         paint: {
           "line-color": "#F0E2C2",
-          "line-width": 6,
-          "line-opacity": 0.88,
+          "line-width": 8,
+          "line-opacity": 0.92,
           "line-dasharray": [1, 1],
         },
         layout: { "line-join": "round", "line-cap": "butt" },
@@ -438,15 +438,15 @@ export default function PropertyMap({
             "match",
             ["get", "surface"],
             "gravel", 5,
-            "4wd",    4,
-            "trail",  3.5,
-            3.5,
+            "4wd",    5,
+            "trail",  4,
+            5,
           ],
           "line-opacity": 0.98,
           "line-dasharray": [
             "case",
             ["==", ["get", "approximate"], true], ["literal", [2, 1.5]],
-            ["==", ["get", "surface"], "trail"],  ["literal", [1.2, 1.4]],
+            ["==", ["get", "surface"], "trail"],  ["literal", [1, 1]],
             ["literal", [1, 0]],
           ] as never,
         },
