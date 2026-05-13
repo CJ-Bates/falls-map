@@ -2,8 +2,8 @@ import { notFound } from "next/navigation";
 import AdminDashboard from "@/components/AdminDashboard";
 
 // Secret URL gate. Anyone with this slug gets the dashboard; otherwise 404.
-// CJ: change this string and redeploy to rotate access.
-const ADMIN_KEY = "cj-falls-ops-2026";
+// Change this string and redeploy to rotate access.
+const ADMIN_KEY = "falls-ops-2026";
 
 export const dynamic = "force-static";
 

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Proxies feedback notifications to ntfy.sh so CJ gets a push on his phone.
+// Proxies feedback notifications to ntfy.sh so the owner gets a push on their phone.
 // Topic name is server-side only (NTFY_TOPIC env var) so guests can't see
-// it in client-side source. Category goes in the notification title so CJ
-// can triage at a glance.
+// it in client-side source. Category goes in the notification title so
+// the owner can triage at a glance.
 
 export const runtime = "edge";
 
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
         Title: title,
         Priority: cat === "repair" ? "high" : "default",
         Tags: cat === "repair" ? "warning,tools" : "speech_balloon",
-        Click: "https://app.thefallsatlionsden.com/admin/cj-falls-ops-2026",
+        Click: "https://app.thefallsatlionsden.com/admin/falls-ops-2026",
         "Content-Type": "text/plain; charset=utf-8",
       },
       body: `${msg}\n\nFrom: ${from}\nPage: ${page}`,

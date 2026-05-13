@@ -25,7 +25,7 @@ export type CabinInfo = {
 };
 
 // Current Wi-Fi setup as of May 2026: two existing networks until the
-// Starlink-hardwired rollout. CJ will collapse this into a single network
+// Starlink-hardwired rollout. This will collapse into a single network
 // (TheFalls Cabins / thefalls) once the upgrade is done.
 const CURRENT_WIFI: WifiNetwork[] = [
   { ssid: "The Falls Guest", password: "TheFalls!" },

@@ -95,7 +95,7 @@ const TILES: { label: string; sub: string; href: string; gradient: string; icon:
   },
   {
     label: "Off-property",
-    sub: "CJ\u2019s nearby food, gas, parks",
+    sub: "Nearby food, gas, parks",
     href: "/nearby",
     gradient: "linear-gradient(135deg, #cdac7d 0%, #5a4a1f 100%)",
     icon: (

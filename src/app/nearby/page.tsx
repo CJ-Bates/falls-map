@@ -109,7 +109,7 @@ export default function NearbyPage() {
         <div>
           <h1 className="ios-title text-2xl text-[#F0E2C2]">Off the property</h1>
           <p className="text-[12px] text-[#B89968] mt-0.5">
-            CJ\u2019s picks within ~20 minutes
+            Within ~20 minutes of the property
           </p>
         </div>
       </header>

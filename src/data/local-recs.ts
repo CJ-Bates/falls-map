@@ -1,6 +1,6 @@
-// Off-property recommendations — places CJ sends guests to within ~20 minutes.
+// Off-property recommendations — places to send guests within ~20 minutes.
 // Surfaced on the /nearby page. Coords are best-estimates from addresses;
-// each pin gets refined once CJ verifies the placement (then we wire them
+// each pin gets refined once placement is verified (then we wire them
 // onto the property map as a togglable overlay).
 
 export type LocalRecCategory = "food" | "drink" | "shop" | "fuel" | "park";
@@ -14,7 +14,7 @@ export type LocalRec = {
   address: string;     // human-readable; deep-linked to maps
   lat: number;
   lng: number;
-  approximate?: boolean; // true while CJ hasn\u2019t confirmed pin placement
+  approximate?: boolean; // true while pin placement hasn\u2019t been verified
   hours?: string;        // optional schedule note
   url?: string;          // optional website
 };
@@ -46,7 +46,7 @@ export const LOCAL_RECS: LocalRec[] = [
     name: "Detour Bar & Grill",
     category: "food",
     town: "Imperial",
-    blurb: "CJ\u2019s pick for closer-to-property B&G. Easy and casual.",
+    blurb: "Closer-to-property bar & grill. Casual and easy.",
     address: "2855 Seckman Rd, Imperial, MO 63052",
     lat: 38.39615, lng: -90.39203, approximate: true,
   },
@@ -129,7 +129,7 @@ export const LOCAL_RECS: LocalRec[] = [
     name: "Herrell\u2019s Market",
     category: "shop",
     town: "Imperial",
-    blurb: "Small market, but great butcher with fresh meats. CJ-approved.",
+    blurb: "Small market with a great butcher. Fresh meats.",
     address: "1015 W Main St, Imperial, MO 63052",
     lat: 38.36833, lng: -90.38700, approximate: true,
   },

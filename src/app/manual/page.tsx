@@ -71,7 +71,7 @@ export default function ManualPage() {
 
       <div className="px-6 mx-auto max-w-3xl">
         <p className="text-[14px] text-[#F0E2C2]/70 leading-relaxed mb-6">
-          A scaffold for the guest manual. Items marked TBD are waiting on content from CJ — when you fill these out, they'll appear here for guests offline.
+          A scaffold for the guest manual. Items marked TBD are waiting on content — once those are filled in, they’ll appear here for guests offline.
         </p>
 
         <div className="space-y-4">

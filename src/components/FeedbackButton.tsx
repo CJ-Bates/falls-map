@@ -6,8 +6,8 @@ import { supabase, FEEDBACK_CATEGORIES, type FeedbackCategory } from "@/lib/supa
 // Small "Send feedback" chip that opens a modal. Guests pick a category
 // (firewood, towels, broken, trash, other request, or just a note), drop
 // the details + optional email. Lands in Supabase `feedback` (shows on
-// /admin) and fires a fire-and-forget push to /api/notify-feedback so CJ
-// gets a phone notification via ntfy.sh.
+// /admin) and fires a fire-and-forget push to /api/notify-feedback so
+// the owner gets a phone notification via ntfy.sh.
 
 type Status =
   | { state: "idle" }
@@ -73,7 +73,7 @@ export default function FeedbackButton() {
       setStatus({ state: "error", msg: error.message });
       return;
     }
-    // Fire-and-forget push so CJ's phone rings. Includes category for the title.
+    // Fire-and-forget push so the owner's phone rings. Includes category for the title.
     try {
       void fetch("/api/notify-feedback", {
         method: "POST",
@@ -123,7 +123,7 @@ export default function FeedbackButton() {
                 </div>
                 <h2 className="ios-title text-2xl mt-4">Sent &mdash; thanks!</h2>
                 <p className="text-[13px] text-[#F0E2C2]/70 mt-1 leading-snug max-w-[260px]">
-                  Your note just pinged CJ&apos;s phone. He&apos;ll see it shortly.
+                  Your note&apos;s on its way. Someone will see it shortly.
                 </p>
                 <button
                   type="button"
@@ -155,7 +155,7 @@ export default function FeedbackButton() {
 
                 <h2 className="ios-title text-xl">Need something?</h2>
                 <p className="text-[12px] text-[#F0E2C2]/65 mt-1 leading-snug">
-                  Pick what it is, drop the details, hit send. Goes straight to CJ.
+                  Pick what it is, drop the details, hit send. Goes straight to the owner.
                 </p>
 
                 {/* Category chips */}
