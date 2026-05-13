@@ -45,3 +45,11 @@ export function thumbPhotoUrl(storagePath: string): string {
   const thumbPath = storagePath.replace(/\.jpg$/i, "-thumb.jpg");
   return publicPhotoUrl(thumbPath);
 }
+
+export type Feedback = {
+  id: string;
+  message: string;
+  email: string | null;
+  page: string | null;
+  created_at: string;
+};

@@ -5,6 +5,8 @@ import { property } from "@/data/property";
 import TodayWidget from "@/components/TodayWidget";
 import InstallAppButton from "@/components/InstallAppButton";
 import WelcomeCarousel from "@/components/WelcomeCarousel";
+import ShareButton from "@/components/ShareButton";
+import FeedbackButton from "@/components/FeedbackButton";
 import trails from "@/data/trails.json";
 import { pois } from "@/data/pois";
 
@@ -346,8 +348,16 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Share + feedback actions */}
+      <section className="mt-10 px-6">
+        <div className="mx-auto max-w-md flex flex-wrap items-center justify-center gap-2">
+          <ShareButton />
+          <FeedbackButton />
+        </div>
+      </section>
+
       {/* Footer */}
-      <footer className="mt-12 px-6 text-center">
+      <footer className="mt-10 px-6 text-center">
         <p className="text-xs text-[#F0E2C2]/45">
           Made for guests of The Falls at Lions Den · Imperial, MO
         </p>
