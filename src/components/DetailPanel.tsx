@@ -298,6 +298,11 @@ export default function DetailPanel({ item, onClose, onGetDirections, route, rou
                 {item.data.description}
               </p>
             )}
+            {item.data.cj_note && (
+              <p className="text-[13px] leading-relaxed text-[#F0E2C2]/60 italic border-l-2 border-[#cdac7d]/40 pl-3">
+                {item.data.cj_note}
+              </p>
+            )}
             <div className="flex gap-2 flex-wrap">
               <span
                 className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em]"
@@ -315,6 +320,18 @@ export default function DetailPanel({ item, onClose, onGetDirections, route, rou
                  item.data.surface === "4wd" ? "4WD" :
                  item.data.surface === "gravel" ? "Any vehicle" : "Paved"}
               </span>
+              {item.data.difficulty && (
+                <span
+                  className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em]"
+                  style={{
+                    background: item.data.difficulty === "easy" ? "rgba(168,196,122,0.18)" : item.data.difficulty === "moderate" ? "rgba(224,183,91,0.18)" : "rgba(224,122,91,0.18)",
+                    color: item.data.difficulty === "easy" ? "#a8c47a" : item.data.difficulty === "moderate" ? "#e0b75b" : "#e07a5b",
+                    border: `1px solid ${item.data.difficulty === "easy" ? "rgba(168,196,122,0.55)" : item.data.difficulty === "moderate" ? "rgba(224,183,91,0.55)" : "rgba(224,122,91,0.55)"}`,
+                  }}
+                >
+                  {item.data.difficulty}
+                </span>
+              )}
               <span className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#F0E2C2]/75 bg-[#F0E2C2]/8">
                 {(item.data.lengthM / 1609.344).toFixed(2)} mi
               </span>

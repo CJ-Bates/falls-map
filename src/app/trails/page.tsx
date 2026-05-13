@@ -1,7 +1,7 @@
 import Link from "next/link";
 import trails from "@/data/trails.json";
 
-export const metadata = { title: "Trails · The Falls at Lions Den" };
+export const metadata = { title: "Trails \u00b7 The Falls at Lions Den" };
 
 const SURFACE_META: Record<
   string,
@@ -11,6 +11,15 @@ const SURFACE_META: Record<
   gravel: { label: "Gravel",  color: "#C9A974", sub: "Any vehicle" },
   "4wd":  { label: "4WD",     color: "#D9531E", sub: "Truck or SUV" },
   trail:  { label: "Walking", color: "#F0E2C2", sub: "On foot only" },
+};
+
+const DIFFICULTY_META: Record<
+  string,
+  { label: string; color: string; bg: string; border: string }
+> = {
+  easy:     { label: "Easy",     color: "#a8c47a", bg: "rgba(168,196,122,0.18)", border: "rgba(168,196,122,0.55)" },
+  moderate: { label: "Moderate", color: "#e0b75b", bg: "rgba(224,183,91,0.18)",  border: "rgba(224,183,91,0.55)" },
+  hard:     { label: "Hard",     color: "#e07a5b", bg: "rgba(224,122,91,0.18)",  border: "rgba(224,122,91,0.55)" },
 };
 
 function lineLengthMiles(coords: number[][]): number {
@@ -36,12 +45,11 @@ function slugify(name: string): string {
 
 export default function TrailsPage() {
   type TrailFeature = {
-    properties: { name?: string; surface?: string; description?: string };
+    properties: { name?: string; surface?: string; description?: string; difficulty?: string; cj_note?: string };
     geometry: { coordinates: number[][] };
   };
   const features = (trails.features as unknown as TrailFeature[])
     .slice()
-    // Sort: surface order (gravel, 4wd, walking) then by length descending
     .sort((a, b) => {
       const order: Record<string, number> = { paved: 0, gravel: 1, "4wd": 2, trail: 3 };
       const oa = order[a.properties.surface ?? "trail"] ?? 9;
@@ -68,15 +76,15 @@ export default function TrailsPage() {
           </svg>
         </Link>
         <div>
-          <h1 className="ios-title text-2xl text-[#F0E2C2]">Trails & Roads</h1>
+          <h1 className="ios-title text-2xl text-[#F0E2C2]">Trails &amp; Roads</h1>
           <p className="text-[12px] text-[#B89968] mt-0.5">
-            {features.length} named · {totalMiles.toFixed(1)} mi total
+            {features.length} named \u00b7 {totalMiles.toFixed(1)} mi total
           </p>
         </div>
       </header>
 
-      {/* Surface legend */}
-      <div className="px-6 max-w-3xl mx-auto mt-2 mb-5">
+      {/* Surface + difficulty legend */}
+      <div className="px-6 max-w-3xl mx-auto mt-2 mb-5 space-y-2">
         <ul className="flex flex-wrap gap-2">
           {Object.entries(SURFACE_META).map(([id, m]) => (
             <li
@@ -88,7 +96,18 @@ export default function TrailsPage() {
                 style={{ background: m.color, boxShadow: `0 0 6px ${m.color}80` }}
               />
               <span className="text-[12px] text-[#F0E2C2]/85 font-semibold">{m.label}</span>
-              <span className="text-[11px] text-[#F0E2C2]/55">· {m.sub}</span>
+              <span className="text-[11px] text-[#F0E2C2]/55">\u00b7 {m.sub}</span>
+            </li>
+          ))}
+        </ul>
+        <ul className="flex flex-wrap gap-2">
+          {Object.entries(DIFFICULTY_META).map(([id, m]) => (
+            <li
+              key={id}
+              className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] uppercase tracking-[0.12em] font-semibold"
+              style={{ background: m.bg, color: m.color, border: `1px solid ${m.border}` }}
+            >
+              {m.label}
             </li>
           ))}
         </ul>
@@ -98,12 +117,13 @@ export default function TrailsPage() {
         {features.map((t, i) => {
           const surface = (t.properties.surface ?? "trail") as keyof typeof SURFACE_META;
           const meta = SURFACE_META[surface] ?? SURFACE_META.trail;
+          const diff = t.properties.difficulty ?? "";
+          const diffMeta = DIFFICULTY_META[diff];
           const miles = lineLengthMiles(t.geometry.coordinates);
           const name = t.properties.name ?? "Unnamed trail";
           const slug = slugify(name);
           return (
             <article key={i} className="ios-glass relative overflow-hidden rounded-3xl">
-              {/* Surface color stripe on the left edge */}
               <div
                 aria-hidden
                 className="absolute left-0 top-0 bottom-0 w-1"
@@ -125,13 +145,30 @@ export default function TrailsPage() {
                     >
                       {meta.label}
                     </span>
+                    {diffMeta && (
+                      <span
+                        className="text-[10px] uppercase tracking-[0.14em] font-semibold rounded-full px-2 py-0.5"
+                        style={{
+                          background: diffMeta.bg,
+                          color: diffMeta.color,
+                          border: `1px solid ${diffMeta.border}`,
+                        }}
+                      >
+                        {diffMeta.label}
+                      </span>
+                    )}
                   </div>
                   <p className="text-[11px] uppercase tracking-[0.14em] text-[#B89968] mt-1">
-                    {miles.toFixed(2)} mi · {meta.sub}
+                    {miles.toFixed(2)} mi \u00b7 {meta.sub}
                   </p>
                   {t.properties.description && (
-                    <p className="text-[14px] text-[#F0E2C2]/80 mt-2 leading-relaxed">
+                    <p className="text-[14px] text-[#F0E2C2]/85 mt-2 leading-relaxed">
                       {t.properties.description}
+                    </p>
+                  )}
+                  {t.properties.cj_note && (
+                    <p className="text-[13px] text-[#F0E2C2]/60 italic mt-1.5 leading-relaxed">
+                      {t.properties.cj_note}
                     </p>
                   )}
                 </div>
@@ -158,7 +195,7 @@ export default function TrailsPage() {
           href="/map"
           className="ios-press block text-center rounded-2xl bg-[#F0E2C2] text-[#1A1310] font-semibold py-3.5"
         >
-          See trails on the map →
+          See trails on the map \u2192
         </Link>
       </div>
     </main>

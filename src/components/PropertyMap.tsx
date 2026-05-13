@@ -567,7 +567,7 @@ export default function PropertyMap({
 
       // Trails are tap-targets: clicking the line opens the detail panel
       // with the trail's info (no pin needed). Cursor changes on hover.
-      type TrailFeatureProps = { name?: string; surface?: string; description?: string };
+      type TrailFeatureProps = { name?: string; surface?: string; description?: string; difficulty?: string; cj_note?: string };
       const slugify = (n: string) =>
         n.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
       const haversineM = (a: [number, number], b: [number, number]) => {
@@ -605,7 +605,9 @@ export default function PropertyMap({
             slug: slugify(name),
             name,
             surface,
+            difficulty: props.difficulty as "easy" | "moderate" | "hard" | undefined,
             description: props.description,
+            cj_note: props.cj_note,
             coords: fullCoords,
             lengthM,
           },

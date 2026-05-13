@@ -57,7 +57,9 @@ export type TrailMeta = {
   slug: string;
   name: string;
   surface: "paved" | "gravel" | "4wd" | "trail";
+  difficulty?: "easy" | "moderate" | "hard";
   description?: string;
+  cj_note?: string;
   coords: number[][];
   lengthM: number;
 };
