@@ -475,13 +475,12 @@ export default function PropertyMap({
           ],
           "circle-radius": [
             "interpolate", ["linear"], ["zoom"],
-            10, 6,
-            13, 7,
-            15, 9,
-            18, 12,
+            10, 4,
+            14, 6,
+            18, 10,
           ],
           "circle-stroke-color": "#1A0F08",
-          "circle-stroke-width": 2,
+          "circle-stroke-width": 1.5,
           "circle-opacity": 0.95,
         },
       });
@@ -1031,9 +1030,7 @@ export default function PropertyMap({
     else m.once("idle", apply);
   }, [focusBounds]);
 
-  // Toggle off-property layer visibility AND auto-fit to bounds on toggle-on.
-  // Without the auto-fit, the property map is zoomed too tight for the
-  // off-property pins (Imperial / Kimmswick / Arnold are several miles out).
+  // Toggle off-property layer visibility when showLocalRecs changes.
   useEffect(() => {
     const m = mapRef.current;
     if (!m) return;
@@ -1042,25 +1039,6 @@ export default function PropertyMap({
       const v = showLocalRecs ? "visible" : "none";
       m.setLayoutProperty("local-recs-circle", "visibility", v);
       m.setLayoutProperty("local-recs-label", "visibility", v);
-      if (showLocalRecs && LOCAL_RECS.length > 0) {
-        // Include all rec pins + the property center so guests see both.
-        let minLng = property.center.lng;
-        let maxLng = property.center.lng;
-        let minLat = property.center.lat;
-        let maxLat = property.center.lat;
-        for (const r of LOCAL_RECS) {
-          if (r.lng < minLng) minLng = r.lng;
-          if (r.lng > maxLng) maxLng = r.lng;
-          if (r.lat < minLat) minLat = r.lat;
-          if (r.lat > maxLat) maxLat = r.lat;
-        }
-        m.fitBounds([[minLng, minLat], [maxLng, maxLat]], {
-          padding: { top: 80, bottom: 140, left: 60, right: 60 },
-          duration: 900,
-          maxZoom: 13,
-          essential: true,
-        });
-      }
     };
     if (m.isStyleLoaded()) apply();
     else m.once("idle", apply);
