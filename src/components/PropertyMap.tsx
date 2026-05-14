@@ -500,24 +500,24 @@ export default function PropertyMap({
         layout: {
           "symbol-placement": "line",
           "text-field": ["get", "name"],
-          "text-size": [
-            "case",
-            ["==", ["get", "name"], "Lefarth Dr"], 20,
-            16,
-          ] as never,
+          "text-size": 16,
           "text-letter-spacing": 0.04,
           "text-anchor": "center",
           "text-offset": [0, -0.8],
           "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+          // Lefarth Dr repeats the label more often along the line so it\u2019s
+          // legible even when zoomed in on just a small section of road.
+          // Default symbol-spacing is 250 px; we drop Lefarth to 90.
+          "symbol-spacing": [
+            "case",
+            ["==", ["get", "name"], "Lefarth Dr"], 90,
+            250,
+          ] as never,
         },
         paint: {
           "text-color": "#2A1F18",
           "text-halo-color": "#F5E8C9",
-          "text-halo-width": [
-            "case",
-            ["==", ["get", "name"], "Lefarth Dr"], 5,
-            3.2,
-          ] as never,
+          "text-halo-width": 3.2,
           "text-halo-blur": 0.3,
         },
       });
