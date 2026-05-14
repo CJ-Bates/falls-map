@@ -195,6 +195,17 @@ export default function MapPage() {
     spots: true,
     carvings: true,
   });
+  // Off-property recs toggle — persisted in localStorage.
+  const [showLocalRecs, setShowLocalRecs] = useState(false);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("falls-show-local-recs");
+      if (raw === "1") setShowLocalRecs(true);
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try { localStorage.setItem("falls-show-local-recs", showLocalRecs ? "1" : "0"); } catch {}
+  }, [showLocalRecs]);
 
   // Live navigation
   const [navigating, setNavigating] = useState(false);
@@ -522,6 +533,7 @@ export default function MapPage() {
         basemap={basemap}
         routeCoords={route?.coords ?? null}
         poiVisibility={poiVisibility}
+        showLocalRecs={showLocalRecs}
         navMode={navigating}
         onUserPosition={setUserPos}
         focusBounds={focusBounds}
@@ -645,6 +657,20 @@ export default function MapPage() {
                   color="#1f1410"
                   active={poiVisibility.carvings}
                   onToggle={() => togglePoi("carvings")}
+                />
+              </ul>
+            </div>
+
+            {/* Off-property */}
+            <div className="pt-3 mt-3 border-t border-[#B89968]/15">
+              <h3 className="text-[10px] uppercase tracking-[0.14em] text-[#B89968] mb-2">Off-property</h3>
+              <ul className="space-y-1.5">
+                <PoiToggleRow
+                  label="Food, gas, parks nearby"
+                  count={18}
+                  color="#cdac7d"
+                  active={showLocalRecs}
+                  onToggle={() => setShowLocalRecs((v) => !v)}
                 />
               </ul>
             </div>

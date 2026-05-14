@@ -15,11 +15,13 @@ import trailsData from "@/data/trails.json";
 import buildingsData from "@/data/buildings.json";
 import horsePastureFence from "@/data/horse-pasture-fence.json";
 import ownedBoundary from "@/data/owned-boundary.json";
+import { LOCAL_RECS, type LocalRec } from "@/data/local-recs";
 
 export type SelectedItem =
   | { kind: "cabin"; data: Cabin }
   | { kind: "poi"; data: Poi }
-  | { kind: "trail"; data: TrailMeta };
+  | { kind: "trail"; data: TrailMeta }
+  | { kind: "local-rec"; data: LocalRec };
 
 export type Basemap = "topo" | "satellite" | "apple";
 
@@ -40,6 +42,8 @@ type Props = {
   onUserPosition?: (pos: [number, number]) => void;
   // Initial bounds to fit to (e.g. from a /map?focus= URL param).
   focusBounds?: [[number, number], [number, number]] | null;
+  // Show the off-property recommendations as a category-colored circle layer.
+  showLocalRecs?: boolean;
 };
 
 const TOPO_STYLE: maplibregl.StyleSpecification = {
@@ -293,6 +297,7 @@ export default function PropertyMap({
   navMode = false,
   onUserPosition,
   focusBounds = null,
+  showLocalRecs = false,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
@@ -427,6 +432,88 @@ export default function PropertyMap({
         type: "line",
         source: "water",
         paint: { "line-color": "#1d5688", "line-width": 1.2, "line-opacity": 0.9 },
+      });
+
+      // Off-property recommendations — small category-colored dots that
+      // appear when the user toggles the layer in the Layers popover.
+      map.addSource("local-recs", {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: LOCAL_RECS.map((r) => ({
+            type: "Feature",
+            geometry: { type: "Point", coordinates: [r.lng, r.lat] },
+            properties: {
+              slug: r.slug,
+              name: r.name,
+              category: r.category,
+              town: r.town,
+              blurb: r.blurb,
+              address: r.address,
+              url: r.url ?? "",
+              hours: r.hours ?? "",
+              approximate: r.approximate ? 1 : 0,
+            },
+          })),
+        } as never,
+      });
+      map.addLayer({
+        id: "local-recs-circle",
+        type: "circle",
+        source: "local-recs",
+        layout: { visibility: "none" },
+        paint: {
+          "circle-color": [
+            "match",
+            ["get", "category"],
+            "food",  "#e0926b",
+            "drink", "#b88abb",
+            "shop",  "#a8c47a",
+            "fuel",  "#5b9be0",
+            "park",  "#cdac7d",
+            "#cdac7d",
+          ],
+          "circle-radius": [
+            "interpolate", ["linear"], ["zoom"],
+            10, 4,
+            14, 6,
+            18, 10,
+          ],
+          "circle-stroke-color": "#1A0F08",
+          "circle-stroke-width": 1.5,
+          "circle-opacity": 0.95,
+        },
+      });
+      map.addLayer({
+        id: "local-recs-label",
+        type: "symbol",
+        source: "local-recs",
+        layout: {
+          visibility: "none",
+          "text-field": ["get", "name"],
+          "text-size": 11,
+          "text-offset": [0, 1.2],
+          "text-anchor": "top",
+          "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
+        },
+        paint: {
+          "text-color": "#2A1F18",
+          "text-halo-color": "#F5E8C9",
+          "text-halo-width": 2,
+        },
+      });
+      map.on("click", "local-recs-circle", (e) => {
+        const feat = e.features?.[0];
+        if (!feat) return;
+        const slug = (feat.properties as { slug?: string }).slug;
+        const rec = LOCAL_RECS.find((r) => r.slug === slug);
+        if (rec) onSelect({ kind: "local-rec", data: rec });
+      });
+      map.on("mouseenter", "local-recs-circle", () => {
+        map.getCanvas().style.cursor = "pointer";
+      });
+      map.on("mouseleave", "local-recs-circle", () => {
+        map.getCanvas().style.cursor = "";
       });
 
       // Trails / roads — painted-trail-map styling: chunky lines with a
@@ -942,6 +1029,20 @@ export default function PropertyMap({
     if (m.isStyleLoaded()) apply();
     else m.once("idle", apply);
   }, [focusBounds]);
+
+  // Toggle off-property layer visibility when showLocalRecs changes.
+  useEffect(() => {
+    const m = mapRef.current;
+    if (!m) return;
+    const apply = () => {
+      if (!m.getLayer("local-recs-circle")) return;
+      const v = showLocalRecs ? "visible" : "none";
+      m.setLayoutProperty("local-recs-circle", "visibility", v);
+      m.setLayoutProperty("local-recs-label", "visibility", v);
+    };
+    if (m.isStyleLoaded()) apply();
+    else m.once("idle", apply);
+  }, [showLocalRecs]);
 
   // Toggle pin visibility based on the poiVisibility prop. Walks the
   // poiMarkersRef and sets each element's display directly — bypasses
