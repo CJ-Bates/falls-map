@@ -1,7 +1,7 @@
 import Link from "next/link";
 import trails from "@/data/trails.json";
 
-export const metadata = { title: "Trails \u00b7 The Falls at Lions Den" };
+export const metadata = { title: "Trails · The Falls at Lions Den" };
 
 const SURFACE_META: Record<
   string,
@@ -43,12 +43,47 @@ function slugify(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
-export default function TrailsPage() {
-  type TrailFeature = {
-    properties: { name?: string; surface?: string; description?: string; difficulty?: string; cj_note?: string };
-    geometry: { coordinates: number[][] };
+type TrailFeature = {
+  properties: {
+    name?: string;
+    surface?: string;
+    description?: string;
+    difficulty?: string;
+    cj_note?: string;
   };
-  const features = (trails.features as unknown as TrailFeature[])
+  geometry: { coordinates: number[][] };
+};
+
+// Build a URL for a chip — toggling the same chip clears the filter.
+function chipHref(params: { d?: string; s?: string }) {
+  const sp = new URLSearchParams();
+  if (params.d) sp.set("d", params.d);
+  if (params.s) sp.set("s", params.s);
+  const qs = sp.toString();
+  return qs ? `/trails?${qs}` : "/trails";
+}
+
+export default async function TrailsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ d?: string; s?: string }>;
+}) {
+  const sp = await searchParams;
+  const activeDifficulty = (["easy", "moderate", "hard"] as const).find(
+    (x) => x === sp.d,
+  );
+  const activeSurface = (["walk", "drive"] as const).find((x) => x === sp.s);
+
+  const all = trails.features as unknown as TrailFeature[];
+
+  const filtered = all
+    .filter((t) => {
+      if (activeDifficulty && t.properties.difficulty !== activeDifficulty) return false;
+      const surface = t.properties.surface ?? "trail";
+      if (activeSurface === "walk" && surface !== "trail") return false;
+      if (activeSurface === "drive" && surface === "trail") return false;
+      return true;
+    })
     .slice()
     .sort((a, b) => {
       const order: Record<string, number> = { paved: 0, gravel: 1, "4wd": 2, trail: 3 };
@@ -58,7 +93,7 @@ export default function TrailsPage() {
       return lineLengthMiles(b.geometry.coordinates) - lineLengthMiles(a.geometry.coordinates);
     });
 
-  const totalMiles = features.reduce(
+  const totalMiles = filtered.reduce(
     (sum, t) => sum + lineLengthMiles(t.geometry.coordinates),
     0,
   );
@@ -78,116 +113,127 @@ export default function TrailsPage() {
         <div>
           <h1 className="ios-title text-2xl text-[#F0E2C2]">Trails &amp; Roads</h1>
           <p className="text-[12px] text-[#B89968] mt-0.5">
-            {features.length} named \u00b7 {totalMiles.toFixed(1)} mi total
+            {filtered.length} of {all.length} · {totalMiles.toFixed(1)} mi shown
           </p>
         </div>
       </header>
 
-      {/* Surface + difficulty legend */}
-      <div className="px-6 max-w-3xl mx-auto mt-2 mb-5 space-y-2">
-        <ul className="flex flex-wrap gap-2">
-          {Object.entries(SURFACE_META).map(([id, m]) => (
-            <li
-              key={id}
-              className="ios-glass inline-flex items-center gap-2 rounded-full px-3 py-1.5"
-            >
-              <span
-                className="block h-[3px] w-6 rounded-full"
-                style={{ background: m.color, boxShadow: `0 0 6px ${m.color}80` }}
+      {/* Filter chips */}
+      <div className="px-6 max-w-3xl mx-auto mt-3 mb-4 space-y-2">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-[10px] uppercase tracking-[0.14em] text-[#B89968] mr-1">Difficulty</span>
+          <FilterChip href={chipHref({ s: activeSurface })} active={!activeDifficulty} label="All" />
+          {(["easy", "moderate", "hard"] as const).map((d) => {
+            const m = DIFFICULTY_META[d];
+            const active = activeDifficulty === d;
+            return (
+              <FilterChip
+                key={d}
+                href={chipHref({ d: active ? undefined : d, s: activeSurface })}
+                active={active}
+                label={m.label}
+                accent={{ bg: m.bg, color: m.color, border: m.border }}
               />
-              <span className="text-[12px] text-[#F0E2C2]/85 font-semibold">{m.label}</span>
-              <span className="text-[11px] text-[#F0E2C2]/55">\u00b7 {m.sub}</span>
-            </li>
-          ))}
-        </ul>
-        <ul className="flex flex-wrap gap-2">
-          {Object.entries(DIFFICULTY_META).map(([id, m]) => (
-            <li
-              key={id}
-              className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] uppercase tracking-[0.12em] font-semibold"
-              style={{ background: m.bg, color: m.color, border: `1px solid ${m.border}` }}
-            >
-              {m.label}
-            </li>
-          ))}
-        </ul>
+            );
+          })}
+        </div>
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-[10px] uppercase tracking-[0.14em] text-[#B89968] mr-1">Type</span>
+          <FilterChip href={chipHref({ d: activeDifficulty })} active={!activeSurface} label="All" />
+          <FilterChip
+            href={chipHref({ d: activeDifficulty, s: activeSurface === "walk" ? undefined : "walk" })}
+            active={activeSurface === "walk"}
+            label="Walking only"
+          />
+          <FilterChip
+            href={chipHref({ d: activeDifficulty, s: activeSurface === "drive" ? undefined : "drive" })}
+            active={activeSurface === "drive"}
+            label="Drivable"
+          />
+        </div>
       </div>
 
       <div className="px-6 mx-auto max-w-3xl space-y-3">
-        {features.map((t, i) => {
-          const surface = (t.properties.surface ?? "trail") as keyof typeof SURFACE_META;
-          const meta = SURFACE_META[surface] ?? SURFACE_META.trail;
-          const diff = t.properties.difficulty ?? "";
-          const diffMeta = DIFFICULTY_META[diff];
-          const miles = lineLengthMiles(t.geometry.coordinates);
-          const name = t.properties.name ?? "Unnamed trail";
-          const slug = slugify(name);
-          return (
-            <article key={i} className="ios-glass relative overflow-hidden rounded-3xl">
-              <div
-                aria-hidden
-                className="absolute left-0 top-0 bottom-0 w-1"
-                style={{ background: meta.color, boxShadow: `0 0 12px ${meta.color}60` }}
-              />
-              <div className="pl-5 pr-4 py-4 flex items-start gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="ios-headline text-[17px] text-[#F0E2C2] leading-tight">
-                      {name}
-                    </h2>
-                    <span
-                      className="text-[10px] uppercase tracking-[0.14em] font-semibold rounded-full px-2 py-0.5"
-                      style={{
-                        background: `${meta.color}22`,
-                        color: meta.color === "#F0E2C2" ? "#F0E2C2" : meta.color,
-                        border: `1px solid ${meta.color}55`,
-                      }}
-                    >
-                      {meta.label}
-                    </span>
-                    {diffMeta && (
+        {filtered.length === 0 ? (
+          <p className="text-center text-[14px] text-[#F0E2C2]/55 py-12">
+            No trails match those filters. <Link href="/trails" className="text-[#cdac7d] underline">Clear filters</Link>.
+          </p>
+        ) : (
+          filtered.map((t, i) => {
+            const surface = (t.properties.surface ?? "trail") as keyof typeof SURFACE_META;
+            const meta = SURFACE_META[surface] ?? SURFACE_META.trail;
+            const diff = t.properties.difficulty ?? "";
+            const diffMeta = DIFFICULTY_META[diff];
+            const miles = lineLengthMiles(t.geometry.coordinates);
+            const name = t.properties.name ?? "Unnamed trail";
+            const slug = slugify(name);
+            return (
+              <article key={i} className="ios-glass relative overflow-hidden rounded-3xl">
+                <div
+                  aria-hidden
+                  className="absolute left-0 top-0 bottom-0 w-1"
+                  style={{ background: meta.color, boxShadow: `0 0 12px ${meta.color}60` }}
+                />
+                <div className="pl-5 pr-4 py-4 flex items-start gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h2 className="ios-headline text-[17px] text-[#F0E2C2] leading-tight">
+                        {name}
+                      </h2>
                       <span
                         className="text-[10px] uppercase tracking-[0.14em] font-semibold rounded-full px-2 py-0.5"
                         style={{
-                          background: diffMeta.bg,
-                          color: diffMeta.color,
-                          border: `1px solid ${diffMeta.border}`,
+                          background: `${meta.color}22`,
+                          color: meta.color === "#F0E2C2" ? "#F0E2C2" : meta.color,
+                          border: `1px solid ${meta.color}55`,
                         }}
                       >
-                        {diffMeta.label}
+                        {meta.label}
                       </span>
+                      {diffMeta && (
+                        <span
+                          className="text-[10px] uppercase tracking-[0.14em] font-semibold rounded-full px-2 py-0.5"
+                          style={{
+                            background: diffMeta.bg,
+                            color: diffMeta.color,
+                            border: `1px solid ${diffMeta.border}`,
+                          }}
+                        >
+                          {diffMeta.label}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] uppercase tracking-[0.14em] text-[#B89968] mt-1">
+                      {miles.toFixed(2)} mi · {meta.sub}
+                    </p>
+                    {t.properties.description && (
+                      <p className="text-[14px] text-[#F0E2C2]/85 mt-2 leading-relaxed">
+                        {t.properties.description}
+                      </p>
+                    )}
+                    {t.properties.cj_note && (
+                      <p className="text-[13px] text-[#F0E2C2]/60 italic mt-1.5 leading-relaxed">
+                        {t.properties.cj_note}
+                      </p>
                     )}
                   </div>
-                  <p className="text-[11px] uppercase tracking-[0.14em] text-[#B89968] mt-1">
-                    {miles.toFixed(2)} mi \u00b7 {meta.sub}
-                  </p>
-                  {t.properties.description && (
-                    <p className="text-[14px] text-[#F0E2C2]/85 mt-2 leading-relaxed">
-                      {t.properties.description}
-                    </p>
-                  )}
-                  {t.properties.cj_note && (
-                    <p className="text-[13px] text-[#F0E2C2]/60 italic mt-1.5 leading-relaxed">
-                      {t.properties.cj_note}
-                    </p>
-                  )}
+                  <Link
+                    href={`/map?focus=trail-${slug}`}
+                    aria-label={`Show ${name} on the map`}
+                    className="ios-press grid h-9 w-9 place-items-center rounded-full bg-[#F0E2C2]/10 text-[#F0E2C2]/75 hover:text-[#F0E2C2] flex-shrink-0"
+                    title="Show on map"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z" />
+                      <path d="M9 3v15" />
+                      <path d="M15 6v15" />
+                    </svg>
+                  </Link>
                 </div>
-                <Link
-                  href={`/map?focus=trail-${slug}`}
-                  aria-label={`Show ${name} on the map`}
-                  className="ios-press grid h-9 w-9 place-items-center rounded-full bg-[#F0E2C2]/10 text-[#F0E2C2]/75 hover:text-[#F0E2C2] flex-shrink-0"
-                  title="Show on map"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z" />
-                    <path d="M9 3v15" />
-                    <path d="M15 6v15" />
-                  </svg>
-                </Link>
-              </div>
-            </article>
-          );
-        })}
+              </article>
+            );
+          })
+        )}
       </div>
 
       <div className="px-6 mx-auto max-w-3xl mt-8">
@@ -195,9 +241,50 @@ export default function TrailsPage() {
           href="/map"
           className="ios-press block text-center rounded-2xl bg-[#F0E2C2] text-[#1A1310] font-semibold py-3.5"
         >
-          See trails on the map \u2192
+          See trails on the map →
         </Link>
       </div>
     </main>
+  );
+}
+
+function FilterChip({
+  href,
+  active,
+  label,
+  accent,
+}: {
+  href: string;
+  active: boolean;
+  label: string;
+  accent?: { bg: string; color: string; border: string };
+}) {
+  if (active) {
+    return (
+      <Link
+        href={href}
+        className="ios-press inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[11.5px] font-semibold"
+        style={
+          accent
+            ? { background: accent.color, color: "#1A1310", border: `1px solid ${accent.color}` }
+            : { background: "#F0E2C2", color: "#1A1310", border: "1px solid #F0E2C2" }
+        }
+      >
+        {label}
+      </Link>
+    );
+  }
+  return (
+    <Link
+      href={href}
+      className="ios-press inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[11.5px] font-semibold transition-colors"
+      style={
+        accent
+          ? { background: accent.bg, color: accent.color, border: `1px solid ${accent.border}` }
+          : { background: "rgba(240,226,194,0.08)", color: "#F0E2C2", border: "1px solid rgba(240,226,194,0.20)" }
+      }
+    >
+      {label}
+    </Link>
   );
 }

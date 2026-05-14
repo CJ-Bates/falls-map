@@ -7,6 +7,33 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "edge";
 
+// Basic per-IP rate limit. Edge runtime memory is per-region and resets on
+// cold start, so this isn\u2019t bulletproof against a determined attacker, but
+// it blocks all drive-by spam and accidental form-resubmission storms.
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+const RATE_LIMIT_MAX = 5;
+const recentByIp = new Map<string, number[]>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const stamps = (recentByIp.get(ip) ?? []).filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+  if (stamps.length >= RATE_LIMIT_MAX) {
+    recentByIp.set(ip, stamps);
+    return true;
+  }
+  stamps.push(now);
+  recentByIp.set(ip, stamps);
+  // Sweep stale keys periodically to bound memory growth.
+  if (recentByIp.size > 5000) {
+    for (const [k, v] of recentByIp.entries()) {
+      const fresh = v.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+      if (fresh.length === 0) recentByIp.delete(k);
+      else recentByIp.set(k, fresh);
+    }
+  }
+  return false;
+}
+
 type Body = {
   message?: string;
   email?: string | null;
@@ -32,6 +59,18 @@ export async function POST(req: NextRequest) {
   const topic = process.env.NTFY_TOPIC;
   if (!topic) {
     return NextResponse.json({ ok: true, notified: false });
+  }
+
+  // Per-IP rate limit (5 / hour). x-forwarded-for is set by Vercel\u2019s edge.
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    req.headers.get("x-real-ip") ||
+    "unknown";
+  if (isRateLimited(ip)) {
+    return NextResponse.json(
+      { ok: false, error: "rate_limited" },
+      { status: 429 },
+    );
   }
 
   let body: Body = {};
