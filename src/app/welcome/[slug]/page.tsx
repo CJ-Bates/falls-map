@@ -6,6 +6,7 @@ import { cabins } from "@/data/cabins";
 import InstallAppButton from "@/components/InstallAppButton";
 import CopyChip from "@/components/CopyChip";
 import FeedbackButton from "@/components/FeedbackButton";
+import CabinPhotoGallery from "@/components/CabinPhotoGallery";
 
 export const dynamic = "force-static";
 
@@ -173,6 +174,9 @@ export default async function CabinWelcomePage({ params }: { params: Promise<{ s
               )}
             </section>
           )}
+
+          {/* Per-cabin photo gallery — hidden when no photos exist */}
+          <CabinPhotoGallery cabinSlug={info.cabinSlug} cabinName={info.shortName} />
 
           {/* Explore CTAs */}
           <div className="grid grid-cols-2 gap-3 mt-2">
