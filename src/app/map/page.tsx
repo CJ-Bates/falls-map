@@ -335,7 +335,7 @@ export default function MapPage() {
   };
 
   // Search filtering: match name + description (case-insensitive) across
-  // cabins + POIs.
+  // cabins, POIs, and trails.
   const searchResults = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return [] as SelectedItem[];
@@ -357,7 +357,36 @@ export default function MapPage() {
         out.push({ kind: "poi", data: p });
       }
     }
-    return out.slice(0, 8);
+    type TrailFeat = {
+      properties: { name?: string; surface?: string; description?: string; difficulty?: string; cj_note?: string };
+      geometry: { coordinates: number[][] };
+    };
+    for (const t of (trailsData.features as unknown as TrailFeat[])) {
+      const name = t.properties.name ?? "";
+      if (!name) continue;
+      const hay = `${name} ${t.properties.description ?? ""} ${t.properties.cj_note ?? ""}`.toLowerCase();
+      if (hay.includes(q)) {
+        const coords = t.geometry.coordinates;
+        let lengthM = 0;
+        for (let i = 1; i < coords.length; i++) {
+          lengthM += haversine(coords[i - 1] as LngLat, coords[i] as LngLat);
+        }
+        out.push({
+          kind: "trail",
+          data: {
+            slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
+            name,
+            surface: (t.properties.surface ?? "trail") as "paved" | "gravel" | "4wd" | "trail",
+            difficulty: t.properties.difficulty as "easy" | "moderate" | "hard" | undefined,
+            description: t.properties.description,
+            cj_note: t.properties.cj_note,
+            coords,
+            lengthM,
+          },
+        });
+      }
+    }
+    return out.slice(0, 10);
   }, [searchQuery]);
 
   // Focus the search input when the overlay opens.
@@ -372,6 +401,24 @@ export default function MapPage() {
   const pickSearchResult = (item: SelectedItem) => {
     setSelected(item);
     setSearchOpen(false);
+    // Pan/zoom map to the picked item by setting focusBounds.
+    if (item.kind === "trail") {
+      let minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity;
+      for (const [lng, lat] of item.data.coords) {
+        if (lng < minLng) minLng = lng;
+        if (lng > maxLng) maxLng = lng;
+        if (lat < minLat) minLat = lat;
+        if (lat > maxLat) maxLat = lat;
+      }
+      if (Number.isFinite(minLng)) {
+        setFocusBounds([[minLng, minLat], [maxLng, maxLat]]);
+      }
+    } else {
+      const lng = item.data.lng;
+      const lat = item.data.lat;
+      const pad = 0.0015;
+      setFocusBounds([[lng - pad, lat - pad], [lng + pad, lat + pad]]);
+    }
   };
 
   // Close the source-picker when selection changes, but DON'T clear the
