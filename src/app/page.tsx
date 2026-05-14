@@ -130,7 +130,7 @@ export default function Home() {
               <line x1="12" y1="10" x2="12" y2="14.5" stroke="#F0E2C2" strokeWidth="2.4" />
               <circle cx="12" cy="17.2" r="0.45" fill="#F0E2C2" stroke="none" />
             </svg>
-            First time visiting? Tap for the right way in
+            First time visiting? Tap for directions
           </Link>
 
           {/* Round logo as the hero mark */}
@@ -381,3 +381,4 @@ export default function Home() {
     </main>
   );
 }
+      
