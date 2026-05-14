@@ -411,7 +411,7 @@ export default function PropertyMap({
         type: "line",
         source: "owned-boundary",
         paint: {
-          "line-color": "#B83A8C",
+          "line-color": "#1F5E2E",
           "line-width": 4.5,
           "line-opacity": 1,
         },
