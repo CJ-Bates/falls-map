@@ -720,12 +720,16 @@ export default function PropertyMap({
       { lng: -90.46040, lat: 38.39880, label: "The 13",        size: 40, rotate: -3 },
       { lng: -90.45029, lat: 38.40857, label: "Horse Pasture", size: 32, rotate: -2 },
     ];
+    // Area labels scale + fade with zoom so they don\u2019t dominate at wide
+    // zooms (where you can\u2019t see what they\u2019re actually labelling).
+    const areaLabelEls: { el: HTMLDivElement; baseSize: number; rotate: number }[] = [];
     AREA_LABELS.forEach((a) => {
+      const baseSize = a.size ?? 30;
+      const rotate = a.rotate ?? 0;
       const el = document.createElement("div");
       el.style.cssText = `
         font-family: "Caveat", "Cabin Sketch", cursive;
         font-weight: 700;
-        font-size: ${a.size ?? 30}px;
         color: #1A1310;
         text-shadow:
           0 0 12px #F5E8C9,
@@ -735,17 +739,35 @@ export default function PropertyMap({
           0 0 4px #F5E8C9,
           1.5px 1.5px 0 rgba(245, 232, 201, 1),
           -1px -1px 0 rgba(245, 232, 201, 1);
-        opacity: 1;
         white-space: nowrap;
         pointer-events: none;
         user-select: none;
-        transform: rotate(${a.rotate ?? 0}deg);
+        transform: rotate(${rotate}deg);
         letter-spacing: 0.04em;
+        will-change: font-size, opacity;
       `;
       el.textContent = a.label;
+      areaLabelEls.push({ el, baseSize, rotate });
       new maplibregl.Marker({ element: el, anchor: "center" })
         .setLngLat([a.lng, a.lat]).addTo(map);
     });
+
+    // Zoom-responsive sizing: invisible <= 12, scales up linearly to full
+    // size by z=15.5. Keeps the property zoom-out view from being dominated
+    // by big handwritten area labels.
+    const updateAreaLabelStyles = () => {
+      const z = map.getZoom();
+      const t = Math.max(0, Math.min(1, (z - 12) / 3.5)); // 0 at z=12, 1 at z=15.5
+      const minFactor = 0.4;
+      const factor = minFactor + (1 - minFactor) * t;
+      const opacity = t < 0.05 ? 0 : (0.4 + 0.6 * t);
+      areaLabelEls.forEach(({ el, baseSize }) => {
+        el.style.fontSize = `${(baseSize * factor).toFixed(1)}px`;
+        el.style.opacity = String(opacity);
+      });
+    };
+    updateAreaLabelStyles();
+    map.on("zoom", updateAreaLabelStyles);
 
 
 
