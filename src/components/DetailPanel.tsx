@@ -69,7 +69,7 @@ export default function DetailPanel({ item, onClose, onGetDirections, route, rou
 
   const TRAIL_SURFACE_COLOR: Record<string, string> = {
     paved:  "#3D3022",
-    gravel: "#9A938A",
+    gravel: "#7A5532",
     "4wd":  "#D9531E",
     trail:  "#F0E2C2",
   };
@@ -77,7 +77,7 @@ export default function DetailPanel({ item, onClose, onGetDirections, route, rou
     item.kind === "cabin"
       ? categoryStyle.cabin
       : item.kind === "trail"
-        ? { label: "Trail", color: TRAIL_SURFACE_COLOR[item.data.surface] ?? "#9A938A", emoji: "🥾" }
+        ? { label: "Trail", color: TRAIL_SURFACE_COLOR[item.data.surface] ?? "#7A5532", emoji: "🥾" }
         : categoryStyle[item.data.category];
 
   const subtitle =
@@ -307,14 +307,14 @@ export default function DetailPanel({ item, onClose, onGetDirections, route, rou
               <span
                 className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em]"
                 style={{
-                  background: `${(TRAIL_SURFACE_COLOR[item.data.surface] ?? "#9A938A")}22`,
-                  color: TRAIL_SURFACE_COLOR[item.data.surface] === "#F0E2C2" ? "#F0E2C2" : (TRAIL_SURFACE_COLOR[item.data.surface] ?? "#9A938A"),
-                  border: `1px solid ${(TRAIL_SURFACE_COLOR[item.data.surface] ?? "#9A938A")}55`,
+                  background: `${(TRAIL_SURFACE_COLOR[item.data.surface] ?? "#7A5532")}22`,
+                  color: TRAIL_SURFACE_COLOR[item.data.surface] === "#F0E2C2" ? "#F0E2C2" : (TRAIL_SURFACE_COLOR[item.data.surface] ?? "#7A5532"),
+                  border: `1px solid ${(TRAIL_SURFACE_COLOR[item.data.surface] ?? "#7A5532")}55`,
                 }}
               >
                 <span
                   className="block h-[3px] w-5 rounded-full"
-                  style={{ background: TRAIL_SURFACE_COLOR[item.data.surface] ?? "#9A938A" }}
+                  style={{ background: TRAIL_SURFACE_COLOR[item.data.surface] ?? "#7A5532" }}
                 />
                 {item.data.surface === "trail" ? "Walking only" :
                  item.data.surface === "4wd" ? "4WD" :
@@ -465,7 +465,7 @@ function DirectionsBlock({
               key={i}
               style={{
                 width: `${(s.distance / route.distance) * 100}%`,
-                background: SURFACE_COLOR[s.surface] ?? "#9A938A",
+                background: SURFACE_COLOR[s.surface] ?? "#7A5532",
               }}
               title={`${s.trailName} · ${(s.distance / 1609.344).toFixed(2)} mi`}
             />
@@ -476,7 +476,7 @@ function DirectionsBlock({
             <li key={i} className="flex items-center gap-2">
               <span
                 className="h-1.5 w-3 rounded-full flex-shrink-0"
-                style={{ background: SURFACE_COLOR[s.surface] ?? "#9A938A" }}
+                style={{ background: SURFACE_COLOR[s.surface] ?? "#7A5532" }}
               />
               <span className="truncate">{s.trailName}</span>
               <span className="text-[#F0E2C2]/55 ml-auto whitespace-nowrap">
@@ -509,7 +509,7 @@ function DirectionsBlock({
 
 const SURFACE_COLOR: Record<Surface, string> = {
   paved:  "#3D3022",
-  gravel: "#9A938A",
+  gravel: "#7A5532",
   "4wd":  "#D9531E",
   trail:  "#F0E2C2",
 };

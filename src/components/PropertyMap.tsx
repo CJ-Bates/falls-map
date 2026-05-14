@@ -399,9 +399,9 @@ export default function PropertyMap({
         source: "owned-boundary",
         paint: {
           "line-color": "#1A0F08",
-          "line-width": 9,
-          "line-opacity": 0.85,
-          "line-blur": 2.5,
+          "line-width": 12,
+          "line-opacity": 0.9,
+          "line-blur": 3,
         },
         layout: { "line-join": "round", "line-cap": "round" },
       });
@@ -412,7 +412,7 @@ export default function PropertyMap({
         source: "owned-boundary",
         paint: {
           "line-color": "#B83A8C",
-          "line-width": 4.5,
+          "line-width": 6,
           "line-opacity": 1,
         },
         layout: { "line-join": "round", "line-cap": "round" },
@@ -458,10 +458,10 @@ export default function PropertyMap({
             "match",
             ["get", "surface"],
             "paved",  "#3D3022",
-            "gravel", "#9A938A",
+            "gravel", "#7A5532",
             "4wd",    "#D9531E",
             "trail",  "#F0E2C2",
-            /* default */ "#9A938A",
+            /* default */ "#7A5532",
           ],
           "line-width": [
             "match",
@@ -499,7 +499,11 @@ export default function PropertyMap({
         layout: {
           "symbol-placement": "line",
           "text-field": ["get", "name"],
-          "text-size": 16,
+          "text-size": [
+            "case",
+            ["==", ["get", "name"], "Lefarth Dr"], 20,
+            16,
+          ] as never,
           "text-letter-spacing": 0.04,
           "text-anchor": "center",
           "text-offset": [0, -0.8],
@@ -508,7 +512,11 @@ export default function PropertyMap({
         paint: {
           "text-color": "#2A1F18",
           "text-halo-color": "#F5E8C9",
-          "text-halo-width": 3.2,
+          "text-halo-width": [
+            "case",
+            ["==", ["get", "name"], "Lefarth Dr"], 5,
+            3.2,
+          ] as never,
           "text-halo-blur": 0.3,
         },
       });
@@ -806,7 +814,7 @@ export default function PropertyMap({
           filter: ["==", ["get", "kind"], "line"],
           paint: {
             "line-color": "#67B0FF",
-            "line-width": 4.5,
+            "line-width": 6,
             "line-opacity": 0.98,
           },
           layout: { "line-join": "round", "line-cap": "round" },
