@@ -388,24 +388,27 @@ export default function PropertyMap({
       // Property boundary — a chunky gold line over a darker brown shadow so
       // it reads like a "fenceline" rather than a path. Deliberately distinct
       // from walking trails (dashed cream) and gravel roads (solid tan).
+      // Soft dark halo underneath for depth + readability over any basemap
       map.addLayer({
         id: "owned-line-shadow",
         type: "line",
         source: "owned-boundary",
         paint: {
-          "line-color": "#3D2A1B",
-          "line-width": 7,
-          "line-opacity": 0.9,
+          "line-color": "#1A0F08",
+          "line-width": 9,
+          "line-opacity": 0.85,
+          "line-blur": 2.5,
         },
         layout: { "line-join": "round", "line-cap": "round" },
       });
+      // Main fenceline: saturated bright gold, solid (no dashes).
       map.addLayer({
         id: "owned-line",
         type: "line",
         source: "owned-boundary",
         paint: {
-          "line-color": "#E2C36F",
-          "line-width": 4,
+          "line-color": "#F2C744",
+          "line-width": 4.5,
           "line-opacity": 1,
         },
         layout: { "line-join": "round", "line-cap": "round" },

@@ -29,11 +29,24 @@ export default async function CabinWelcomePage({ params }: { params: Promise<{ s
 
   return (
     <main className="hero-radial min-h-[100svh] w-full pb-16">
-      <section className="relative px-6 pt-[calc(env(safe-area-inset-top,0px)+1.5rem)]">
+      {/* Compact back-row: left-anchored circular Back, centered Install-as-app */}
+      <div className="relative px-6 pt-[calc(env(safe-area-inset-top,0px)+1rem)] pb-2 max-w-2xl mx-auto">
+        <Link
+          href="/manual"
+          aria-label="Back to House Manual"
+          className="ios-glass-strong ios-press absolute left-6 top-[calc(env(safe-area-inset-top,0px)+1rem)] z-10 grid h-10 w-10 place-items-center rounded-full text-[#F0E2C2]"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m15 18-6-6 6-6" />
+          </svg>
+        </Link>
+        <div className="flex justify-center">
+          <InstallAppButton />
+        </div>
+      </div>
+
+      <section className="relative px-6 pt-3">
         <div className="mx-auto max-w-2xl text-center">
-          <div className="mb-6 flex justify-center">
-            <InstallAppButton />
-          </div>
 
           {/* Cabin hero photo */}
           {cabin?.coverPhoto && (

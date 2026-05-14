@@ -31,9 +31,9 @@ const TRAIL_ITEMS: LegendItem[] = [
 ];
 
 const AREA_ITEMS: LegendItem[] = [
-  // Solid gold band over dark brown — matches the "fenceline" boundary
-  // rendered by PropertyMap (owned-line-shadow + owned-line layers).
-  { sample: <span className="block h-[7px] w-7 rounded-full" style={{ background: "#E2C36F", boxShadow: "0 0 0 1.5px #3D2A1B" }} />, label: "Property boundary" },
+  // Saturated gold band with a soft dark halo — matches the fenceline
+  // boundary rendered by PropertyMap (owned-line-shadow + owned-line layers).
+  { sample: <span className="block h-[7px] w-7 rounded-full" style={{ background: "#F2C744", boxShadow: "0 0 0 2px rgba(26,15,8,0.85)" }} />, label: "Property boundary" },
   { sample: <span className="block h-3 w-7 rounded-sm bg-[#3a82c2]/70 border border-[#1d5688]/80" />, label: "Lake / water" },
   { sample: <span className="block h-3 w-7 rounded-sm bg-[#7d8f5a]/70" />, label: "Horse pasture" },
 ];
