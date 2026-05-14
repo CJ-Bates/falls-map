@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export const metadata = { title: "Getting here · The Falls at Lions Den" };
 
-// Property gate (where Lefarth Dr becomes Valley Lakes Trail). Used as a
+// Property gate (where Lefarth Road becomes Valley Lakes Trail). Used as a
 // driving waypoint so guests' phones route them via Lefarth and not the wrong
 // Sunny Creek entrance.
 const ENTRANCE_LAT = 38.4068;
@@ -66,7 +66,7 @@ export default function ArrivalPage() {
             <li className="flex items-start gap-3">
               <span className="grid h-7 w-7 place-items-center rounded-full bg-[#F0E2C2] text-[#1A1310] text-[13px] font-bold flex-shrink-0">2</span>
               <p className="text-[14px] leading-relaxed text-[#F0E2C2]/90">
-                Turn onto <strong className="text-[#F0E2C2]">Lefarth Dr</strong>{" "}— a straight gravel road that heads southwest along the horse pasture.
+                Turn onto <strong className="text-[#F0E2C2]">Lefarth Road</strong>{" "}— a straight gravel road that heads southwest along the horse pasture.
               </p>
             </li>
             <li className="flex items-start gap-3">
@@ -107,7 +107,7 @@ export default function ArrivalPage() {
         <section className="ios-glass rounded-3xl p-6 space-y-2">
           <h2 className="ios-headline text-[15px] text-[#cdac7d]">If you get lost</h2>
           <p className="text-[14px] leading-relaxed text-[#F0E2C2]/85">
-            If you find yourself on Sunny Creek Rd, just turn around{" "}— it dead-ends at the old camp gate. Head back to Lions Den Rd and look for Lefarth Dr.
+            If you find yourself on Sunny Creek Rd, just turn around{" "}— it dead-ends at the old camp gate. Head back to Lions Den Rd and look for Lefarth Road.
           </p>
         </section>
 

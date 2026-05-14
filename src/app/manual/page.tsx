@@ -77,7 +77,7 @@ export default function ManualPage() {
               <span className="font-semibold text-[#F0E2C2]">The right way in.</span>{" "}
               GPS apps sometimes try to route you via Sunny Creek Rd. That's the wrong way and dead-ends in a neighbor's subdivision.{" "}
               <Link href="/arrival" className="text-[#cdac7d] underline">Tap here for the correct route</Link>{" "}
-              (Lefarth Dr from Lions Den Rd).
+              (Lefarth Road from Lions Den Rd).
             </li>
             <li>
               <span className="font-semibold text-[#F0E2C2]">Door code.</span>{" "}

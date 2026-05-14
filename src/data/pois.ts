@@ -141,9 +141,9 @@ export const pois: Poi[] = [
     category: "entrance",
     zone: "cabin-ridge",
     description:
-      "The correct way in. Turn off Lions Den Rd onto Lefarth Dr — it becomes Valley Lakes Trail at the gate.",
+      "The correct way in. Turn off Lions Den Rd onto Lefarth Road — it becomes Valley Lakes Trail at the gate.",
     story:
-      "GPS will sometimes try to route you through Living Well Village via Sunny Creek. Don't trust it — that road doesn't connect to our cabins. Lefarth Dr is the only way in.",
+      "GPS will sometimes try to route you through Living Well Village via Sunny Creek. Don't trust it — that road doesn't connect to our cabins. Lefarth Road is the only way in.",
     lat: 38.4116821,
     lng: -90.4479641,
   },
@@ -153,7 +153,7 @@ export const pois: Poi[] = [
     category: "warn",
     zone: "cabin-ridge",
     description:
-      "Sunny Creek Rd leads to Living Well Village next door. It does not connect to our cabins. Turn around and take Lefarth Dr instead.",
+      "Sunny Creek Rd leads to Living Well Village next door. It does not connect to our cabins. Turn around and take Lefarth Road instead.",
     lat: 38.41438,
     lng: -90.45221,
   },

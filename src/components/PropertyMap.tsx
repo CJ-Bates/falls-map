@@ -494,13 +494,13 @@ export default function PropertyMap({
         layout: { "line-join": "round", "line-cap": "round" },
       });
       // Trail labels — symbol-spacing isn\u2019t data-expression-eligible in
-      // MapLibre, so Lefarth Dr (which wants tighter repeats) gets its own
+      // MapLibre, so Lefarth Road (which wants tighter repeats) gets its own
       // layer. Every other trail uses the default spacing.
       map.addLayer({
         id: "trails-labels",
         type: "symbol",
         source: "trails",
-        filter: ["!=", ["get", "name"], "Lefarth Dr"],
+        filter: ["!=", ["get", "name"], "Lefarth Road"],
         layout: {
           "symbol-placement": "line",
           "text-field": ["get", "name"],
@@ -521,7 +521,7 @@ export default function PropertyMap({
         id: "trails-labels-lefarth",
         type: "symbol",
         source: "trails",
-        filter: ["==", ["get", "name"], "Lefarth Dr"],
+        filter: ["==", ["get", "name"], "Lefarth Road"],
         layout: {
           "symbol-placement": "line",
           "text-field": ["get", "name"],
