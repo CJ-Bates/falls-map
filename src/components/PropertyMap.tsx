@@ -964,7 +964,7 @@ export default function PropertyMap({
     if (!m) return;
     const apply = () => {
       const v = overlaysVisible ? "visible" : "none";
-      for (const id of ["trails-line", "trails-hit", "trails-labels"]) {
+      for (const id of ["trails-halo", "trails-line", "trails-hit", "trails-labels"]) {
         if (m.getLayer(id)) m.setLayoutProperty(id, "visibility", v);
       }
     };
