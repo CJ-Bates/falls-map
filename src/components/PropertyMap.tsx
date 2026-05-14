@@ -250,7 +250,8 @@ function buildPinElement(color: string, category: string, seed: string = categor
   // stays untouched.
   const tilt = document.createElement("div");
   const tiltDeg = tiltFromSeed(seed);
-  tilt.style.cssText = `width: 36px; height: 36px; transform: rotate(${tiltDeg}deg); transform-origin: 50% 50%;`;
+  tilt.dataset.tilt = String(tiltDeg);
+  tilt.style.cssText = `width: 36px; height: 36px; transform: rotate(${tiltDeg}deg) scale(1); transform-origin: 50% 50%;`;
 
   // INNER VISUAL — this is the only thing we animate on hover/touch.
   const inner = document.createElement("div");
@@ -458,10 +459,10 @@ export default function PropertyMap({
             "match",
             ["get", "surface"],
             "paved",  "#3D3022",
-            "gravel", "#7A5532",
+            "gravel", "#C9A974",
             "4wd",    "#D9531E",
             "trail",  "#F0E2C2",
-            /* default */ "#7A5532",
+            /* default */ "#C9A974",
           ],
           "line-width": [
             "match",
@@ -716,9 +717,9 @@ export default function PropertyMap({
     // the pins, not directly on top of them.
     const AREA_LABELS: { lng: number; lat: number; label: string; size?: number; rotate?: number }[] = [
       { lng: -90.4567,  lat: 38.4124,  label: "Cabin Ridge",   size: 35, rotate: -4 },
-      { lng: -90.45741, lat: 38.40679, label: "Main Lake",     size: 30, rotate: 2 },
-      { lng: -90.46040, lat: 38.39880, label: "The 13",        size: 40, rotate: -3 },
-      { lng: -90.45029, lat: 38.40857, label: "Horse Pasture", size: 32, rotate: -2 },
+      { lng: -90.45741, lat: 38.40679, label: "Main Lake",     size: 35, rotate: 2 },
+      { lng: -90.46040, lat: 38.39880, label: "The 13",        size: 35, rotate: -3 },
+      { lng: -90.45029, lat: 38.40857, label: "Horse Pasture", size: 35, rotate: -2 },
     ];
     // Area labels scale + fade with zoom so they don\u2019t dominate at wide
     // zooms (where you can\u2019t see what they\u2019re actually labelling).
@@ -768,6 +769,25 @@ export default function PropertyMap({
     };
     updateAreaLabelStyles();
     map.on("zoom", updateAreaLabelStyles);
+
+    // Zoom-responsive pin scaling: smaller / dimmer at low zooms so the
+    // map doesn\u2019t feel cluttered when you can\u2019t make out what each pin is.
+    const updatePinScales = () => {
+      const z = map.getZoom();
+      const t = Math.max(0, Math.min(1, (z - 13) / 3)); // 0 at z<=13, 1 at z>=16
+      const minScale = 0.55;
+      const scale = minScale + (1 - minScale) * t;
+      const opacity = 0.55 + 0.45 * t; // never below 55% so they stay legible
+      poiMarkersRef.current.forEach(({ el }) => {
+        const tilt = el.firstElementChild as HTMLElement | null;
+        if (!tilt) return;
+        const tiltDeg = parseFloat(tilt.dataset.tilt ?? "0");
+        tilt.style.transform = `rotate(${tiltDeg}deg) scale(${scale})`;
+        el.style.opacity = String(opacity);
+      });
+    };
+    updatePinScales();
+    map.on("zoom", updatePinScales);
 
 
 

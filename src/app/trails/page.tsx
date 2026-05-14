@@ -8,7 +8,7 @@ const SURFACE_META: Record<
   { label: string; color: string; sub: string }
 > = {
   paved:  { label: "Paved",   color: "#3D3022", sub: "Any car" },
-  gravel: { label: "Gravel",  color: "#7A5532", sub: "Any vehicle" },
+  gravel: { label: "Gravel",  color: "#C9A974", sub: "Any vehicle" },
   "4wd":  { label: "4WD",     color: "#D9531E", sub: "Truck or SUV" },
   trail:  { label: "Walking", color: "#F0E2C2", sub: "On foot only" },
 };

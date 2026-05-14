@@ -25,7 +25,7 @@ const PIN_ITEMS: LegendItem[] = [
 ];
 
 const TRAIL_ITEMS: LegendItem[] = [
-  { sample: <span className="block h-[5px] w-7 rounded-full" style={{ background: "#7A5532" }} />, label: "Gravel road (any vehicle)" },
+  { sample: <span className="block h-[5px] w-7 rounded-full" style={{ background: "#C9A974" }} />, label: "Gravel road (any vehicle)" },
   { sample: <span className="block h-[4px] w-7" style={{ backgroundImage: "linear-gradient(to right, #D9531E 0, #D9531E 57%, transparent 57%, transparent 100%)", backgroundSize: "14px 100%" }} />, label: "4WD trail (truck or SUV)" },
   { sample: <span className="block h-[4px] w-7" style={{ backgroundImage: "linear-gradient(to right, #F0E2C2 0, #F0E2C2 28.6%, transparent 28.6%, transparent 100%)", backgroundSize: "14px 100%" }} />, label: "Walking trail (on foot)" },
 ];
