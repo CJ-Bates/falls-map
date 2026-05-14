@@ -144,14 +144,16 @@ function PoiToggleRow({
         >
           {label}
         </span>
-        <span
-          className={
-            "text-[11px] tabular-nums transition-colors " +
-            (active ? "text-[#F0E2C2]/55" : "text-[#F0E2C2]/30")
-          }
-        >
-          {count}
-        </span>
+        {count > 0 && (
+          <span
+            className={
+              "text-[11px] tabular-nums transition-colors " +
+              (active ? "text-[#F0E2C2]/55" : "text-[#F0E2C2]/30")
+            }
+          >
+            {count}
+          </span>
+        )}
         {/* iOS-style toggle pill */}
         <span
           className="relative inline-flex h-6 w-10 flex-shrink-0 rounded-full transition-colors"
@@ -195,6 +197,17 @@ export default function MapPage() {
     spots: true,
     carvings: true,
   });
+  // Master overlay toggle — hides ALL pins + trail lines for a bare-property view.
+  const [showOverlays, setShowOverlays] = useState(true);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("falls-show-overlays");
+      if (raw === "0") setShowOverlays(false);
+    } catch {}
+  }, []);
+  useEffect(() => {
+    try { localStorage.setItem("falls-show-overlays", showOverlays ? "1" : "0"); } catch {}
+  }, [showOverlays]);
 
   // Live navigation
   const [navigating, setNavigating] = useState(false);
@@ -522,6 +535,7 @@ export default function MapPage() {
         basemap={basemap}
         routeCoords={route?.coords ?? null}
         poiVisibility={poiVisibility}
+        overlaysVisible={showOverlays}
         navMode={navigating}
         onUserPosition={setUserPos}
         focusBounds={focusBounds}
@@ -621,8 +635,29 @@ export default function MapPage() {
               </div>
             </div>
 
-            {/* Points of interest */}
+            {/* Master overlay toggle — hide everything for a bare-property view */}
             <div className="pt-3 mt-3 border-t border-[#B89968]/15">
+              <h3 className="text-[10px] uppercase tracking-[0.14em] text-[#B89968] mb-2">Map overlays</h3>
+              <ul className="space-y-1.5">
+                <PoiToggleRow
+                  label="Pins & trails"
+                  count={0}
+                  color="#cdac7d"
+                  active={showOverlays}
+                  onToggle={() => setShowOverlays((v) => !v)}
+                />
+              </ul>
+              <p className="text-[10.5px] text-[#F0E2C2]/45 mt-2 leading-snug">
+                Turn off to view the property bare.
+              </p>
+            </div>
+
+            {/* Points of interest (only meaningful when master overlay is on) */}
+            <div
+              className="pt-3 mt-3 border-t border-[#B89968]/15"
+              style={{ opacity: showOverlays ? 1 : 0.4, pointerEvents: showOverlays ? "auto" : "none" }}
+              aria-hidden={!showOverlays}
+            >
               <h3 className="text-[10px] uppercase tracking-[0.14em] text-[#B89968] mb-2">Points</h3>
               <ul className="space-y-1.5">
                 <PoiToggleRow

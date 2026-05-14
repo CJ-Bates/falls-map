@@ -40,6 +40,9 @@ type Props = {
   onUserPosition?: (pos: [number, number]) => void;
   // Initial bounds to fit to (e.g. from a /map?focus= URL param).
   focusBounds?: [[number, number], [number, number]] | null;
+  // Master toggle for ALL pins + trail layers. When false the property
+  // renders bare (basemap + property boundary + buildings + water only).
+  overlaysVisible?: boolean;
 };
 
 const TOPO_STYLE: maplibregl.StyleSpecification = {
@@ -293,6 +296,7 @@ export default function PropertyMap({
   navMode = false,
   onUserPosition,
   focusBounds = null,
+  overlaysVisible = true,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
@@ -943,14 +947,30 @@ export default function PropertyMap({
     else m.once("idle", apply);
   }, [focusBounds]);
 
-  // Toggle pin visibility based on the poiVisibility prop. Walks the
-  // poiMarkersRef and sets each element's display directly — bypasses
-  // React render and works even before the map has finished loading.
+  // Toggle pin visibility based on the poiVisibility prop AND the master
+  // overlaysVisible toggle. Walks the poiMarkersRef and sets each element's
+  // display directly — bypasses React render and works even before the map
+  // has finished loading.
   useEffect(() => {
     poiMarkersRef.current.forEach(({ kind, el }) => {
-      el.style.display = poiVisibility[kind] ? "" : "none";
+      const show = overlaysVisible && poiVisibility[kind];
+      el.style.display = show ? "" : "none";
     });
-  }, [poiVisibility]);
+  }, [poiVisibility, overlaysVisible]);
+
+  // Master overlay toggle: hide/show all trail-related layers.
+  useEffect(() => {
+    const m = mapRef.current;
+    if (!m) return;
+    const apply = () => {
+      const v = overlaysVisible ? "visible" : "none";
+      for (const id of ["trails-line", "trails-hit", "trails-labels"]) {
+        if (m.getLayer(id)) m.setLayoutProperty(id, "visibility", v);
+      }
+    };
+    if (m.isStyleLoaded()) apply();
+    else m.once("idle", apply);
+  }, [overlaysVisible]);
 
   // Apply basemap selection by toggling visibility on the 4 base raster
   // layers. Topo mode uses two stacked layers (opentopomap + voyager deep
