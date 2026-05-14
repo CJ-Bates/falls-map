@@ -28,11 +28,12 @@ const TRAIL_ITEMS: LegendItem[] = [
   { sample: <span className="block h-[5px] w-7 rounded-full" style={{ background: "#C9A974" }} />, label: "Gravel road (any vehicle)" },
   { sample: <span className="block h-[5px] w-7 rounded-full" style={{ background: "#D9531E" }} />, label: "4WD trail (truck or SUV)" },
   { sample: <span className="block h-[4px] w-7" style={{ backgroundImage: "linear-gradient(to right, #F0E2C2 50%, transparent 50%)", backgroundSize: "8px 100%" }} />, label: "Walking trail (on foot)" },
-  { sample: <span className="block h-[5px] w-7 rounded-full" style={{ background: "#3D3022" }} />, label: "Paved road" },
 ];
 
 const AREA_ITEMS: LegendItem[] = [
-  { sample: <span className="block h-[8px] w-7" style={{ backgroundImage: "linear-gradient(to right, #F0E2C2 50%, transparent 50%)", backgroundSize: "16px 100%" }} />, label: "Property boundary" },
+  // Solid gold band over dark brown — matches the "fenceline" boundary
+  // rendered by PropertyMap (owned-line-shadow + owned-line layers).
+  { sample: <span className="block h-[7px] w-7 rounded-full" style={{ background: "#E2C36F", boxShadow: "0 0 0 1.5px #3D2A1B" }} />, label: "Property boundary" },
   { sample: <span className="block h-3 w-7 rounded-sm bg-[#3a82c2]/70 border border-[#1d5688]/80" />, label: "Lake / water" },
   { sample: <span className="block h-3 w-7 rounded-sm bg-[#7d8f5a]/70" />, label: "Horse pasture" },
 ];

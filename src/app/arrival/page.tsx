@@ -50,7 +50,7 @@ export default function ArrivalPage() {
             <h2 className="ios-headline text-[18px] text-[#F0E2C2]">Don&apos;t trust your GPS</h2>
           </div>
           <p className="text-[14px] leading-relaxed text-[#F0E2C2]/85">
-            Some phones will try to route you in via <strong className="text-[#F0E2C2]">Sunny Creek Rd</strong> — that&apos;s the Living Well Village entrance, and it <em>doesn&apos;t connect</em> to our cabins. If you end up at a locked gate, you&apos;ve gone the wrong way.
+            Some phones will try to route you in via{" "}<strong className="text-[#F0E2C2]">Sunny Creek Rd</strong>{" "}— that&apos;s the Living Well Village entrance, and it <em>doesn&apos;t connect</em>{" "}to our cabins. If you end up at a locked gate, you&apos;ve gone the wrong way.
           </p>
         </section>
 
@@ -66,13 +66,13 @@ export default function ArrivalPage() {
             <li className="flex items-start gap-3">
               <span className="grid h-7 w-7 place-items-center rounded-full bg-[#F0E2C2] text-[#1A1310] text-[13px] font-bold flex-shrink-0">2</span>
               <p className="text-[14px] leading-relaxed text-[#F0E2C2]/90">
-                Turn onto <strong className="text-[#F0E2C2]">Lefarth Dr</strong> — a straight gravel road that heads southwest along the horse pasture.
+                Turn onto <strong className="text-[#F0E2C2]">Lefarth Dr</strong>{" "}— a straight gravel road that heads southwest along the horse pasture.
               </p>
             </li>
             <li className="flex items-start gap-3">
               <span className="grid h-7 w-7 place-items-center rounded-full bg-[#F0E2C2] text-[#1A1310] text-[13px] font-bold flex-shrink-0">3</span>
               <p className="text-[14px] leading-relaxed text-[#F0E2C2]/90">
-                Near the end of Lefarth, take a left onto <strong className="text-[#F0E2C2]">Valley Lakes Trail</strong> at our gate. It&apos;s a windy gravel road that runs right to the cabins.
+                Near the end of Lefarth, take a left onto{" "}<strong className="text-[#F0E2C2]">Valley Lakes Trail</strong>{" "}at our gate. It&apos;s a windy gravel road that runs right to the cabins.
               </p>
             </li>
           </ol>
@@ -107,7 +107,7 @@ export default function ArrivalPage() {
         <section className="ios-glass rounded-3xl p-6 space-y-2">
           <h2 className="ios-headline text-[15px] text-[#cdac7d]">If you get lost</h2>
           <p className="text-[14px] leading-relaxed text-[#F0E2C2]/85">
-            If you find yourself on Sunny Creek Rd, just turn around — it dead-ends at the old camp gate. Head back to Lions Den Rd and look for Lefarth Dr.
+            If you find yourself on Sunny Creek Rd, just turn around{" "}— it dead-ends at the old camp gate. Head back to Lions Den Rd and look for Lefarth Dr.
           </p>
         </section>
 

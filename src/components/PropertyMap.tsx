@@ -385,21 +385,30 @@ export default function PropertyMap({
 
       // Single soft halo around the OUTER union of owned parcels (no internal seams)
       map.addSource("owned-boundary", { type: "geojson", data: ownedBoundary as never });
-      // Dashed cream boundary engineered to match the legend swatch 1:1.
-      // The swatch is 8px tall with a 16px-stripe (8 on / 8 off) pattern; this
-      // line is 8px wide with dasharray [1,1], which MapLibre multiplies by
-      // line-width to give the same 8 on / 8 off cadence.
+      // Property boundary — a chunky gold line over a darker brown shadow so
+      // it reads like a "fenceline" rather than a path. Deliberately distinct
+      // from walking trails (dashed cream) and gravel roads (solid tan).
+      map.addLayer({
+        id: "owned-line-shadow",
+        type: "line",
+        source: "owned-boundary",
+        paint: {
+          "line-color": "#3D2A1B",
+          "line-width": 7,
+          "line-opacity": 0.9,
+        },
+        layout: { "line-join": "round", "line-cap": "round" },
+      });
       map.addLayer({
         id: "owned-line",
         type: "line",
         source: "owned-boundary",
         paint: {
-          "line-color": "#F0E2C2",
-          "line-width": 8,
-          "line-opacity": 0.92,
-          "line-dasharray": [1, 1],
+          "line-color": "#E2C36F",
+          "line-width": 4,
+          "line-opacity": 1,
         },
-        layout: { "line-join": "round", "line-cap": "butt" },
+        layout: { "line-join": "round", "line-cap": "round" },
       });
 
       // Bodies of water
