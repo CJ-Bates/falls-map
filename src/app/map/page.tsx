@@ -197,17 +197,18 @@ export default function MapPage() {
     spots: true,
     carvings: true,
   });
-  // Master overlay toggle — hides ALL pins + trail lines for a bare-property view.
-  const [showOverlays, setShowOverlays] = useState(true);
+  // Trails toggle — hides trail lines + labels for a bare-property view.
+  // Pin visibility is controlled separately by the Points section below.
+  const [showTrails, setShowTrails] = useState(true);
   useEffect(() => {
     try {
-      const raw = localStorage.getItem("falls-show-overlays");
-      if (raw === "0") setShowOverlays(false);
+      const raw = localStorage.getItem("falls-show-trails");
+      if (raw === "0") setShowTrails(false);
     } catch {}
   }, []);
   useEffect(() => {
-    try { localStorage.setItem("falls-show-overlays", showOverlays ? "1" : "0"); } catch {}
-  }, [showOverlays]);
+    try { localStorage.setItem("falls-show-trails", showTrails ? "1" : "0"); } catch {}
+  }, [showTrails]);
 
   // Live navigation
   const [navigating, setNavigating] = useState(false);
@@ -535,7 +536,7 @@ export default function MapPage() {
         basemap={basemap}
         routeCoords={route?.coords ?? null}
         poiVisibility={poiVisibility}
-        overlaysVisible={showOverlays}
+        trailsVisible={showTrails}
         navMode={navigating}
         onUserPosition={setUserPos}
         focusBounds={focusBounds}
@@ -635,29 +636,25 @@ export default function MapPage() {
               </div>
             </div>
 
-            {/* Master overlay toggle — hide everything for a bare-property view */}
+            {/* Trails toggle (pins are controlled per-category below) */}
             <div className="pt-3 mt-3 border-t border-[#B89968]/15">
-              <h3 className="text-[10px] uppercase tracking-[0.14em] text-[#B89968] mb-2">Map overlays</h3>
+              <h3 className="text-[10px] uppercase tracking-[0.14em] text-[#B89968] mb-2">Trails</h3>
               <ul className="space-y-1.5">
                 <PoiToggleRow
-                  label="Pins & trails"
+                  label="Show trails"
                   count={0}
                   color="#cdac7d"
-                  active={showOverlays}
-                  onToggle={() => setShowOverlays((v) => !v)}
+                  active={showTrails}
+                  onToggle={() => setShowTrails((v) => !v)}
                 />
               </ul>
               <p className="text-[10.5px] text-[#F0E2C2]/45 mt-2 leading-snug">
-                Turn off to view the property bare.
+                Turn off to see the property without trails.
               </p>
             </div>
 
-            {/* Points of interest (only meaningful when master overlay is on) */}
-            <div
-              className="pt-3 mt-3 border-t border-[#B89968]/15"
-              style={{ opacity: showOverlays ? 1 : 0.4, pointerEvents: showOverlays ? "auto" : "none" }}
-              aria-hidden={!showOverlays}
-            >
+            {/* Points of interest */}
+            <div className="pt-3 mt-3 border-t border-[#B89968]/15">
               <h3 className="text-[10px] uppercase tracking-[0.14em] text-[#B89968] mb-2">Points</h3>
               <ul className="space-y-1.5">
                 <PoiToggleRow
