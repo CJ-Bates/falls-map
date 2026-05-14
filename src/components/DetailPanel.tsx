@@ -339,72 +339,6 @@ export default function DetailPanel({ item, onClose, onGetDirections, route, rou
           </>
         )}
 
-        {item.kind === "local-rec" && (() => {
-          const r = item.data;
-          const q = encodeURIComponent(`${r.name}, ${r.address}`);
-          const apple = `https://maps.apple.com/?q=${q}`;
-          const google = `https://maps.google.com/?q=${q}`;
-          const CATEGORY_META: Record<string, { label: string; color: string; bg: string; border: string }> = {
-            food:  { label: "Food",  color: "#e0926b", bg: "rgba(224,146,107,0.18)", border: "rgba(224,146,107,0.55)" },
-            drink: { label: "Drink", color: "#b88abb", bg: "rgba(184,138,187,0.18)", border: "rgba(184,138,187,0.55)" },
-            shop:  { label: "Shop",  color: "#a8c47a", bg: "rgba(168,196,122,0.18)", border: "rgba(168,196,122,0.55)" },
-            fuel:  { label: "Gas",   color: "#5b9be0", bg: "rgba(91,155,224,0.18)",  border: "rgba(91,155,224,0.55)" },
-            park:  { label: "Park",  color: "#cdac7d", bg: "rgba(205,172,125,0.18)", border: "rgba(205,172,125,0.55)" },
-          };
-          const m = CATEGORY_META[r.category];
-          return (
-            <>
-              <div className="flex items-center gap-2 flex-wrap">
-                {m && (
-                  <span
-                    className="text-[10px] uppercase tracking-[0.14em] font-semibold rounded-full px-2 py-0.5"
-                    style={{ background: m.bg, color: m.color, border: `1px solid ${m.border}` }}
-                  >
-                    {m.label}
-                  </span>
-                )}
-                <span className="text-[11px] uppercase tracking-[0.12em] text-[#B89968]">{r.town}</span>
-                {r.approximate && (
-                  <span className="text-[11px] text-[#F0E2C2]/50 italic">approx. pin</span>
-                )}
-              </div>
-              <p className="text-[15px] leading-relaxed text-[#F0E2C2]/85">{r.blurb}</p>
-              {r.hours && (
-                <p className="text-[13px] text-[#cdac7d] leading-snug">{r.hours}</p>
-              )}
-              <p className="text-[12px] text-[#F0E2C2]/55 leading-snug">{r.address}</p>
-              <div className="flex flex-wrap gap-2 pt-1">
-                <a
-                  href={apple}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ios-press inline-flex items-center gap-1.5 rounded-full bg-[#F0E2C2]/10 border border-[#F0E2C2]/18 px-3 py-1.5 text-[12px] font-semibold text-[#F0E2C2]"
-                >
-                  Apple Maps
-                </a>
-                <a
-                  href={google}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ios-press inline-flex items-center gap-1.5 rounded-full bg-[#F0E2C2]/10 border border-[#F0E2C2]/18 px-3 py-1.5 text-[12px] font-semibold text-[#F0E2C2]"
-                >
-                  Google Maps
-                </a>
-                {r.url && (
-                  <a
-                    href={r.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ios-press inline-flex items-center gap-1.5 rounded-full bg-[#cdac7d]/15 border border-[#cdac7d]/35 px-3 py-1.5 text-[12px] font-semibold text-[#cdac7d]"
-                  >
-                    Website
-                  </a>
-                )}
-              </div>
-            </>
-          );
-        })()}
-
         {/* Directions panel — shows the Directions button (when no route)
             or a route summary card with distance + ETAs + surface breakdown
             (when one is active). */}
@@ -423,8 +357,6 @@ export default function DetailPanel({ item, onClose, onGetDirections, route, rou
         <div className="pt-2 text-[11px] text-[#B89968]/70 border-t border-[#B89968]/15">
           {item.kind === "trail"
             ? `${item.data.coords[0]?.[1].toFixed(5)}°N, ${Math.abs(item.data.coords[0]?.[0] ?? 0).toFixed(5)}°W`
-            : item.kind === "local-rec"
-            ? `${item.data.lat.toFixed(5)}°N, ${Math.abs(item.data.lng).toFixed(5)}°W · off-property`
             : `${item.data.lat.toFixed(5)}°N, ${Math.abs(item.data.lng).toFixed(5)}°W`}
         </div>
       </div>
