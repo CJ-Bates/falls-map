@@ -458,10 +458,10 @@ export default function PropertyMap({
             "match",
             ["get", "surface"],
             "paved",  "#3D3022",
-            "gravel", "#C9A974",
+            "gravel", "#9A938A",
             "4wd",    "#D9531E",
             "trail",  "#F0E2C2",
-            /* default */ "#C9A974",
+            /* default */ "#9A938A",
           ],
           "line-width": [
             "match",
