@@ -475,7 +475,7 @@ export default function PropertyMap({
           "line-dasharray": [
             "case",
             ["==", ["get", "approximate"], true], ["literal", [2, 1.5]],
-            ["==", ["get", "surface"], "trail"],  ["literal", [1, 1]],
+            ["==", ["get", "surface"], "trail"],  ["literal", [1, 2.5]],
             ["literal", [1, 0]],
           ] as never,
         },
