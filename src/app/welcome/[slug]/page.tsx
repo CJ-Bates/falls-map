@@ -210,9 +210,17 @@ export default async function CabinWelcomePage({ params }: { params: Promise<{ s
             </Link>
           </div>
 
-          {/* Need something? */}
-          <div className="mt-4 flex justify-center">
-            <FeedbackButton />
+          {/* Stay feedback (NOT for urgent needs — those go to the host directly) */}
+          <div className="mt-5 text-center">
+            <p className="text-[12px] text-[#F0E2C2]/65 leading-snug mb-2 max-w-md mx-auto">
+              Need something during your stay? Text the host directly &mdash; number is in your welcome email.
+            </p>
+            <p className="text-[12px] text-[#F0E2C2]/65 leading-snug mb-3 max-w-md mx-auto">
+              Have ideas or feedback for future stays? Drop a note below.
+            </p>
+            <div className="flex justify-center">
+              <FeedbackButton />
+            </div>
           </div>
 
           <p className="text-center text-[11px] text-[#F0E2C2]/40 mt-4">

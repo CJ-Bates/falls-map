@@ -15,11 +15,16 @@ type Body = {
 };
 
 const CATEGORY_TITLES: Record<string, string> = {
-  firewood: "Firewood request",
-  towels: "Towels / linens",
-  repair: "Broken — needs repair",
-  trash: "Trash",
-  other: "Guest request",
+  property: "Property feedback",
+  app: "App feedback",
+  suggestion: "Suggestion",
+  compliment: "Compliment",
+  other: "Feedback",
+  // Legacy categories — still mapped so old rows produce a sensible title:
+  firewood: "Firewood (legacy)",
+  towels: "Towels (legacy)",
+  repair: "Repair (legacy)",
+  trash: "Trash (legacy)",
   note: "Feedback",
 };
 
@@ -52,8 +57,8 @@ export async function POST(req: NextRequest) {
       method: "POST",
       headers: {
         Title: title,
-        Priority: cat === "repair" ? "high" : "default",
-        Tags: cat === "repair" ? "warning,tools" : "speech_balloon",
+        Priority: "default",
+        Tags: cat === "compliment" ? "sparkles" : "speech_balloon",
         Click: "https://app.thefallsatlionsden.com/admin/falls-ops-2026",
         "Content-Type": "text/plain; charset=utf-8",
       },

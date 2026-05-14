@@ -43,15 +43,16 @@ export function thumbPhotoUrl(storagePath: string): string {
   return publicPhotoUrl(thumbPath);
 }
 
-// Feedback categories \u2014 keep in sync with FeedbackButton chips + AdminDashboard.
-// `null` (or anything not in this list) is treated as "Note".
+// Feedback categories shown to guests in the FeedbackButton picker.
+// The widget is for stay-feedback (suggestions, compliments, bugs, ideas) \u2014
+// NOT for urgent service requests. Those go to the host directly via the
+// number in the guest's welcome email.
 export const FEEDBACK_CATEGORIES = [
-  { value: "firewood", label: "Firewood" },
-  { value: "towels", label: "Towels / linens" },
-  { value: "repair", label: "Broken / needs repair" },
-  { value: "trash", label: "Trash" },
-  { value: "other", label: "Other request" },
-  { value: "note", label: "Just a note" },
+  { value: "property", label: "About the property" },
+  { value: "app", label: "About the app" },
+  { value: "suggestion", label: "Suggestion" },
+  { value: "compliment", label: "Compliment" },
+  { value: "other", label: "Something else" },
 ] as const;
 
 export type FeedbackCategory = (typeof FEEDBACK_CATEGORIES)[number]["value"];
@@ -66,8 +67,24 @@ export type Feedback = {
   created_at: string;
 };
 
+// Full label lookup \u2014 covers both current categories and legacy values
+// from the previous service-request flow, so the admin dashboard renders
+// old feedback rows correctly.
+const ALL_FEEDBACK_LABELS: Record<string, string> = {
+  property: "About the property",
+  app: "About the app",
+  suggestion: "Suggestion",
+  compliment: "Compliment",
+  other: "Other",
+  // Legacy categories from the service-request era:
+  firewood: "Firewood (legacy)",
+  towels: "Towels (legacy)",
+  repair: "Repair (legacy)",
+  trash: "Trash (legacy)",
+  note: "Note",
+};
+
 export function feedbackCategoryLabel(value: string | null): string {
   if (!value) return "Note";
-  const m = FEEDBACK_CATEGORIES.find((c) => c.value === value);
-  return m ? m.label : "Note";
+  return ALL_FEEDBACK_LABELS[value] ?? "Note";
 }

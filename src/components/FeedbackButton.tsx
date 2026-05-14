@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { supabase, FEEDBACK_CATEGORIES, type FeedbackCategory } from "@/lib/supabase";
 
-// Small "Send feedback" chip that opens a modal. Guests pick a category
-// (firewood, towels, broken, trash, other request, or just a note), drop
-// the details + optional email. Lands in Supabase `feedback` (shows on
-// /admin) and fires a fire-and-forget push to /api/notify-feedback so
-// the owner gets a phone notification via ntfy.sh.
+// Stay-feedback widget — for ideas, compliments, app bugs, and suggestions
+// about how to make future stays better. NOT for urgent service requests
+// (those go to the host directly via the number in the welcome email).
+//
+// Lands in Supabase `feedback` (shows on /admin) and fires a fire-and-forget
+// push to /api/notify-feedback so the host gets a phone notification.
 
 type Status =
   | { state: "idle" }
@@ -16,29 +17,25 @@ type Status =
   | { state: "error"; msg: string };
 
 const PLACEHOLDERS: Record<FeedbackCategory, string> = {
-  firewood: "How much? Any preference on where to drop it?",
-  towels: "Bath towels, hand towels, sheets? How many?",
-  repair: "What broke? Which cabin / room?",
-  trash: "Cans full? Anything we should know?",
-  other: "What do you need?",
-  note: "What's on your mind?",
+  property: "What stood out? What could we improve? Anything missing?",
+  app: "Found a bug? Something confusing? Ideas?",
+  suggestion: "What should we add for future guests?",
+  compliment: "Tell us what you loved — we'll pass it on to the team.",
+  other: "What's on your mind?",
 };
 
-// Tiny inline icons for each category — keeps the look consistent without emojis
 function CategoryIcon({ value }: { value: FeedbackCategory }) {
   const common = { width: 14, height: 14, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
   switch (value) {
-    case "firewood":
-      return (<svg {...common}><path d="M12 3c-1.5 3-4 4-4 8 a4 4 0 0 0 8 0c0-4-2.5-5-4-8z"/></svg>);
-    case "towels":
-      return (<svg {...common}><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>);
-    case "repair":
-      return (<svg {...common}><path d="M14.7 6.3a4 4 0 1 1-5 5l-7 7v3h3l7-7a4 4 0 0 0 5-5l-2 2-2-2 2-2z"/></svg>);
-    case "trash":
-      return (<svg {...common}><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><rect x="5" y="6" width="14" height="16" rx="2"/></svg>);
+    case "property":
+      return (<svg {...common}><path d="M3 12 12 4l9 8"/><path d="M5 12v9h14v-9"/></svg>);
+    case "app":
+      return (<svg {...common}><rect x="6" y="2" width="12" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>);
+    case "suggestion":
+      return (<svg {...common}><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2v1.3h6V16.7c0-.8.4-1.5 1-2A7 7 0 0 0 12 2z"/></svg>);
+    case "compliment":
+      return (<svg {...common}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>);
     case "other":
-      return (<svg {...common}><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.9.4-1 1-1 1.7"/><circle cx="12" cy="17" r="0.6" fill="currentColor"/></svg>);
-    case "note":
     default:
       return (<svg {...common}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>);
   }
@@ -46,7 +43,7 @@ function CategoryIcon({ value }: { value: FeedbackCategory }) {
 
 export default function FeedbackButton() {
   const [open, setOpen] = useState(false);
-  const [category, setCategory] = useState<FeedbackCategory>("note");
+  const [category, setCategory] = useState<FeedbackCategory>("property");
   const [message, setMessage] = useState("");
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>({ state: "idle" });
@@ -73,7 +70,6 @@ export default function FeedbackButton() {
       setStatus({ state: "error", msg: error.message });
       return;
     }
-    // Fire-and-forget push so the owner's phone rings. Includes category for the title.
     try {
       void fetch("/api/notify-feedback", {
         method: "POST",
@@ -86,7 +82,7 @@ export default function FeedbackButton() {
     setStatus({ state: "sent" });
     setMessage("");
     setEmail("");
-    setCategory("note");
+    setCategory("property");
     setTimeout(close, 2600);
   };
 
@@ -99,7 +95,7 @@ export default function FeedbackButton() {
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
         </svg>
-        Send feedback
+        Leave feedback
       </button>
 
       {open && (
@@ -121,9 +117,9 @@ export default function FeedbackButton() {
                     <path d="M20 6 9 17l-5-5" />
                   </svg>
                 </div>
-                <h2 className="ios-title text-2xl mt-4">Sent &mdash; thanks!</h2>
+                <h2 className="ios-title text-2xl mt-4">Thanks!</h2>
                 <p className="text-[13px] text-[#F0E2C2]/70 mt-1 leading-snug max-w-[260px]">
-                  Your note&apos;s on its way. We&apos;ll take a look.
+                  Your feedback is in. We'll read every word and use it to make future stays better.
                 </p>
                 <button
                   type="button"
@@ -153,9 +149,9 @@ export default function FeedbackButton() {
                   </svg>
                 </button>
 
-                <h2 className="ios-title text-xl">Need something?</h2>
+                <h2 className="ios-title text-xl">How was your stay?</h2>
                 <p className="text-[12px] text-[#F0E2C2]/65 mt-1 leading-snug">
-                  Pick what it is, drop the details, hit send. Goes straight to the owner.
+                  Suggestions, compliments, app bugs, things to add &mdash; we want all of it. It helps us make future stays better.
                 </p>
 
                 {/* Category chips */}
@@ -199,6 +195,10 @@ export default function FeedbackButton() {
                   className="mt-2 w-full rounded-2xl bg-[#F0E2C2]/8 px-3.5 py-2.5 text-[13px] text-[#F0E2C2] placeholder-[#F0E2C2]/35 outline-none focus:bg-[#F0E2C2]/12"
                 />
 
+                <p className="mt-3 text-[11px] text-[#F0E2C2]/55 leading-snug">
+                  Need something during your stay (firewood, towels, something broken)? Please text or call the host directly &mdash; the number is in your welcome email. This widget isn&apos;t monitored in real time.
+                </p>
+
                 {status.state === "error" && (
                   <div className="mt-3 rounded-2xl bg-red-900/30 border border-red-400/30 px-3 py-2 text-[12px] text-red-200">
                     {status.msg}
@@ -210,7 +210,7 @@ export default function FeedbackButton() {
                   disabled={!message.trim() || status.state === "sending"}
                   className="ios-press mt-4 w-full rounded-2xl bg-[#F0E2C2] text-[#1A1310] font-semibold py-3 shadow-[0_8px_24px_rgba(184,153,104,0.25)] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {status.state === "sending" ? "Sending…" : "Send"}
+                  {status.state === "sending" ? "Sending\u2026" : "Send feedback"}
                 </button>
               </form>
             )}

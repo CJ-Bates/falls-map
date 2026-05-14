@@ -265,12 +265,8 @@ export default function ManualPage() {
           </h2>
           <ul className="space-y-3 text-[14px] text-[#F0E2C2]/85 leading-relaxed">
             <li>
-              <span className="font-semibold text-[#F0E2C2]">Not urgent.</span>{" "}
-              Use the feedback widget above. Pick the right category and you'll get a fast response.
-            </li>
-            <li>
-              <span className="font-semibold text-[#F0E2C2]">Urgent (broken pipe, power out, fire).</span>{" "}
-              Call or text the owner. Number is in your welcome email.
+              <span className="font-semibold text-[#F0E2C2]">During your stay (anything not an emergency).</span>{" "}
+              Text or call the host. Number is in your welcome email.
             </li>
             <li>
               <span className="font-semibold text-[#F0E2C2]">Emergency.</span>{" "}
