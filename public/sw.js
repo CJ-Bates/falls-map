@@ -1,7 +1,7 @@
 // public/sw.js — caches the app shell + map tiles + photos for offline use.
 // Registered by /src/components/RegisterSW.tsx on the home page.
 
-const VERSION = "v83";
+const VERSION = "v84";
 const APP_SHELL = `falls-app-${VERSION}`;
 const RUNTIME = `falls-runtime-${VERSION}`;
 const TILES = `falls-tiles-${VERSION}`;
@@ -97,4 +97,8 @@ async function staleWhileRevalidate(cacheName, req) {
 async function cacheFirst(cacheName, req) {
   const cache = await caches.open(cacheName);
   const cached = await cache.match(req);
-  if (cached) return cached
+  if (cached) return cached;
+  const fresh = await fetch(req).catch(() => undefined);
+  if (fresh && fresh.status === 200) cache.put(req, fresh.clone());
+  return fresh || new Response("offline", { status: 503 });
+}
