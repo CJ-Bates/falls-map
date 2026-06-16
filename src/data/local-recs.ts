@@ -9,7 +9,7 @@ export type LocalRec = {
   slug: string;
   name: string;
   category: LocalRecCategory;
-  town: "Imperial" | "Kimmswick" | "Arnold";
+  town: string;
   blurb: string;       // 1-line guest-facing description
   address: string;     // human-readable; deep-linked to maps
   lat: number;
@@ -211,5 +211,77 @@ export const LOCAL_RECS: LocalRec[] = [
     address: "Main St / 2nd St, Kimmswick, MO 63053",
     lat: 38.36658, lng: -90.36200, approximate: true,
     url: "https://www.gokimmswick.com/",
+  },
+
+  // ===== PARK \u2014 St. Louis day-trips (added per Amy / spring 2026) =====
+  {
+    slug: "stl-zoo",
+    name: "St. Louis Zoo",
+    category: "park",
+    town: "St. Louis",
+    blurb: "World-class zoo, free admission. Easily a whole day with the kids.",
+    address: "One Government Drive, St. Louis, MO 63110",
+    lat: 38.6358, lng: -90.2913, approximate: true,
+    url: "https://stlzoo.org/",
+  },
+  {
+    slug: "gateway-arch",
+    name: "Gateway Arch",
+    category: "park",
+    town: "St. Louis",
+    blurb: "The 630-ft monument plus a museum on Westward Expansion. Tram ride to the top.",
+    address: "11 N 4th St, St. Louis, MO 63102",
+    lat: 38.6247, lng: -90.1848, approximate: true,
+    url: "https://www.gatewayarch.com/",
+  },
+  {
+    slug: "missouri-botanical-garden",
+    name: "Missouri Botanical Garden",
+    category: "park",
+    town: "St. Louis",
+    blurb: "79 acres of gardens including the world-renowned Japanese garden.",
+    address: "4344 Shaw Blvd, St. Louis, MO 63110",
+    lat: 38.6128, lng: -90.2599, approximate: true,
+    url: "https://www.missouribotanicalgarden.org/",
+  },
+  {
+    slug: "union-station",
+    name: "St. Louis Union Station",
+    category: "park",
+    town: "St. Louis",
+    blurb: "Historic train station with hotel, aquarium, Ferris wheel, and restaurants.",
+    address: "1820 Market St, St. Louis, MO 63103",
+    lat: 38.6271, lng: -90.2073, approximate: true,
+    url: "https://www.stlouisunionstation.com/",
+  },
+  {
+    slug: "grants-farm",
+    name: "Grant\u2019s Farm",
+    category: "park",
+    town: "St. Louis",
+    blurb: "Free zoo + Clydesdale stables on historic Anheuser-Busch land. Plan a half day.",
+    address: "10501 Gravois Rd, St. Louis, MO 63123",
+    lat: 38.5544, lng: -90.3417, approximate: true,
+    url: "https://www.grantsfarm.com/",
+  },
+  {
+    slug: "suson-park",
+    name: "Suson Park",
+    category: "park",
+    town: "Sappington",
+    blurb: "Free county park with petting farm, ponds, and picnic shelters. Great for kids.",
+    address: "6073 Wells Rd, St. Louis, MO 63128",
+    lat: 38.5158, lng: -90.3725, approximate: true,
+    url: "https://stlouiscountymo.gov/st-louis-county-departments/parks-and-recreation/places-to-go/suson-park/",
+  },
+  {
+    slug: "world-bird-sanctuary",
+    name: "World Bird Sanctuary",
+    category: "park",
+    town: "Valley Park",
+    blurb: "Free wildlife sanctuary featuring eagles, owls, and other birds of prey.",
+    address: "125 Bald Eagle Ridge Rd, Valley Park, MO 63088",
+    lat: 38.5414, lng: -90.5057, approximate: true,
+    url: "https://www.worldbirdsanctuary.org/",
   },
 ];
