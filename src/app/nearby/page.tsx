@@ -97,8 +97,20 @@ function groupByCategory() {
   );
 }
 
-export default function NearbyPage() {
-  const grouped = groupByCategory();
+function chipHref(c?: string) {
+  return c ? `/nearby?c=${c}` : "/nearby";
+}
+
+export default async function NearbyPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ c?: string }>;
+}) {
+  const sp = await searchParams;
+  const activeCategory = (["food", "drink", "shop", "fuel", "park"] as const).find((x) => x === sp.c);
+  const grouped = groupByCategory().filter(([cat]) => !activeCategory || cat === activeCategory);
+  const totalAll = LOCAL_RECS.length;
+  const totalShown = grouped.reduce((sum, [, recs]) => sum + recs.length, 0);
 
   return (
     <main className="hero-radial min-h-[100svh] w-full pb-16">
@@ -115,13 +127,43 @@ export default function NearbyPage() {
         <div>
           <h1 className="ios-title text-2xl text-[#F0E2C2]">Off the property</h1>
           <p className="text-[12px] text-[#B89968] mt-0.5">
-            Local spots + St. Louis day-trips
+            Local spots + St. Louis day-trips \u00b7 drive times from The Falls
           </p>
         </div>
       </header>
 
-      <div className="px-6 mx-auto max-w-3xl mt-4 space-y-6">
-        {grouped.map(([category, recs]) => {
+      {/* Category filter chips */}
+      <div className="px-6 max-w-3xl mx-auto mt-3 mb-1">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <FilterChip href={chipHref(undefined)} active={!activeCategory} label={`All (${totalAll})`} />
+          {(["food", "drink", "shop", "fuel", "park"] as const).map((c) => {
+            const m = CATEGORY_META[c];
+            const count = LOCAL_RECS.filter((r) => r.category === c).length;
+            const active = activeCategory === c;
+            return (
+              <FilterChip
+                key={c}
+                href={chipHref(active ? undefined : c)}
+                active={active}
+                label={`${m.label} (${count})`}
+                accent={{ bg: m.bg, color: m.color, border: m.border }}
+              />
+            );
+          })}
+        </div>
+        {activeCategory && (
+          <p className="text-[11px] text-[#F0E2C2]/55 mt-2">
+            Showing {totalShown} of {totalAll}.
+          </p>
+        )}
+      </div>
+
+      <div className="px-6 mx-auto max-w-3xl mt-3 space-y-6">
+        {grouped.length === 0 ? (
+          <p className="text-center text-[14px] text-[#F0E2C2]/55 py-12">
+            No spots in this category. <Link href="/nearby" className="text-[#cdac7d] underline">Clear filter</Link>.
+          </p>
+        ) : grouped.map(([category, recs]) => {
           const meta = CATEGORY_META[category];
           return (
             <section key={category}>
@@ -152,9 +194,20 @@ export default function NearbyPage() {
                         <h2 className="ios-headline text-[16px] text-[#F0E2C2] leading-tight">
                           {rec.name}
                         </h2>
-                        <span className="text-[10px] uppercase tracking-[0.14em] text-[#B89968]">
-                          {rec.town}
-                        </span>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {rec.driveMin && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-[#cdac7d]/15 border border-[#cdac7d]/30 px-2 py-0.5 text-[10.5px] font-semibold text-[#cdac7d]">
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                              </svg>
+                              ~{rec.driveMin} min
+                            </span>
+                          )}
+                          <span className="text-[10px] uppercase tracking-[0.14em] text-[#B89968]">
+                            {rec.town}
+                          </span>
+                        </div>
                       </div>
                       <p className="text-[14px] text-[#F0E2C2]/85 mt-1.5 leading-relaxed">
                         {rec.blurb}
@@ -218,5 +271,46 @@ export default function NearbyPage() {
         </p>
       </div>
     </main>
+  );
+}
+
+function FilterChip({
+  href,
+  active,
+  label,
+  accent,
+}: {
+  href: string;
+  active: boolean;
+  label: string;
+  accent?: { bg: string; color: string; border: string };
+}) {
+  if (active) {
+    return (
+      <Link
+        href={href}
+        className="ios-press inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[11.5px] font-semibold"
+        style={
+          accent
+            ? { background: accent.color, color: "#1A1310", border: `1px solid ${accent.color}` }
+            : { background: "#F0E2C2", color: "#1A1310", border: "1px solid #F0E2C2" }
+        }
+      >
+        {label}
+      </Link>
+    );
+  }
+  return (
+    <Link
+      href={href}
+      className="ios-press inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[11.5px] font-semibold transition-colors"
+      style={
+        accent
+          ? { background: accent.bg, color: accent.color, border: `1px solid ${accent.border}` }
+          : { background: "rgba(240,226,194,0.08)", color: "#F0E2C2", border: "1px solid rgba(240,226,194,0.20)" }
+      }
+    >
+      {label}
+    </Link>
   );
 }

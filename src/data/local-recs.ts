@@ -15,6 +15,7 @@ export type LocalRec = {
   lat: number;
   lng: number;
   approximate?: boolean; // true while pin placement hasn\u2019t been verified
+  driveMin?: number;       // approximate drive minutes from The Falls
   hours?: string;        // optional schedule note
   url?: string;          // optional website
 };
@@ -30,6 +31,7 @@ export const LOCAL_RECS: LocalRec[] = [
     address: "1209 Main St, Imperial, MO 63052",
     lat: 38.36898, lng: -90.38539, approximate: true,
     url: "https://www.dinefg.com/",
+    driveMin: 10,
   },
   {
     slug: "adelitas-mexican",
@@ -40,6 +42,7 @@ export const LOCAL_RECS: LocalRec[] = [
     address: "1235 Imperial Main, Imperial, MO 63052",
     lat: 38.36932, lng: -90.38509, approximate: true,
     url: "https://adelitasmexicancuisinemo.com/",
+    driveMin: 10,
   },
   {
     slug: "detour-bar-grill",
@@ -50,6 +53,7 @@ export const LOCAL_RECS: LocalRec[] = [
     address: "2855 Seckman Rd, Imperial, MO 63052",
     lat: 38.39615, lng: -90.39203, approximate: true,
     url: "http://detourgrillandbar.com/",
+    driveMin: 7,
   },
   {
     slug: "star-cafe",
@@ -60,6 +64,7 @@ export const LOCAL_RECS: LocalRec[] = [
     address: "2868 Seckman Rd, Imperial, MO 63052",
     lat: 38.39641, lng: -90.39241, approximate: true,
     url: "https://www.starcafeseckman.com/",
+    driveMin: 7,
   },
 
   // ===== FOOD — Kimmswick =====
@@ -73,6 +78,7 @@ export const LOCAL_RECS: LocalRec[] = [
     lat: 38.36647, lng: -90.36165, approximate: true,
     hours: "Tue\u2013Sun 10am\u20133pm \u00b7 reservations strongly recommended",
     url: "https://theblueowl.com/",
+    driveMin: 18,
   },
   {
     slug: "dough-depot",
@@ -83,6 +89,7 @@ export const LOCAL_RECS: LocalRec[] = [
     address: "216 Market St, Kimmswick, MO 63053",
     lat: 38.36668, lng: -90.36245, approximate: true,
     url: "https://www.gokimmswick.com/business-directory/dough-depot-cafe/",
+    driveMin: 18,
   },
   {
     slug: "lachance-winery",
@@ -93,6 +100,7 @@ export const LOCAL_RECS: LocalRec[] = [
     address: "6035 Second St, Kimmswick, MO 63053",
     lat: 38.36625, lng: -90.36213, approximate: true,
     url: "https://lachancevineyards.com/",
+    driveMin: 18,
   },
 
   // ===== FOOD — Arnold =====
@@ -105,6 +113,7 @@ export const LOCAL_RECS: LocalRec[] = [
     address: "3606 W Outer Rd, Arnold, MO 63010",
     lat: 38.40663, lng: -90.39144, approximate: true,
     url: "https://www.twistedtavernstl.com/",
+    driveMin: 15,
   },
   {
     slug: "sybergs-arnold",
@@ -115,6 +124,7 @@ export const LOCAL_RECS: LocalRec[] = [
     address: "249 Arnold Crossroads Center, Arnold, MO 63010",
     lat: 38.43441, lng: -90.37562, approximate: true,
     url: "https://sybergs.com/locations/arnold/",
+    driveMin: 18,
   },
   {
     slug: "sj-snoball-custard",
@@ -125,6 +135,7 @@ export const LOCAL_RECS: LocalRec[] = [
     address: "3857 W Outer Rd, Arnold, MO 63010",
     lat: 38.40934, lng: -90.39351, approximate: true,
     url: "https://sjsnoballshop.com/",
+    driveMin: 15,
   },
 
   // ===== SHOP — grocery / markets =====
@@ -137,6 +148,7 @@ export const LOCAL_RECS: LocalRec[] = [
     address: "1015 W Main St, Imperial, MO 63052",
     lat: 38.36833, lng: -90.38700, approximate: true,
     url: "https://www.facebook.com/HerrellsMarket/",
+    driveMin: 10,
   },
   {
     slug: "schnucks-arnold-richardson",
@@ -147,6 +159,7 @@ export const LOCAL_RECS: LocalRec[] = [
     address: "3900 Vogel Rd, Arnold, MO 63010",
     lat: 38.41922, lng: -90.37705, approximate: true,
     url: "https://schnucks.com/locations/mo-arnold-127",
+    driveMin: 18,
   },
   {
     slug: "dierbergs-arnold-commons",
@@ -157,6 +170,7 @@ export const LOCAL_RECS: LocalRec[] = [
     address: "860 Arnold Commons Dr, Arnold, MO 63010",
     lat: 38.43572, lng: -90.37798, approximate: true,
     url: "https://www.dierbergs.com/store-locations/arnold-commons",
+    driveMin: 20,
   },
   {
     slug: "walmart-arnold",
@@ -167,6 +181,7 @@ export const LOCAL_RECS: LocalRec[] = [
     address: "2201 Michigan Ave, Arnold, MO 63010",
     lat: 38.43389, lng: -90.37352, approximate: true,
     url: "https://www.walmart.com/store/1514-arnold-mo",
+    driveMin: 20,
   },
 
   // ===== FUEL =====
@@ -178,6 +193,7 @@ export const LOCAL_RECS: LocalRec[] = [
     blurb: "Closest gas station to the property.",
     address: "2865 Seckman Rd, Imperial, MO 63052",
     lat: 38.39629, lng: -90.39221, approximate: true,
+    driveMin: 7,
   },
 
   // ===== PARK / outdoors / things to do =====
@@ -190,6 +206,7 @@ export const LOCAL_RECS: LocalRec[] = [
     address: "1050 Charles J Becker Dr, Imperial, MO 63052",
     lat: 38.38733, lng: -90.39593, approximate: true,
     url: "https://mostateparks.com/historic-site/mastodon-state-historic-site",
+    driveMin: 8,
   },
   {
     slug: "anheuser-estate-museum",
@@ -201,6 +218,7 @@ export const LOCAL_RECS: LocalRec[] = [
     lat: 38.36511, lng: -90.35763, approximate: true,
     hours: "Walk-in tours every Thursday noon\u20134pm \u00b7 $10/person",
     url: "https://cityofkimmswick.org/community/anheuser-estate/",
+    driveMin: 18,
   },
   {
     slug: "kimmswick-historic-district",
@@ -211,6 +229,7 @@ export const LOCAL_RECS: LocalRec[] = [
     address: "Main St / 2nd St, Kimmswick, MO 63053",
     lat: 38.36658, lng: -90.36200, approximate: true,
     url: "https://www.gokimmswick.com/",
+    driveMin: 18,
   },
 
   // ===== PARK \u2014 St. Louis day-trips (added per Amy / spring 2026) =====
@@ -223,6 +242,7 @@ export const LOCAL_RECS: LocalRec[] = [
     address: "One Government Drive, St. Louis, MO 63110",
     lat: 38.6358, lng: -90.2913, approximate: true,
     url: "https://stlzoo.org/",
+    driveMin: 40,
   },
   {
     slug: "gateway-arch",
@@ -233,6 +253,7 @@ export const LOCAL_RECS: LocalRec[] = [
     address: "11 N 4th St, St. Louis, MO 63102",
     lat: 38.6247, lng: -90.1848, approximate: true,
     url: "https://www.gatewayarch.com/",
+    driveMin: 40,
   },
   {
     slug: "missouri-botanical-garden",
@@ -243,6 +264,7 @@ export const LOCAL_RECS: LocalRec[] = [
     address: "4344 Shaw Blvd, St. Louis, MO 63110",
     lat: 38.6128, lng: -90.2599, approximate: true,
     url: "https://www.missouribotanicalgarden.org/",
+    driveMin: 40,
   },
   {
     slug: "union-station",
@@ -253,6 +275,7 @@ export const LOCAL_RECS: LocalRec[] = [
     address: "1820 Market St, St. Louis, MO 63103",
     lat: 38.6271, lng: -90.2073, approximate: true,
     url: "https://www.stlouisunionstation.com/",
+    driveMin: 35,
   },
   {
     slug: "grants-farm",
@@ -263,6 +286,7 @@ export const LOCAL_RECS: LocalRec[] = [
     address: "10501 Gravois Rd, St. Louis, MO 63123",
     lat: 38.5544, lng: -90.3417, approximate: true,
     url: "https://www.grantsfarm.com/",
+    driveMin: 30,
   },
   {
     slug: "suson-park",
@@ -273,6 +297,7 @@ export const LOCAL_RECS: LocalRec[] = [
     address: "6073 Wells Rd, St. Louis, MO 63128",
     lat: 38.5158, lng: -90.3725, approximate: true,
     url: "https://stlouiscountymo.gov/st-louis-county-departments/parks-and-recreation/places-to-go/suson-park/",
+    driveMin: 25,
   },
   {
     slug: "world-bird-sanctuary",
@@ -283,5 +308,6 @@ export const LOCAL_RECS: LocalRec[] = [
     address: "125 Bald Eagle Ridge Rd, Valley Park, MO 63088",
     lat: 38.5414, lng: -90.5057, approximate: true,
     url: "https://www.worldbirdsanctuary.org/",
+    driveMin: 40,
   },
 ];
