@@ -61,7 +61,7 @@ export default function ManualPage() {
             </li>
             <li>
               <span className="font-semibold text-[#F0E2C2]">Need anything?</span>{" "}
-              Tap <em>Send feedback</em> on the home page. It pings the owner's phone directly with whatever you need.
+              For everyday stay needs, reply to your booking email (Amy). For urgent issues, text or call CJ at <a href="tel:+13144097833" className="text-[#cdac7d] underline">(314) 409-7833</a>.
             </li>
           </ol>
         </section>
@@ -141,24 +141,41 @@ export default function ManualPage() {
           </p>
         </section>
 
-        {/* Service requests */}
+        {/* Need something during your stay — direct contacts */}
         <section className="ios-glass rounded-3xl p-5">
           <h2 className="ios-headline text-[16px] text-[#cdac7d] mb-3 flex items-center gap-2">
-            <SectionIcon d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            <SectionIcon d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" />
             Need something during your stay?
           </h2>
           <p className="text-[14px] text-[#F0E2C2]/85 leading-relaxed mb-3">
-            Tap <em>Send feedback</em> on the home page, pick a category, and send. It pings the owner's phone directly.
+            For everyday requests &mdash; firewood, extra towels, trash questions, anything about the property &mdash; the fastest way is to <strong className="text-[#F0E2C2]">reply to your booking email</strong>. Amy handles guest support and will get back to you quickly.
           </p>
-          <ul className="space-y-1.5 text-[13.5px] text-[#F0E2C2]/85 leading-relaxed">
-            <li><span className="text-[#cdac7d] font-semibold">Firewood</span> &mdash; running low, or restocked but need a delivery to a specific firepit.</li>
-            <li><span className="text-[#cdac7d] font-semibold">Towels / linens</span> &mdash; extras for the cabin.</li>
-            <li><span className="text-[#cdac7d] font-semibold">Broken / needs repair</span> &mdash; anything from a leaky faucet to a tripped breaker.</li>
-            <li><span className="text-[#cdac7d] font-semibold">Trash</span> &mdash; full bins, or you're not sure where pickup is.</li>
-            <li><span className="text-[#cdac7d] font-semibold">Other request</span> &mdash; anything else (more firewood, a weird sound from the well, whatever).</li>
-            <li><span className="text-[#cdac7d] font-semibold">Just a note</span> &mdash; ideas, compliments, suggestions for the app.</li>
-          </ul>
-          <div className="mt-4 flex justify-center">
+          <p className="text-[14px] text-[#F0E2C2]/85 leading-relaxed">
+            For urgent issues (broken pipe, power out, you&apos;re locked out, or you can&apos;t reach Amy), text or call CJ:
+          </p>
+          <div className="mt-3 flex justify-center">
+            <a
+              href="tel:+13144097833"
+              className="ios-press inline-flex items-center gap-2 rounded-full bg-[#cdac7d]/15 border border-[#cdac7d]/40 px-4 py-2 text-[14px] font-semibold text-[#F0E2C2]"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cdac7d" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+              (314) 409-7833
+            </a>
+          </div>
+        </section>
+
+        {/* Stay feedback (general — NOT for urgent needs) */}
+        <section className="ios-glass rounded-3xl p-5">
+          <h2 className="ios-headline text-[16px] text-[#cdac7d] mb-3 flex items-center gap-2">
+            <SectionIcon d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            How was your stay?
+          </h2>
+          <p className="text-[14px] text-[#F0E2C2]/85 leading-relaxed mb-3">
+            Tap the feedback button below to share suggestions, compliments, app bugs, or ideas for what to add. We read every note and use it to make future stays better. <em>Not monitored in real time</em> &mdash; for anything you need <strong className="text-[#F0E2C2]">now</strong>, use the contacts above.
+          </p>
+          <div className="mt-3 flex justify-center">
             <FeedbackButton />
           </div>
         </section>
@@ -252,8 +269,12 @@ export default function ManualPage() {
           </h2>
           <ul className="space-y-3 text-[14px] text-[#F0E2C2]/85 leading-relaxed">
             <li>
-              <span className="font-semibold text-[#F0E2C2]">During your stay (anything not an emergency).</span>{" "}
-              Text or call the host. Number is in your welcome email.
+              <span className="font-semibold text-[#F0E2C2]">Non-urgent.</span>{" "}
+              Reply to your booking email. Amy handles guest support.
+            </li>
+            <li>
+              <span className="font-semibold text-[#F0E2C2]">Urgent (broken pipe, power out, locked out).</span>{" "}
+              Text or call CJ at <a href="tel:+13144097833" className="text-[#cdac7d] underline">(314) 409-7833</a>.
             </li>
             <li>
               <span className="font-semibold text-[#F0E2C2]">Emergency.</span>{" "}
