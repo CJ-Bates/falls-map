@@ -122,33 +122,20 @@ export default function ManualPage() {
             Wi-Fi &amp; cell
           </h2>
           <p className="text-[14px] text-[#F0E2C2]/85 leading-relaxed mb-3">
-            Two networks during the current upgrade. Try the Guest network first, fall back to the other if signal is weak.
+            One wired Starlink network covers every cabin. Same SSID and password everywhere on the property.
           </p>
           <div className="space-y-2 text-[13.5px] text-[#F0E2C2]/85">
             <div className="flex items-center justify-between rounded-2xl bg-[#F0E2C2]/8 px-3.5 py-2.5">
               <div>
                 <div className="text-[11px] uppercase tracking-[0.12em] text-[#F0E2C2]/55">Network</div>
-                <div>The Falls Guest</div>
+                <div>The Falls Wifi_Guest</div>
               </div>
               <div className="text-right">
                 <div className="text-[11px] uppercase tracking-[0.12em] text-[#F0E2C2]/55">Password</div>
-                <div className="font-mono">TheFalls!</div>
-              </div>
-            </div>
-            <div className="flex items-center justify-between rounded-2xl bg-[#F0E2C2]/8 px-3.5 py-2.5">
-              <div>
-                <div className="text-[11px] uppercase tracking-[0.12em] text-[#F0E2C2]/55">Backup</div>
-                <div>The Falls</div>
-              </div>
-              <div className="text-right">
-                <div className="text-[11px] uppercase tracking-[0.12em] text-[#F0E2C2]/55">Password</div>
-                <div className="font-mono">thefalls</div>
+                <div className="font-mono">CabinFalls!</div>
               </div>
             </div>
           </div>
-          <p className="text-[12px] text-[#F0E2C2]/55 leading-snug mt-3">
-            A single hardwired Starlink network is rolling out soon. This card will update with the new credentials once it's live.
-          </p>
           <p className="text-[12px] text-[#F0E2C2]/55 leading-snug mt-2">
             <span className="text-[#F0E2C2]/85">Cell coverage</span> can be spotty past the lakes and out at The 13. Install this app to your home screen and the property map will work without a signal.
           </p>

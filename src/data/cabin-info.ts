@@ -24,15 +24,11 @@ export type CabinInfo = {
   cabinSpecificNote: string | null;
 };
 
-// Current Wi-Fi setup as of May 2026: two existing networks until the
-// Starlink-hardwired rollout. This will collapse into a single network
-// (TheFalls Cabins / thefalls) once the upgrade is done.
+// Wi-Fi as of v101: single hardwired Starlink network covering every cabin.
 const CURRENT_WIFI: WifiNetwork[] = [
-  { ssid: "The Falls Guest", password: "TheFalls!" },
-  { ssid: "The Falls", password: "thefalls" },
+  { ssid: "The Falls Wifi_Guest", password: "CabinFalls!" },
 ];
-const WIFI_NOTE =
-  "Two networks while we upgrade — try Guest first, fall back to the other if it\u2019s weak. A single hardwired Starlink network is coming.";
+const WIFI_NOTE: string | null = null;
 
 export const cabinInfo: CabinInfo[] = [
   {
