@@ -30,6 +30,7 @@ type Stats = {
 };
 
 const CABINS = [
+  { slug: "main", name: "Main App (home)" },
   { slug: "cabin-1", name: "Ridge Cabin 1" },
   { slug: "cabin-2", name: "Ridge Cabin 2" },
   { slug: "cabin-3a", name: "Ridge Cabin 3A" },
@@ -313,7 +314,7 @@ export default function AdminDashboard() {
                   className="block w-full aspect-square rounded-lg"
                 />
                 <div className="mt-2 text-[12px] font-semibold text-[#1A1310]">{c.name}</div>
-                <div className="text-[10px] text-[#6B4423] truncate">/welcome/{c.slug}</div>
+                <div className="text-[10px] text-[#6B4423] truncate">{c.slug === "main" ? "/" : `/welcome/${c.slug}`}</div>
               </div>
             ))}
           </div>
