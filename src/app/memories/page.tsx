@@ -71,6 +71,18 @@ export default function MemoriesPage() {
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>({ state: "idle" });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Preview URL for the picked file. Memoized + revoked so we don't mint a
+  // fresh blob: URL on every render (each one pins the photo in memory).
+  const previewUrl = useMemo(
+    () => (file ? URL.createObjectURL(file) : null),
+    [file],
+  );
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -302,11 +314,11 @@ export default function MemoriesPage() {
                   : "bg-[#F0E2C2]/8 border-2 border-dashed border-[#F0E2C2]/20")
               }
             >
-              {file ? (
+              {file && previewUrl ? (
                 <>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={URL.createObjectURL(file)}
+                    src={previewUrl}
                     alt="Selected"
                     className="absolute inset-0 h-full w-full object-cover"
                   />
