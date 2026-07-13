@@ -1,6 +1,23 @@
 import type { Metadata, Viewport } from "next";
+import { Cabin_Sketch, Caveat } from "next/font/google";
 import "./globals.css";
 import RegisterSW from "@/components/RegisterSW";
+
+// Self-hosted via next/font — replaces the render-blocking Google Fonts
+// @import chain in globals.css. Exposed as CSS variables consumed by
+// .font-sketch / .font-hand.
+const cabinSketch = Cabin_Sketch({
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  variable: "--font-cabin-sketch",
+  display: "swap",
+});
+const caveat = Caveat({
+  weight: ["500", "700"],
+  subsets: ["latin"],
+  variable: "--font-caveat",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://app.thefallsatlionsden.com"),
@@ -55,7 +72,10 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className="h-full antialiased">
+    <html
+      lang="en"
+      className={`h-full antialiased ${cabinSketch.variable} ${caveat.variable}`}
+    >
       <body
         className="bg-[#0e0a08] text-[#F0E2C2]"
         style={{ minHeight: "100dvh" }}

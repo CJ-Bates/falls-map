@@ -2,7 +2,20 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import PropertyMap, { type SelectedItem, type Basemap, type PoiVisibility } from "@/components/PropertyMap";
+import dynamic from "next/dynamic";
+import type { SelectedItem, Basemap, PoiVisibility } from "@/components/PropertyMap";
+
+// MapLibre GL (~800 KB of JS + CSS) only loads when the map route actually
+// renders, instead of riding along in the initial chunk. Type-only imports
+// above are erased at build time, so they don't defeat the split.
+const PropertyMap = dynamic(() => import("@/components/PropertyMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="absolute inset-0 flex items-center justify-center bg-[#0e0a08]">
+      <span className="font-hand text-2xl text-[#B89968]">Unrolling the map…</span>
+    </div>
+  ),
+});
 import MapLegend from "@/components/MapLegend";
 import OfflineButton from "@/components/OfflineButton";
 import DetailPanel from "@/components/DetailPanel";

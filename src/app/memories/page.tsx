@@ -143,7 +143,10 @@ export default function MemoriesPage() {
     try {
       [original, thumb] = await Promise.all([
         encodeImage(file, Infinity, 0.92),
-        encodeImage(file, 1200, 0.8),
+        // Thumbs render in ~150-200px grid cells; 480px covers 2x screens
+        // at a fraction of the old 1200px payload. Full-res original still
+        // backs the lightbox.
+        encodeImage(file, 480, 0.75),
       ]);
     } catch (err) {
       setUploadStatus({

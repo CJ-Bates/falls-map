@@ -747,7 +747,7 @@ export default function PropertyMap({
       const rotate = a.rotate ?? 0;
       const el = document.createElement("div");
       el.style.cssText = `
-        font-family: "Caveat", "Cabin Sketch", cursive;
+        font-family: var(--font-caveat), "Caveat", "Cabin Sketch", cursive;
         font-weight: 700;
         color: #1A1310;
         text-shadow:
@@ -1267,7 +1267,7 @@ export default function PropertyMap({
           <path d="M56 31 L34 33 L31 31 L34 29 Z" fill="#B89968" stroke="#2A1F18" strokeWidth="0.4" strokeLinejoin="round" opacity="0.85" />
           <path d="M6 31 L28 29 L31 31 L28 33 Z" fill="#B89968" stroke="#2A1F18" strokeWidth="0.4" strokeLinejoin="round" opacity="0.85" />
           <circle cx="31" cy="31" r="2.5" fill="#2A1F18" />
-          <text x="31" y="13" textAnchor="middle" fontFamily="Cabin Sketch, serif" fontWeight="700" fontSize="9" fill="#2A1F18">N</text>
+          <text x="31" y="13" textAnchor="middle" fontFamily="var(--font-cabin-sketch), Cabin Sketch, serif" fontWeight="700" fontSize="9" fill="#2A1F18">N</text>
         </svg>
       </button>
 
