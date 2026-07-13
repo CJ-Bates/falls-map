@@ -309,6 +309,13 @@ export default function PropertyMap({
   const [tracking, setTracking] = useState(false);
   const [locateError, setLocateError] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  // Auto-dismiss the location-error toast after a few seconds — previously
+  // it stayed on screen forever, covering the locate button.
+  useEffect(() => {
+    if (!locateError) return;
+    const t = setTimeout(() => setLocateError(null), 6000);
+    return () => clearTimeout(t);
+  }, [locateError]);
   // Compass: write the rotation transform directly to the SVG via a ref so
   // we bypass React's render cycle on every rotate frame. This is what makes
   // the dial silky instead of jittery — no setState during the gesture.
