@@ -21,7 +21,7 @@ import {
   type LngLat,
   type Route,
 } from "@/lib/routing";
-import { publicCabins } from "@/data/cabins";
+import { cabins, publicCabins } from "@/data/cabins";
 import { pois, categoryStyle } from "@/data/pois";
 import { haversine } from "@/lib/routing";
 import trailsData from "@/data/trails.json";
@@ -220,13 +220,28 @@ export default function MapPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // URL focus parameter: when /map?focus=trail-<slug>, fit the map to
-  // that trail's bounding box on mount. Done via a state we hand to
-  // PropertyMap as an "initial bounds" hint.
+  // URL focus parameters, handled on mount:
+  //   /map?focus=trail-<slug>  — fit the map to that trail's bounding box
+  //   /map?cabin=<slug>        — zoom to a cabin and open its detail panel
+  //                              (linked from the cabin welcome pages)
+  // Done via a state we hand to PropertyMap as an "initial bounds" hint.
   const [focusBounds, setFocusBounds] = useState<[[number, number], [number, number]] | null>(null);
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
+    const cabinSlug = params.get("cabin");
+    if (cabinSlug) {
+      const cabin = cabins.find((c) => c.slug === cabinSlug);
+      if (cabin) {
+        const pad = 0.0015;
+        setFocusBounds([
+          [cabin.lng - pad, cabin.lat - pad],
+          [cabin.lng + pad, cabin.lat + pad],
+        ]);
+        setSelected({ kind: "cabin", data: cabin });
+        return;
+      }
+    }
     const focus = params.get("focus");
     if (!focus) return;
     if (focus.startsWith("trail-")) {
