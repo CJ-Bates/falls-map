@@ -234,7 +234,7 @@ export default function Home() {
             </span>
             <span className="flex-1 text-left">
               <span className="ios-headline block text-[15px]">Share a photo from your stay</span>
-              <span className="block text-[12px] text-[#F0E2C2]/75">Add to the guest album · see everyone else\'s</span>
+              <span className="block text-[12px] text-[#F0E2C2]/75">Add to the guest album · see everyone else&apos;s</span>
             </span>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="transition-transform group-active:translate-x-0.5 flex-shrink-0">
               <path d="m9 6 6 6-6 6" />
