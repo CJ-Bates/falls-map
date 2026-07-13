@@ -169,17 +169,13 @@ function PoiToggleRow({
   );
 }
 
-function formatAgo(ms: number): string {
-  const delta = Date.now() - ms;
-  const min = Math.floor(delta / 60_000);
-  if (min < 1) return "just now";
-  if (min < 60) return `${min}m ago`;
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr}h ago`;
-  const day = Math.floor(hr / 24);
-  if (day < 7) return `${day}d ago`;
-  return `${Math.floor(day / 7)}w ago`;
-}
+// Pin counts shown in the Layers popover — derived from the data so they
+// never go stale when cabins/POIs are added or retired.
+const PIN_COUNTS = {
+  cabins: publicCabins.length,
+  carvings: pois.filter((p) => p.category === "bear" || p.category === "bobcat").length,
+  spots: pois.filter((p) => p.category !== "bear" && p.category !== "bobcat").length,
+};
 
 // ---------- page --------------------------------------------------------------
 export default function MapPage() {
@@ -674,21 +670,21 @@ export default function MapPage() {
               <ul className="space-y-1.5">
                 <PoiToggleRow
                   label="Cabins"
-                  count={4}
+                  count={PIN_COUNTS.cabins}
                   color="#B23A1F"
                   active={poiVisibility.cabins}
                   onToggle={() => togglePoi("cabins")}
                 />
                 <PoiToggleRow
                   label="Spots"
-                  count={8}
+                  count={PIN_COUNTS.spots}
                   color="#D9531E"
                   active={poiVisibility.spots}
                   onToggle={() => togglePoi("spots")}
                 />
                 <PoiToggleRow
                   label="Carvings"
-                  count={2}
+                  count={PIN_COUNTS.carvings}
                   color="#1f1410"
                   active={poiVisibility.carvings}
                   onToggle={() => togglePoi("carvings")}
