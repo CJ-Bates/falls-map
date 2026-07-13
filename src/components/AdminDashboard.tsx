@@ -11,9 +11,10 @@ import {
   type Feedback,
 } from "@/lib/supabase";
 
-// Private operator dashboard. Pulls a live snapshot from Supabase: recent
-// memories, recent feedback (open + resolved), and quick counts. Plus
-// printable QR codes for each cabin door.
+// Private operator dashboard. Memories come from Supabase directly (they're
+// public gallery content anyway); feedback comes through /api/admin/feedback,
+// authenticated with the admin key, since the table holds guest emails and
+// anon has no access to it. Plus printable QR codes for each cabin door.
 
 type Stats = {
   memoriesTotal: number;
@@ -50,7 +51,7 @@ function timeAgo(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 }
 
-export default function AdminDashboard() {
+export default function AdminDashboard({ adminKey }: { adminKey: string }) {
   const [stats, setStats] = useState<Stats>({
     memoriesTotal: 0,
     memoriesWithCaption: 0,
@@ -67,23 +68,32 @@ export default function AdminDashboard() {
   const [showResolved, setShowResolved] = useState(false);
 
   const load = async () => {
-    const memQ = await supabase
-      .from("memories")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(500);
-    const fbQ = await supabase
-      .from("feedback")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(200);
+    const [memQ, fbRes] = await Promise.all([
+      supabase
+        .from("memories")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(500),
+      fetch("/api/admin/feedback", {
+        headers: { Authorization: `Bearer ${adminKey}` },
+      }).catch(() => null),
+    ]);
+
+    let feedback: Feedback[] = [];
+    let fbErr: string | null = null;
+    if (fbRes && fbRes.ok) {
+      const json = (await fbRes.json().catch(() => null)) as { feedback?: Feedback[] } | null;
+      feedback = json?.feedback ?? [];
+    } else {
+      fbErr = fbRes
+        ? `Couldn't load feedback (HTTP ${fbRes.status})`
+        : "Couldn't load feedback (no connection)";
+    }
 
     const memErr = memQ.error?.message;
-    const fbErr = fbQ.error?.message;
     const error = memErr || fbErr || null;
 
     const memories = (memQ.data ?? []) as Memory[];
-    const feedback = (fbQ.data ?? []) as Feedback[];
 
     const byCabin: Record<string, number> = {};
     const byPoi: Record<string, number> = {};
@@ -121,41 +131,36 @@ export default function AdminDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const markResolved = async (id: string) => {
-    // Optimistic update
-    setStats((s) => ({
-      ...s,
-      feedbackOpen: s.feedbackOpen.filter((f) => f.id !== id),
-      feedbackResolved: [
-        { ...(s.feedbackOpen.find((f) => f.id === id) as Feedback), resolved_at: new Date().toISOString() },
-        ...s.feedbackResolved,
-      ],
-    }));
-    const { error } = await supabase
-      .from("feedback")
-      .update({ resolved_at: new Date().toISOString() })
-      .eq("id", id);
-    if (error) {
-      // Reload to recover from inconsistent state
-      void load();
-    }
+  const setResolved = async (id: string, resolved: boolean) => {
+    // Optimistic update; reload on failure to recover consistent state.
+    setStats((s) => {
+      const source = resolved ? s.feedbackOpen : s.feedbackResolved;
+      const item = source.find((f) => f.id === id);
+      if (!item) return s;
+      const moved = { ...item, resolved_at: resolved ? new Date().toISOString() : null };
+      return {
+        ...s,
+        feedbackOpen: resolved
+          ? s.feedbackOpen.filter((f) => f.id !== id)
+          : [moved, ...s.feedbackOpen],
+        feedbackResolved: resolved
+          ? [moved, ...s.feedbackResolved]
+          : s.feedbackResolved.filter((f) => f.id !== id),
+      };
+    });
+    const res = await fetch("/api/admin/feedback", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${adminKey}`,
+      },
+      body: JSON.stringify({ id, resolved }),
+    }).catch(() => null);
+    if (!res || !res.ok) void load();
   };
 
-  const reopen = async (id: string) => {
-    setStats((s) => ({
-      ...s,
-      feedbackResolved: s.feedbackResolved.filter((f) => f.id !== id),
-      feedbackOpen: [
-        { ...(s.feedbackResolved.find((f) => f.id === id) as Feedback), resolved_at: null },
-        ...s.feedbackOpen,
-      ],
-    }));
-    const { error } = await supabase
-      .from("feedback")
-      .update({ resolved_at: null })
-      .eq("id", id);
-    if (error) void load();
-  };
+  const markResolved = (id: string) => setResolved(id, true);
+  const reopen = (id: string) => setResolved(id, false);
 
   return (
     <main className="hero-radial min-h-[100svh] w-full pb-16">

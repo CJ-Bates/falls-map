@@ -181,7 +181,7 @@ export default async function CabinWelcomePage({ params }: { params: Promise<{ s
           {/* Explore CTAs */}
           <div className="grid grid-cols-2 gap-3 mt-2">
             <Link
-              href={cabin ? `/map?cabin=${cabin.slug}` : "/map"}
+              href={cabin ? `/map?focus=${cabin.slug}` : "/map"}
               className="ios-glass ios-press rounded-2xl p-4 text-center"
             >
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#cdac7d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-1">

@@ -233,15 +233,22 @@ export default function MapPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // URL focus parameter: when /map?focus=trail-<slug>, fit the map to
-  // that trail's bounding box on mount. Done via a state we hand to
-  // PropertyMap as an "initial bounds" hint.
+  // URL focus parameter — deep-links from the home tiles and the cabin
+  // welcome pages:
+  //   /map?focus=trail-<slug>  → fit the map to that trail's bounding box
+  //   /map?focus=poi-<slug>    → zoom to + select that POI
+  //   /map?focus=cabin-<n>     → zoom to + select that cabin (slugs are
+  //                              already "cabin-1" etc., no extra prefix)
   const [focusBounds, setFocusBounds] = useState<[[number, number], [number, number]] | null>(null);
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const focus = params.get("focus");
     if (!focus) return;
+    const zoomToPoint = (lng: number, lat: number) => {
+      const pad = 0.0015;
+      setFocusBounds([[lng - pad, lat - pad], [lng + pad, lat + pad]]);
+    };
     if (focus.startsWith("trail-")) {
       const slug = focus.slice("trail-".length);
       const match = (trailsData as unknown as {
@@ -261,7 +268,37 @@ export default function MapPage() {
           [Math.max(...lngs), Math.max(...lats)],
         ]);
       }
+    } else if (focus === "firepits" || focus === "carvings") {
+      // Named groups used by the home "quick action" tiles — frame every
+      // matching pin rather than selecting one.
+      const match =
+        focus === "firepits"
+          ? pois.filter((p) => p.category === "firepit")
+          : pois.filter((p) => p.category === "bear" || p.category === "bobcat");
+      if (match.length > 0) {
+        const lngs = match.map((p) => p.lng);
+        const lats = match.map((p) => p.lat);
+        const pad = 0.001;
+        setFocusBounds([
+          [Math.min(...lngs) - pad, Math.min(...lats) - pad],
+          [Math.max(...lngs) + pad, Math.max(...lats) + pad],
+        ]);
+      }
+    } else if (focus.startsWith("poi-")) {
+      const slug = focus.slice("poi-".length);
+      const p = pois.find((x) => x.slug === slug);
+      if (p) {
+        setSelected({ kind: "poi", data: p });
+        zoomToPoint(p.lng, p.lat);
+      }
+    } else if (focus.startsWith("cabin-")) {
+      const c = publicCabins.find((x) => x.slug === focus);
+      if (c) {
+        setSelected({ kind: "cabin", data: c });
+        zoomToPoint(c.lng, c.lat);
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Hydrate POI visibility from localStorage on mount + write back on

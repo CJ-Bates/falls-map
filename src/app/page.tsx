@@ -32,7 +32,7 @@ const TILES: { label: string; sub: string; href: string; gradient: string; icon:
   {
     label: "Firepits",
     sub: "Lake beach + ridge top",
-    href: "/map?focus=trail-valley-lakes-trail",
+    href: "/map?focus=firepits",
     gradient: "linear-gradient(135deg, #D9531E 0%, #7A2D0A 100%)",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -71,7 +71,7 @@ const TILES: { label: string; sub: string; href: string; gradient: string; icon:
   {
     label: "Find the bear",
     sub: `Big Lou + Bobby (${CARVING_COUNT} carvings)`,
-    href: "/map",
+    href: "/map?focus=carvings",
     gradient: "linear-gradient(135deg, #3a2d22 0%, #1a1310 100%)",
     icon: (
       <svg viewBox="0 0 24 24" fill="#F0E2C2">

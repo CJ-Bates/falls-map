@@ -59,12 +59,14 @@ export const metadata: Metadata = {
   },
 };
 
+// Pinch-zoom stays enabled (no maximumScale/userScalable lock) — disabling
+// it blocks low-vision guests from zooming, a WCAG 1.4.4 failure. Modern
+// iOS ignores the lock anyway; double-tap zoom on the map itself is handled
+// by MapLibre, not the viewport.
 export const viewport: Viewport = {
   themeColor: "#0e0a08",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   viewportFit: "cover",
 };
 

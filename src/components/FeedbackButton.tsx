@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { supabase, FEEDBACK_CATEGORIES, type FeedbackCategory } from "@/lib/supabase";
+import { FEEDBACK_CATEGORIES, type FeedbackCategory } from "@/lib/supabase";
 
 // Stay-feedback widget — for ideas, compliments, app bugs, and suggestions
 // about how to make future stays better. NOT for urgent service requests
 // (those go to the host directly via the number in the welcome email).
 //
-// Lands in Supabase `feedback` (shows on /admin) and fires a fire-and-forget
-// push to /api/notify-feedback so the host gets a phone notification.
+// Submits through /api/feedback, which validates, rate-limits, stores the
+// row (server-side key — anon has no access to the table), and pushes a
+// phone notification to the host.
 
 type Status =
   | { state: "idle" }
@@ -60,24 +61,26 @@ export default function FeedbackButton() {
     setStatus({ state: "sending" });
     const page = typeof window !== "undefined" ? window.location.pathname : null;
     const trimmedEmail = email.trim() || null;
-    const { error } = await supabase.from("feedback").insert({
-      message: trimmed,
-      email: trimmedEmail,
-      page,
-      category,
-    });
-    if (error) {
-      setStatus({ state: "error", msg: error.message });
-      return;
-    }
+    let res: Response;
     try {
-      void fetch("/api/notify-feedback", {
+      res = await fetch("/api/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: trimmed, email: trimmedEmail, page, category }),
       });
     } catch {
-      // ignore
+      setStatus({ state: "error", msg: "No connection — please try again when you have signal." });
+      return;
+    }
+    if (!res.ok) {
+      setStatus({
+        state: "error",
+        msg:
+          res.status === 429
+            ? "That's plenty of feedback for now — thank you! Please try again in a bit."
+            : "Something went wrong sending that. Please try again.",
+      });
+      return;
     }
     setStatus({ state: "sent" });
     setMessage("");

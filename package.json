@@ -9,11 +9,12 @@
     "import-gpx": "node scripts/import-gpx.mjs"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
     "maplibre-gl": "^5.24.0",
     "next": "16.2.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "@supabase/supabase-js": "^2.45.0"
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

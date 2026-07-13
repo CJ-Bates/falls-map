@@ -1,15 +1,14 @@
 import { notFound } from "next/navigation";
 import AdminDashboard from "@/components/AdminDashboard";
 
-// Secret URL gate. Anyone with this slug gets the dashboard; otherwise 404.
-// Change this string and redeploy to rotate access.
-const ADMIN_KEY = "falls-ops-2026";
+// Secret URL gate, validated server-side against the ADMIN_KEY env var
+// (Vercel project settings). The key is no longer hardcoded in the repo,
+// so rotating it is an env-var change + redeploy, not a code change.
+// This page must render dynamically — a static build would bake the
+// comparison result (and previously baked the key itself via
+// generateStaticParams) into public build output.
 
-export const dynamic = "force-static";
-
-export function generateStaticParams() {
-  return [{ key: ADMIN_KEY }];
-}
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Admin · The Falls",
@@ -18,6 +17,7 @@ export const metadata = {
 
 export default async function AdminPage({ params }: { params: Promise<{ key: string }> }) {
   const { key } = await params;
-  if (key !== ADMIN_KEY) notFound();
-  return <AdminDashboard />;
+  const adminKey = process.env.ADMIN_KEY;
+  if (!adminKey || key !== adminKey) notFound();
+  return <AdminDashboard adminKey={key} />;
 }
