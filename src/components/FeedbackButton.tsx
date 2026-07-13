@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { supabase, FEEDBACK_CATEGORIES, type FeedbackCategory } from "@/lib/supabase";
+import { useOverlayDismiss } from "@/lib/useOverlayDismiss";
 
 // Stay-feedback widget — for ideas, compliments, app bugs, and suggestions
 // about how to make future stays better. NOT for urgent service requests
@@ -52,6 +53,7 @@ export default function FeedbackButton() {
     setOpen(false);
     setStatus({ state: "idle" });
   };
+  useOverlayDismiss(open, close);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,10 +103,14 @@ export default function FeedbackButton() {
       {open && (
         <div
           className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center bg-black/65 backdrop-blur-md p-4"
+          style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 1rem)" }}
           onClick={close}
         >
           <div
             onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Leave feedback"
             className="ios-glass-strong relative w-full max-w-sm rounded-3xl p-6 text-[#F0E2C2] shadow-[0_18px_44px_rgba(0,0,0,0.55)]"
           >
             {status.state === "sent" ? (

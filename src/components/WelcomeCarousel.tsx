@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useOverlayDismiss } from "@/lib/useOverlayDismiss";
 
 // First-time welcome carousel. Shows a 3-screen intro the first time a guest
 // opens the app (no falls-onboarded flag in localStorage). On dismiss, sets
@@ -74,6 +75,7 @@ export default function WelcomeCarousel() {
     try { localStorage.setItem(STORAGE_KEY, "1"); } catch {}
     setOpen(false);
   };
+  useOverlayDismiss(open, dismiss);
 
   const next = () => {
     if (index < SLIDES.length - 1) setIndex(index + 1);
@@ -88,6 +90,7 @@ export default function WelcomeCarousel() {
       className="fixed inset-0 z-[80] flex items-center justify-center bg-black/65 backdrop-blur-lg p-5"
       role="dialog"
       aria-modal="true"
+      aria-label="Welcome to The Falls"
     >
       <div className="ios-glass-strong relative w-full max-w-sm rounded-3xl p-7 text-center text-[#F0E2C2] shadow-[0_18px_44px_rgba(0,0,0,0.55)]">
         <button

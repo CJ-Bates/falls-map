@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useOverlayDismiss } from "@/lib/useOverlayDismiss";
 
 // Chrome / Android type for the install prompt event.
 type BeforeInstallPromptEvent = Event & {
@@ -28,6 +29,7 @@ export default function InstallAppButton() {
     useState<BeforeInstallPromptEvent | null>(null);
   const [isIos, setIsIos] = useState(false);
   const [mounted, setMounted] = useState(false);
+  useOverlayDismiss(iosInstructions, () => setIosInstructions(false));
 
   useEffect(() => {
     setMounted(true);
@@ -102,6 +104,9 @@ export default function InstallAppButton() {
           <div
             className="ios-glass-strong relative w-full max-w-sm rounded-3xl p-6 text-[#F0E2C2] shadow-[0_18px_44px_rgba(0,0,0,0.55)]"
             onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Add to home screen instructions"
           >
             <button
               onClick={() => setIosInstructions(false)}
