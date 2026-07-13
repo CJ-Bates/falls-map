@@ -1,7 +1,7 @@
 // public/sw.js — caches the app shell + map tiles + photos for offline use.
 // Registered by /src/components/RegisterSW.tsx on the home page.
 
-const VERSION = "v107";
+const VERSION = "v108";
 const APP_SHELL = `falls-app-${VERSION}`;
 const RUNTIME = `falls-runtime-${VERSION}`;
 const TILES = `falls-tiles-${VERSION}`;
@@ -59,6 +59,23 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(cacheFirst(IMAGES, req));
     return;
   }
+  // Guest photos from Supabase storage — uploads are content-addressed
+  // (uuid.jpg, cache-control: 1 year), so cache-first is safe. Only the
+  // public storage path; REST API calls must stay network-only.
+  if (url.host.endsWith(".supabase.co") && url.pathname.startsWith("/storage/v1/object/public/")) {
+    event.respondWith(cacheFirst(IMAGES, req));
+    return;
+  }
+  // Web fonts (Cabin Sketch / Caveat) — cache so the hand-drawn map labels
+  // and headings still render offline. CSS revalidates; binaries are immutable.
+  if (url.host === "fonts.googleapis.com") {
+    event.respondWith(staleWhileRevalidate(RUNTIME, req));
+    return;
+  }
+  if (url.host === "fonts.gstatic.com") {
+    event.respondWith(cacheFirst(RUNTIME, req));
+    return;
+  }
   // Same-origin: app shell + runtime
   if (url.origin === self.location.origin) {
     // Navigations (HTML pages) — try network, fall back to cached shell
@@ -88,7 +105,7 @@ async function staleWhileRevalidate(cacheName, req) {
   const cache = await caches.open(cacheName);
   const cached = await cache.match(req);
   const fresh = fetch(req).then((res) => {
-    if (res && res.status === 200) cache.put(req, res.clone());
+    if (res && (res.status === 200 || res.type === "opaque")) cache.put(req, res.clone());
     return res;
   }).catch(() => undefined);
   return cached || (await fresh) || new Response("offline", { status: 503 });
@@ -99,6 +116,6 @@ async function cacheFirst(cacheName, req) {
   const cached = await cache.match(req);
   if (cached) return cached;
   const fresh = await fetch(req).catch(() => undefined);
-  if (fresh && fresh.status === 200) cache.put(req, fresh.clone());
+  if (fresh && (fresh.status === 200 || fresh.type === "opaque")) cache.put(req, fresh.clone());
   return fresh || new Response("offline", { status: 503 });
 }
