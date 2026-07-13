@@ -1,20 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase, publicPhotoUrl, thumbPhotoUrl, type Memory } from "@/lib/supabase";
 import { publicCabins } from "@/data/cabins";
 import { pois } from "@/data/pois";
 import trails from "@/data/trails.json";
 
-// Kebab-case slug from a trail's name. Matches the convention used in
-// /map?focus=trail-<slug> deep-links elsewhere in the app.
 function trailSlug(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-// De-duplicated list of trail names (multiple GeoJSON segments can share a
-// name when a single trail is split into pieces).
 const TRAIL_NAMES: string[] = Array.from(
   new Set(
     (trails.features as Array<{ properties: { name?: string } }>)
@@ -29,7 +25,6 @@ type UploadStatus =
   | { state: "error"; message: string }
   | { state: "done" };
 
-// Pretty-print "2 hours ago"
 function timeAgo(iso: string): string {
   const ms = Date.now() - new Date(iso).getTime();
   const m = Math.floor(ms / 60_000);
@@ -42,7 +37,6 @@ function timeAgo(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 }
 
-// Place options for the optional "tag a place" dropdown.
 const PLACE_OPTIONS: { value: string; label: string; kind: "cabin" | "poi" | "trail" }[] = [
   ...publicCabins.map((c) => ({ value: `cabin:${c.slug}`, label: c.name, kind: "cabin" as const })),
   ...pois.map((p) => ({ value: `poi:${p.slug}`, label: p.name, kind: "poi" as const })),
@@ -66,9 +60,10 @@ export default function MemoriesPage() {
   const [memories, setMemories] = useState<Memory[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [lightbox, setLightbox] = useState<Memory | null>(null);
+  // Lightbox tracks INDEX (into memories[]) rather than a single Memory,
+  // so swipe / arrow / chevron nav can move through the gallery.
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
-  // Upload form state
   const [file, setFile] = useState<File | null>(null);
   const [caption, setCaption] = useState("");
   const [name, setName] = useState("");
@@ -76,7 +71,6 @@ export default function MemoriesPage() {
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>({ state: "idle" });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Hydrate gallery from Supabase
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -105,9 +99,6 @@ export default function MemoriesPage() {
     setUploadStatus({ state: "idle" });
   };
 
-  // Re-encode a photo as JPEG via canvas. maxEdge = Infinity preserves the
-  // source resolution; quality is 0..1. Used twice: once for the full-res
-  // original, once for the gallery thumb.
   const encodeImage = async (
     file: File,
     maxEdge: number,
@@ -147,11 +138,6 @@ export default function MemoriesPage() {
     if (!file) return;
     setUploadStatus({ state: "uploading", progress: 0 });
 
-    // Build BOTH versions in parallel:
-    //   - Full-res original (no resize, quality 0.92) for the lightbox and
-    //     for anyone who wants to download / reprint the shot later.
-    //   - 1200-px thumb (quality 0.80) for the gallery grid so the page
-    //     stays fast and Supabase egress stays low.
     let original: Blob;
     let thumb: Blob;
     try {
@@ -162,7 +148,7 @@ export default function MemoriesPage() {
     } catch (err) {
       setUploadStatus({
         state: "error",
-        message: err instanceof Error ? err.message : "Couldn\'t process photo",
+        message: err instanceof Error ? err.message : "Couldn't process photo",
       });
       return;
     }
@@ -174,8 +160,6 @@ export default function MemoriesPage() {
       .from("memories")
       .upload(path, original, { cacheControl: "31536000", contentType: "image/jpeg" });
     if (!uploadErr) {
-      // Best-effort thumb upload. If this fails (rare — same bucket / same
-      // policies), the gallery falls back to the original via onError.
       await supabase.storage
         .from("memories")
         .upload(thumbPath, thumb, { cacheControl: "31536000", contentType: "image/jpeg" });
@@ -208,15 +192,74 @@ export default function MemoriesPage() {
       return;
     }
 
-    // Optimistically prepend
     if (row) setMemories((prev) => [row as Memory, ...prev]);
     setUploadStatus({ state: "done" });
     setFile(null);
     setCaption("");
-    // keep name + place — guests often upload several
     if (fileInputRef.current) fileInputRef.current.value = "";
     setTimeout(() => setUploadStatus({ state: "idle" }), 2400);
   };
+
+  // ---------- Lightbox navigation ----------
+  const lightbox = useMemo<Memory | null>(() => {
+    if (lightboxIndex === null) return null;
+    return memories[lightboxIndex] ?? null;
+  }, [lightboxIndex, memories]);
+
+  const closeLightbox = useCallback(() => setLightboxIndex(null), []);
+  const showPrev = useCallback(() => {
+    setLightboxIndex((idx) => (idx === null || idx <= 0 ? idx : idx - 1));
+  }, []);
+  const showNext = useCallback(() => {
+    setLightboxIndex((idx) => {
+      if (idx === null) return idx;
+      if (idx >= memories.length - 1) return idx;
+      return idx + 1;
+    });
+  }, [memories.length]);
+
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeLightbox();
+      else if (e.key === "ArrowLeft") showPrev();
+      else if (e.key === "ArrowRight") showNext();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [lightboxIndex, closeLightbox, showPrev, showNext]);
+
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const original = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = original;
+    };
+  }, [lightboxIndex]);
+
+  const swipeStart = useRef<{ x: number; y: number; t: number } | null>(null);
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== "touch") return;
+    swipeStart.current = { x: e.clientX, y: e.clientY, t: Date.now() };
+  };
+  const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== "touch") return;
+    const start = swipeStart.current;
+    swipeStart.current = null;
+    if (!start) return;
+    const dx = e.clientX - start.x;
+    const dy = e.clientY - start.y;
+    const dt = Date.now() - start.t;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.4 && dt < 800) {
+      if (dx > 0) showPrev();
+      else showNext();
+    }
+  };
+
+  const currentIndex = lightboxIndex ?? 0;
+  const canGoPrev = lightboxIndex !== null && lightboxIndex > 0;
+  const canGoNext = lightboxIndex !== null && lightboxIndex < memories.length - 1;
 
   return (
     <main className="hero-radial min-h-[100svh] w-full pb-16">
@@ -240,13 +283,9 @@ export default function MemoriesPage() {
 
       {/* Upload form */}
       <section className="px-6 max-w-3xl mx-auto mt-3">
-        <form
-          onSubmit={submit}
-          className="ios-glass rounded-3xl p-4 space-y-3"
-        >
+        <form onSubmit={submit} className="ios-glass rounded-3xl p-4 space-y-3">
           <h2 className="text-[10px] uppercase tracking-[0.14em] text-[#B89968]">Share a photo</h2>
 
-          {/* File picker — styled to look like a tile */}
           <label className="ios-press block w-full cursor-pointer">
             <input
               ref={fileInputRef}
@@ -313,23 +352,17 @@ export default function MemoriesPage() {
             <option value="">Tag a place (optional)</option>
             <optgroup label="Cabins">
               {PLACE_OPTIONS.filter((o) => o.kind === "cabin").map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
+                <option key={o.value} value={o.value}>{o.label}</option>
               ))}
             </optgroup>
             <optgroup label="Spots">
               {PLACE_OPTIONS.filter((o) => o.kind === "poi").map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
+                <option key={o.value} value={o.value}>{o.label}</option>
               ))}
             </optgroup>
             <optgroup label="Trails">
               {PLACE_OPTIONS.filter((o) => o.kind === "trail").map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
+                <option key={o.value} value={o.value}>{o.label}</option>
               ))}
             </optgroup>
           </select>
@@ -369,10 +402,10 @@ export default function MemoriesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {memories.map((m) => (
+            {memories.map((m, i) => (
               <button
                 key={m.id}
-                onClick={() => setLightbox(m)}
+                onClick={() => setLightboxIndex(i)}
                 className="ios-press relative overflow-hidden rounded-2xl aspect-square bg-[#2A1F18]"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -382,8 +415,6 @@ export default function MemoriesPage() {
                   loading="lazy"
                   className="absolute inset-0 h-full w-full object-cover"
                   onError={(e) => {
-                    // Legacy entry uploaded before we started saving thumbs —
-                    // fall back to the original file.
                     const target = e.currentTarget as HTMLImageElement;
                     const fallback = publicPhotoUrl(m.storage_path);
                     if (target.src !== fallback) target.src = fallback;
@@ -408,33 +439,109 @@ export default function MemoriesPage() {
         )}
       </section>
 
-      {/* Lightbox */}
+      {/* ============================================================
+          LIGHTBOX (rewritten v105 → v107)
+
+          Fixes vs. old version:
+            - Close (X) button is now a *fixed* element with z-[60]
+              so a tap always hits the button, not the image behind it.
+            - Larger touch target (h-12 w-12 = 48px, iOS HIG minimum)
+            - Explicit onPointerDown stopPropagation for reliability
+            - Chevron prev/next buttons (fixed, z-[60])
+            - Photo counter chip at top-left
+            - Left/right swipe support via pointer events
+            - Escape / arrow key support on desktop
+            - Body scroll lock while open (prevents iOS scroll flicker)
+        ============================================================ */}
       {lightbox && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
-          onClick={() => setLightbox(null)}
+          className="fixed inset-0 z-50 bg-black/90"
+          onClick={closeLightbox}
+          onPointerDown={onPointerDown}
+          onPointerUp={onPointerUp}
         >
-          <button
-            aria-label="Close"
-            onClick={() => setLightbox(null)}
-            className="absolute top-4 right-4 ios-press grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white"
+          {/* Counter chip (top-left) */}
+          <div
+            className="fixed left-4 z-[60] ios-glass-strong rounded-full px-3 py-1.5 text-[11px] font-semibold text-[#F0E2C2] tracking-wider uppercase pointer-events-none"
+            style={{ top: "calc(env(safe-area-inset-top, 0px) + 1rem)" }}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            {currentIndex + 1} / {memories.length}
+          </div>
+
+          {/* Close (X) button */}
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={(e) => {
+              e.stopPropagation();
+              closeLightbox();
+            }}
+            onPointerDown={(e) => e.stopPropagation()}
+            className="fixed right-4 z-[60] ios-press ios-glass-strong grid h-12 w-12 place-items-center rounded-full text-[#F0E2C2]"
+            style={{ top: "calc(env(safe-area-inset-top, 0px) + 1rem)" }}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 6 6 18" /><path d="m6 6 12 12" />
             </svg>
           </button>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={publicPhotoUrl(lightbox.storage_path)}
-            alt={lightbox.caption ?? "Guest photo"}
-            className="max-h-[80svh] max-w-full object-contain rounded-2xl shadow-[0_18px_60px_rgba(0,0,0,0.65)]"
-            onClick={(e) => e.stopPropagation()}
-          />
+
+          {/* Prev button */}
+          {memories.length > 1 && (
+            <button
+              type="button"
+              aria-label="Previous photo"
+              disabled={!canGoPrev}
+              onClick={(e) => {
+                e.stopPropagation();
+                showPrev();
+              }}
+              onPointerDown={(e) => e.stopPropagation()}
+              className="fixed left-3 top-1/2 -translate-y-1/2 z-[60] ios-press ios-glass-strong grid h-12 w-12 place-items-center rounded-full text-[#F0E2C2] disabled:opacity-25"
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m15 18-6-6 6-6" />
+              </svg>
+            </button>
+          )}
+
+          {/* Next button */}
+          {memories.length > 1 && (
+            <button
+              type="button"
+              aria-label="Next photo"
+              disabled={!canGoNext}
+              onClick={(e) => {
+                e.stopPropagation();
+                showNext();
+              }}
+              onPointerDown={(e) => e.stopPropagation()}
+              className="fixed right-3 top-1/2 -translate-y-1/2 z-[60] ios-press ios-glass-strong grid h-12 w-12 place-items-center rounded-full text-[#F0E2C2] disabled:opacity-25"
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            </button>
+          )}
+
+          {/* Image (centered) — pointer-events managed so backdrop close still works */}
+          <div className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              key={lightbox.id}
+              src={publicPhotoUrl(lightbox.storage_path)}
+              alt={lightbox.caption ?? "Guest photo"}
+              className="max-h-[78svh] max-w-full object-contain rounded-2xl shadow-[0_18px_60px_rgba(0,0,0,0.65)] pointer-events-auto"
+              onClick={(e) => e.stopPropagation()}
+              draggable={false}
+            />
+          </div>
+
           {(lightbox.caption || lightbox.guest_name || placeLabel(lightbox)) && (
             <div
-              className="ios-glass-strong absolute left-1/2 -translate-x-1/2 rounded-2xl px-4 py-3 text-[#F0E2C2] max-w-[90%] text-center"
+              className="ios-glass-strong fixed left-1/2 -translate-x-1/2 rounded-2xl px-4 py-3 text-[#F0E2C2] max-w-[90%] text-center pointer-events-auto"
               style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 1rem)" }}
               onClick={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
             >
               {lightbox.caption && (
                 <div className="font-hand text-[20px] leading-snug">{lightbox.caption}</div>
