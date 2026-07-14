@@ -49,7 +49,7 @@ export default function OfflineButton({ offlineStatus, downloading, onDownload, 
             ? "bg-[#F0E2C2] text-[#1A1310] shadow-[0_8px_24px_rgba(184,153,104,0.45)]"
             : "ios-glass-strong text-[#F0E2C2]")
         }
-        style={{ bottom: "9rem", right: "1rem" }}
+        style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 9rem)", right: "1rem" }}
       >
         <span className="relative grid place-items-center h-full w-full">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -87,7 +87,7 @@ export default function OfflineButton({ offlineStatus, downloading, onDownload, 
             className="ios-glass-strong animate-pop-up absolute z-[12] rounded-3xl text-[#F0E2C2] shadow-[0_18px_44px_rgba(0,0,0,0.45)]"
             style={{
               right: "1rem",
-              bottom: "12.25rem",
+              bottom: "calc(env(safe-area-inset-bottom, 0px) + 12.25rem)",
               width: "min(320px, calc(100vw - 2rem))",
               padding: "16px 16px 14px 16px",
               transformOrigin: "bottom right",

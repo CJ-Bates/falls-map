@@ -325,7 +325,7 @@ export default function AdminDashboard({ adminKey }: { adminKey: string }) {
           </div>
         </section>
 
-        <p className="text-[10.5px] text-[#F0E2C2]/40 text-center pt-2">
+        <p className="text-[10.5px] text-[#F0E2C2]/60 text-center pt-2">
           This page is private. Anyone who knows the URL can see it &mdash; don&apos;t share it.
         </p>
       </div>
@@ -348,7 +348,7 @@ function TagList({ title, entries }: { title: string; entries: Record<string, nu
     <div>
       <h3 className="text-[10px] uppercase tracking-[0.14em] text-[#B89968] mb-2">{title}</h3>
       {sorted.length === 0 ? (
-        <p className="text-[12px] text-[#F0E2C2]/45">No tags yet</p>
+        <p className="text-[12px] text-[#F0E2C2]/60">No tags yet</p>
       ) : (
         <ul className="space-y-1">
           {sorted.map(([slug, count]) => (

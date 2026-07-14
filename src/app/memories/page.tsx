@@ -337,7 +337,7 @@ export default function MemoriesPage() {
             onChange={(e) => setName(e.target.value)}
             placeholder="Your name (optional)"
             maxLength={40}
-            className="w-full rounded-2xl bg-[#F0E2C2]/8 px-3.5 py-2.5 text-[14px] text-[#F0E2C2] placeholder-[#F0E2C2]/35 outline-none focus:bg-[#F0E2C2]/12"
+            className="w-full rounded-2xl bg-[#F0E2C2]/8 px-3.5 py-2.5 text-[14px] text-[#F0E2C2] placeholder-[#F0E2C2]/50 outline-none focus:bg-[#F0E2C2]/12"
           />
           <input
             type="text"
@@ -345,7 +345,7 @@ export default function MemoriesPage() {
             onChange={(e) => setCaption(e.target.value)}
             placeholder="Caption (optional)"
             maxLength={200}
-            className="w-full rounded-2xl bg-[#F0E2C2]/8 px-3.5 py-2.5 text-[14px] text-[#F0E2C2] placeholder-[#F0E2C2]/35 outline-none focus:bg-[#F0E2C2]/12"
+            className="w-full rounded-2xl bg-[#F0E2C2]/8 px-3.5 py-2.5 text-[14px] text-[#F0E2C2] placeholder-[#F0E2C2]/50 outline-none focus:bg-[#F0E2C2]/12"
           />
           <select
             value={place}

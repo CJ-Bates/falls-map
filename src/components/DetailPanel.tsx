@@ -386,7 +386,7 @@ function DirectionsBlock({
     return (
       <button
         onClick={onGetDirections}
-        className="ios-press w-full rounded-2xl bg-[#2E78D2] text-white font-semibold py-3.5 mt-2 shadow-[0_8px_24px_rgba(46,120,210,0.35)] inline-flex items-center justify-center gap-2"
+        className="ios-press w-full rounded-2xl bg-[#cdac7d] text-[#1A1310] font-semibold py-3.5 mt-2 shadow-[0_8px_24px_rgba(184,153,104,0.35)] inline-flex items-center justify-center gap-2"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
           <path d="M3 11 21 3l-8 18-2-7-8-3z"/>
@@ -401,13 +401,13 @@ function DirectionsBlock({
   const driveMin = Math.max(1, Math.round(route.distance / 6.7 / 60));
 
   return (
-    <div className="rounded-2xl bg-[#2E78D2]/12 border border-[#2E78D2]/30 p-3.5 space-y-3">
+    <div className="rounded-2xl bg-[#cdac7d]/12 border border-[#cdac7d]/30 p-3.5 space-y-3">
       {/* From → To header */}
       <div className="flex items-center gap-2.5">
         <div className="flex flex-col gap-1 items-center pt-0.5">
           <span className="block h-2 w-2 rounded-full bg-[#7d8f5a] ring-2 ring-[#7d8f5a]/30" />
           <span className="block h-3 w-px bg-[#F0E2C2]/30" />
-          <span className="block h-2 w-2 rounded-full bg-[#2E78D2] ring-2 ring-[#2E78D2]/30" />
+          <span className="block h-2 w-2 rounded-full bg-[#cdac7d] ring-2 ring-[#cdac7d]/30" />
         </div>
         <div className="flex-1 min-w-0 space-y-1">
           <div className="text-[13px] text-[#F0E2C2]/85 leading-tight truncate">
@@ -421,7 +421,7 @@ function DirectionsBlock({
           <button
             onClick={onReverseRoute}
             aria-label="Reverse direction"
-            className="ios-press grid h-9 w-9 place-items-center rounded-full bg-[#F0E2C2]/10 text-[#67B0FF] hover:bg-[#F0E2C2]/15 flex-shrink-0"
+            className="ios-press grid h-9 w-9 place-items-center rounded-full bg-[#F0E2C2]/10 text-[#cdac7d] hover:bg-[#F0E2C2]/15 flex-shrink-0"
             title="Reverse"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -450,7 +450,7 @@ function DirectionsBlock({
         {onClearRoute && (
           <button
             onClick={onClearRoute}
-            className="ios-press text-[12px] text-[#67B0FF] font-semibold whitespace-nowrap"
+            className="ios-press text-[12px] text-[#cdac7d] font-semibold whitespace-nowrap"
           >
             Clear
           </button>
@@ -495,7 +495,7 @@ function DirectionsBlock({
       {onStartNavigation && (
         <button
           onClick={onStartNavigation}
-          className="ios-press w-full rounded-2xl bg-[#2E78D2] text-white font-semibold py-3 mt-1 shadow-[0_8px_24px_rgba(46,120,210,0.35)] inline-flex items-center justify-center gap-2"
+          className="ios-press w-full rounded-2xl bg-[#cdac7d] text-[#1A1310] font-semibold py-3 mt-1 shadow-[0_8px_24px_rgba(184,153,104,0.35)] inline-flex items-center justify-center gap-2"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
             <path d="M8 5v14l11-7z"/>

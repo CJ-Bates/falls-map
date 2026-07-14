@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { cabinInfo, cabinInfoBySlug } from "@/data/cabin-info";
+import { cabinInfo, cabinInfoBySlug, HOST_PHONE } from "@/data/cabin-info";
 import { cabins } from "@/data/cabins";
 import InstallAppButton from "@/components/InstallAppButton";
 import CopyChip from "@/components/CopyChip";
@@ -217,7 +217,7 @@ export default async function CabinWelcomePage({ params }: { params: Promise<{ s
           {/* Stay feedback (NOT for urgent needs — those go to the host directly) */}
           <div className="mt-5 text-center">
             <p className="text-[12px] text-[#F0E2C2]/65 leading-snug mb-2 max-w-md mx-auto">
-              Need something during your stay? Reply to your booking email (Amy handles guest support) or text CJ at <a href="tel:+13144097833" className="text-[#cdac7d] underline">(314) 409-7833</a> for urgent issues.
+              Need something during your stay? Reply to your booking email (Amy handles guest support) or text CJ at <a href={`tel:${HOST_PHONE.tel}`} className="text-[#cdac7d] underline">{HOST_PHONE.display}</a> for urgent issues.
             </p>
             <p className="text-[12px] text-[#F0E2C2]/65 leading-snug mb-3 max-w-md mx-auto">
               Have ideas or feedback for future stays? Drop a note below.
@@ -227,7 +227,7 @@ export default async function CabinWelcomePage({ params }: { params: Promise<{ s
             </div>
           </div>
 
-          <p className="text-center text-[11px] text-[#F0E2C2]/40 mt-4">
+          <p className="text-center text-[11px] text-[#F0E2C2]/60 mt-4">
             Tap <span className="font-semibold">Install as app</span> at the top so you can use this offline anywhere on the property.
           </p>
         </div>

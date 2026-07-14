@@ -256,7 +256,7 @@ export default async function NearbyPage({
                             Website
                           </a>
                         )}
-                        <span className="text-[11px] text-[#F0E2C2]/45 ml-auto">{rec.address}</span>
+                        <span className="text-[11px] text-[#F0E2C2]/60 ml-auto">{rec.address}</span>
                       </div>
                     </div>
                   </article>
@@ -266,8 +266,8 @@ export default async function NearbyPage({
           );
         })}
 
-        <p className="text-center text-[11px] text-[#F0E2C2]/40 pt-2">
-          Pin coords are still being verified. If something opens to the wrong spot, tap &ldquo;Send feedback&rdquo; on the home page.
+        <p className="text-center text-[11px] text-[#F0E2C2]/60 pt-2">
+          Tapping a place opens it in your maps app for directions and current hours.
         </p>
       </div>
     </main>

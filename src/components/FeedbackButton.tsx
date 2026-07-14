@@ -187,7 +187,7 @@ export default function FeedbackButton() {
                   rows={4}
                   maxLength={1000}
                   required
-                  className="mt-3 w-full rounded-2xl bg-[#F0E2C2]/8 px-3.5 py-2.5 text-[14px] text-[#F0E2C2] placeholder-[#F0E2C2]/35 outline-none focus:bg-[#F0E2C2]/12 resize-none"
+                  className="mt-3 w-full rounded-2xl bg-[#F0E2C2]/8 px-3.5 py-2.5 text-[14px] text-[#F0E2C2] placeholder-[#F0E2C2]/50 outline-none focus:bg-[#F0E2C2]/12 resize-none"
                 />
                 <input
                   type="email"
@@ -195,7 +195,7 @@ export default function FeedbackButton() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Email (optional &mdash; only if you want a reply)"
                   maxLength={120}
-                  className="mt-2 w-full rounded-2xl bg-[#F0E2C2]/8 px-3.5 py-2.5 text-[13px] text-[#F0E2C2] placeholder-[#F0E2C2]/35 outline-none focus:bg-[#F0E2C2]/12"
+                  className="mt-2 w-full rounded-2xl bg-[#F0E2C2]/8 px-3.5 py-2.5 text-[13px] text-[#F0E2C2] placeholder-[#F0E2C2]/50 outline-none focus:bg-[#F0E2C2]/12"
                 />
 
                 <p className="mt-3 text-[11px] text-[#F0E2C2]/55 leading-snug">

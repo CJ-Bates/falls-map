@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Cabin_Sketch, Caveat } from "next/font/google";
 import "./globals.css";
 import RegisterSW from "@/components/RegisterSW";
+import BottomNav from "@/components/BottomNav";
 
 // Self-hosted via next/font — replaces the render-blocking Google Fonts
 // @import chain in globals.css. Exposed as CSS variables consumed by
@@ -84,6 +85,7 @@ export default function RootLayout({
       >
         <RegisterSW />
         {children}
+        <BottomNav />
       </body>
     </html>
   );

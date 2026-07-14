@@ -74,7 +74,7 @@ export default function CabinPhotoGallery({
           </a>
         ))}
       </div>
-      <p className="text-[11px] text-[#F0E2C2]/45 mt-3 leading-snug">
+      <p className="text-[11px] text-[#F0E2C2]/60 mt-3 leading-snug">
         Tap any photo to view full size. {photos.length > 12 && `Showing 12 of ${photos.length}. `}<Link href="/memories" className="text-[#cdac7d] underline">Share a photo from your stay</Link>.
       </p>
     </section>

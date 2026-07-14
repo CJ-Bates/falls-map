@@ -373,7 +373,7 @@ export default function Home() {
       </section>
       {/* Footer */}
       <footer className="mt-10 px-6 text-center">
-        <p className="text-xs text-[#F0E2C2]/45">
+        <p className="text-xs text-[#F0E2C2]/60">
           Made for guests of The Falls at Lions Den · Imperial, MO
         </p>
       </footer>

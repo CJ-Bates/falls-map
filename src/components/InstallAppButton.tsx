@@ -139,7 +139,7 @@ export default function InstallAppButton() {
                 <span className="text-[14px] flex items-center gap-2 flex-wrap">
                   Tap
                   <span className="inline-flex items-center gap-1 rounded-md bg-[#F0E2C2]/12 px-2 py-1">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#67B0FF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cdac7d" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M12 3v13" />
                       <path d="m7 8 5-5 5 5" />
                       <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" />

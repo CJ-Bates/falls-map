@@ -114,7 +114,7 @@ function SourceOption({
         <div className="text-[14px] font-semibold text-[#F0E2C2] leading-tight truncate">{label}</div>
         <div className="text-[12px] text-[#F0E2C2]/60 mt-0.5 truncate">{sub}</div>
       </div>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="text-[#F0E2C2]/40 flex-shrink-0">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="text-[#F0E2C2]/60 flex-shrink-0">
         <path d="m9 6 6 6-6 6" />
       </svg>
     </button>
@@ -152,7 +152,7 @@ function PoiToggleRow({
         <span
           className={
             "flex-1 text-left text-[13px] font-semibold leading-none transition-colors " +
-            (active ? "text-[#F0E2C2]" : "text-[#F0E2C2]/45")
+            (active ? "text-[#F0E2C2]" : "text-[#F0E2C2]/60")
           }
         >
           {label}
@@ -538,7 +538,7 @@ export default function MapPage() {
           className="ios-glass-strong absolute z-10 left-1/2 -translate-x-1/2 flex items-center gap-2 rounded-full pl-3.5 pr-1 py-1 shadow-[0_8px_24px_rgba(0,0,0,0.35)]"
           style={{ top: "calc(env(safe-area-inset-top, 0px) + 0.85rem)" }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#67B0FF" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#cdac7d" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
             <path d="M3 11 21 3l-8 18-2-7-8-3z"/>
           </svg>
           <div className="leading-none">
@@ -619,7 +619,7 @@ export default function MapPage() {
               ? "bg-[#F0E2C2] text-[#1A1310] shadow-[0_8px_24px_rgba(184,153,104,0.45)]"
               : "ios-glass-strong")
           }
-          style={{ bottom: "5.25rem", right: "1rem" }}
+          style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 5.25rem)", right: "1rem" }}
         >
           <LayersIcon className="h-[22px] w-[22px]" />
         </button>
@@ -640,7 +640,7 @@ export default function MapPage() {
             className="ios-glass-strong animate-pop-up absolute z-[12] rounded-3xl text-[#F0E2C2] shadow-[0_18px_44px_rgba(0,0,0,0.45)]"
             style={{
               right: "1rem",
-              bottom: "8.5rem",
+              bottom: "calc(env(safe-area-inset-bottom, 0px) + 8.5rem)",
               width: "min(320px, calc(100vw - 2rem))",
               padding: "16px 16px 14px 16px",
               transformOrigin: "bottom right",
@@ -698,7 +698,7 @@ export default function MapPage() {
                   onToggle={() => setShowTrails((v) => !v)}
                 />
               </ul>
-              <p className="text-[10.5px] text-[#F0E2C2]/45 mt-2 leading-snug">
+              <p className="text-[10.5px] text-[#F0E2C2]/60 mt-2 leading-snug">
                 Turn off to see the property without trails.
               </p>
             </div>
@@ -754,7 +754,7 @@ export default function MapPage() {
             }}
           >
             <div className="flex-1 min-w-0">
-              <div className="text-[10px] uppercase tracking-[0.14em] text-[#67B0FF]">Heading to</div>
+              <div className="text-[10px] uppercase tracking-[0.14em] text-[#cdac7d]">Heading to</div>
               <div className="text-[14px] font-semibold text-[#F0E2C2] mt-0.5 truncate">
                 {routeTo.name}
               </div>
@@ -821,7 +821,7 @@ export default function MapPage() {
               />
               <button
                 onClick={() => setSearchOpen(false)}
-                className="ios-press text-[12px] font-semibold text-[#67B0FF] px-2"
+                className="ios-press text-[12px] font-semibold text-[#cdac7d] px-2"
               >
                 Cancel
               </button>

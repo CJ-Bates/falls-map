@@ -24,10 +24,20 @@ export type CabinInfo = {
   cabinSpecificNote: string | null;
 };
 
+// Single source of truth for shared guest-facing facts. The manual and the
+// welcome pages import these — change them HERE, not in page copy, or the
+// two will drift.
+export const GUEST_WIFI: WifiNetwork = {
+  ssid: "The Falls Wifi_Guest",
+  password: "CabinFalls!",
+};
+export const HOST_PHONE = {
+  tel: "+13144097833",
+  display: "(314) 409-7833",
+};
+
 // Wi-Fi as of v101: single hardwired Starlink network covering every cabin.
-const CURRENT_WIFI: WifiNetwork[] = [
-  { ssid: "The Falls Wifi_Guest", password: "CabinFalls!" },
-];
+const CURRENT_WIFI: WifiNetwork[] = [GUEST_WIFI];
 const WIFI_NOTE: string | null = null;
 
 export const cabinInfo: CabinInfo[] = [

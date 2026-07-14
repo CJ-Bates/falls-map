@@ -93,7 +93,7 @@ export default function MapLegend({ hidden = false }: { hidden?: boolean }) {
             ? "bg-[#F0E2C2] text-[#1A1310] shadow-[0_8px_24px_rgba(184,153,104,0.45)]"
             : "ios-glass-strong")
         }
-        style={{ bottom: "12.75rem", right: "1rem" }}
+        style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 12.75rem)", right: "1rem" }}
       >
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="10" />
@@ -151,7 +151,7 @@ export default function MapLegend({ hidden = false }: { hidden?: boolean }) {
                 ))}
               </ul>
             </section>
-            <p className="mt-3 text-[10.5px] text-[#F0E2C2]/45 leading-snug">
+            <p className="mt-3 text-[10.5px] text-[#F0E2C2]/60 leading-snug">
               Tap any pin for details. Pinch to zoom in for clustered spots.
             </p>
           </div>

@@ -1274,7 +1274,7 @@ export default function PropertyMap({
       <button
         onClick={recenterOnUser}
         aria-label={tracking ? "Recenter on me" : "Track my location"}
-        className="ios-glass-strong ios-press absolute bottom-6 right-4 z-10 grid h-12 w-12 place-items-center rounded-full text-[#F0E2C2]"
+        className="ios-glass-strong ios-press absolute bottom-[calc(env(safe-area-inset-bottom,0px)+1.5rem)] right-4 z-10 grid h-12 w-12 place-items-center rounded-full text-[#F0E2C2]"
         title={tracking ? "Recenter on me" : "Show my live location"}
       >
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

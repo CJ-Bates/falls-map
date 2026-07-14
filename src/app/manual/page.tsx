@@ -1,5 +1,6 @@
 import Link from "next/link";
 import FeedbackButton from "@/components/FeedbackButton";
+import { GUEST_WIFI, HOST_PHONE } from "@/data/cabin-info";
 
 export const metadata = { title: "House Manual · The Falls at Lions Den" };
 
@@ -61,7 +62,7 @@ export default function ManualPage() {
             </li>
             <li>
               <span className="font-semibold text-[#F0E2C2]">Need anything?</span>{" "}
-              For everyday stay needs, reply to your booking email (Amy). For urgent issues, text or call CJ at <a href="tel:+13144097833" className="text-[#cdac7d] underline">(314) 409-7833</a>.
+              For everyday stay needs, reply to your booking email (Amy). For urgent issues, text or call CJ at <a href={`tel:${HOST_PHONE.tel}`} className="text-[#cdac7d] underline">{HOST_PHONE.display}</a>.
             </li>
           </ol>
         </section>
@@ -128,11 +129,11 @@ export default function ManualPage() {
             <div className="flex items-center justify-between rounded-2xl bg-[#F0E2C2]/8 px-3.5 py-2.5">
               <div>
                 <div className="text-[11px] uppercase tracking-[0.12em] text-[#F0E2C2]/55">Network</div>
-                <div>The Falls Wifi_Guest</div>
+                <div>{GUEST_WIFI.ssid}</div>
               </div>
               <div className="text-right">
                 <div className="text-[11px] uppercase tracking-[0.12em] text-[#F0E2C2]/55">Password</div>
-                <div className="font-mono">CabinFalls!</div>
+                <div className="font-mono">{GUEST_WIFI.password}</div>
               </div>
             </div>
           </div>
@@ -155,13 +156,13 @@ export default function ManualPage() {
           </p>
           <div className="mt-3 flex justify-center">
             <a
-              href="tel:+13144097833"
+              href={`tel:${HOST_PHONE.tel}`}
               className="ios-press inline-flex items-center gap-2 rounded-full bg-[#cdac7d]/15 border border-[#cdac7d]/40 px-4 py-2 text-[14px] font-semibold text-[#F0E2C2]"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cdac7d" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>
               </svg>
-              (314) 409-7833
+              {HOST_PHONE.display}
             </a>
           </div>
         </section>
@@ -206,7 +207,7 @@ export default function ManualPage() {
             </li>
             <li>
               <span className="font-semibold text-[#F0E2C2]">Wildlife.</span>{" "}
-              Deer, geese, ducks, wild turkey, the occasional bobcat. Give them space. Dogs welcome on-leash. <em>(Pet policy: confirm in your booking.)</em>
+              Deer, geese, ducks, wild turkey, the occasional bobcat. Give them space. And a heads-up: pets aren&apos;t allowed at The Falls, so leave the pups at home.
             </li>
             <li>
               <span className="font-semibold text-[#F0E2C2]">Find the bear.</span>{" "}
@@ -228,7 +229,7 @@ export default function ManualPage() {
             </li>
             <li>
               <span className="font-semibold text-[#F0E2C2]">Trash &amp; recycling.</span>{" "}
-              Each cabin has bins. <em>Pickup day and bin location coming soon.</em> If you're unsure, send feedback and we'll guide you.
+              Each cabin has bins. If you&apos;re unsure where anything goes, reply to your booking email and we&apos;ll point you right.
             </li>
             <li>
               <span className="font-semibold text-[#F0E2C2]">Linens.</span>{" "}
@@ -274,7 +275,7 @@ export default function ManualPage() {
             </li>
             <li>
               <span className="font-semibold text-[#F0E2C2]">Urgent (broken pipe, power out, locked out).</span>{" "}
-              Text or call CJ at <a href="tel:+13144097833" className="text-[#cdac7d] underline">(314) 409-7833</a>.
+              Text or call CJ at <a href={`tel:${HOST_PHONE.tel}`} className="text-[#cdac7d] underline">{HOST_PHONE.display}</a>.
             </li>
             <li>
               <span className="font-semibold text-[#F0E2C2]">Emergency.</span>{" "}
@@ -283,7 +284,7 @@ export default function ManualPage() {
           </ul>
         </section>
 
-        <p className="text-center text-[11px] text-[#F0E2C2]/40 pt-2">
+        <p className="text-center text-[11px] text-[#F0E2C2]/60 pt-2">
           This manual is a living document. Things may change &mdash; if anything is out of date, send a quick note.
         </p>
       </div>
