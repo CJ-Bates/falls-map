@@ -446,11 +446,11 @@ export default function MemoriesPage() {
           LIGHTBOX (rewritten v105 → v107)
 
           Fixes vs. old version:
-            - Close (X) button is now a *fixed* element with z-[60]
+            - Close (X) button is a *fixed* element above the tab bar
               so a tap always hits the button, not the image behind it.
             - Larger touch target (h-12 w-12 = 48px, iOS HIG minimum)
             - Explicit onPointerDown stopPropagation for reliability
-            - Chevron prev/next buttons (fixed, z-[60])
+            - Chevron prev/next buttons (fixed, above the tab bar)
             - Photo counter chip at top-left
             - Left/right swipe support via pointer events
             - Escape / arrow key support on desktop
@@ -458,14 +458,14 @@ export default function MemoriesPage() {
         ============================================================ */}
       {lightbox && (
         <div
-          className="fixed inset-0 z-50 bg-black/90"
+          className="fixed inset-0 z-[90] bg-black/90"
           onClick={closeLightbox}
           onPointerDown={onPointerDown}
           onPointerUp={onPointerUp}
         >
           {/* Counter chip (top-left) */}
           <div
-            className="fixed left-4 z-[60] ios-glass-strong rounded-full px-3 py-1.5 text-[11px] font-semibold text-[#F0E2C2] tracking-wider uppercase pointer-events-none"
+            className="fixed left-4 z-[95] ios-glass-strong rounded-full px-3 py-1.5 text-[11px] font-semibold text-[#F0E2C2] tracking-wider uppercase pointer-events-none"
             style={{ top: "calc(env(safe-area-inset-top, 0px) + 1rem)" }}
           >
             {currentIndex + 1} / {memories.length}
@@ -480,7 +480,7 @@ export default function MemoriesPage() {
               closeLightbox();
             }}
             onPointerDown={(e) => e.stopPropagation()}
-            className="fixed right-4 z-[60] ios-press ios-glass-strong grid h-12 w-12 place-items-center rounded-full text-[#F0E2C2]"
+            className="fixed right-4 z-[95] ios-press ios-glass-strong grid h-12 w-12 place-items-center rounded-full text-[#F0E2C2]"
             style={{ top: "calc(env(safe-area-inset-top, 0px) + 1rem)" }}
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
@@ -499,7 +499,7 @@ export default function MemoriesPage() {
                 showPrev();
               }}
               onPointerDown={(e) => e.stopPropagation()}
-              className="fixed left-3 top-1/2 -translate-y-1/2 z-[60] ios-press ios-glass-strong grid h-12 w-12 place-items-center rounded-full text-[#F0E2C2] disabled:opacity-25"
+              className="fixed left-3 top-1/2 -translate-y-1/2 z-[95] ios-press ios-glass-strong grid h-12 w-12 place-items-center rounded-full text-[#F0E2C2] disabled:opacity-25"
             >
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <path d="m15 18-6-6 6-6" />
@@ -518,7 +518,7 @@ export default function MemoriesPage() {
                 showNext();
               }}
               onPointerDown={(e) => e.stopPropagation()}
-              className="fixed right-3 top-1/2 -translate-y-1/2 z-[60] ios-press ios-glass-strong grid h-12 w-12 place-items-center rounded-full text-[#F0E2C2] disabled:opacity-25"
+              className="fixed right-3 top-1/2 -translate-y-1/2 z-[95] ios-press ios-glass-strong grid h-12 w-12 place-items-center rounded-full text-[#F0E2C2] disabled:opacity-25"
             >
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                 <path d="m9 18 6-6-6-6" />

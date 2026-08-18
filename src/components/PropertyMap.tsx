@@ -1198,7 +1198,13 @@ export default function PropertyMap({
       poiMarkersRef.current.forEach(({ el, poiSlug }) => {
         if (!poiSlug || !slugs.has(poiSlug)) return;
         if (el.querySelector("[data-photo-badge]")) return;
-        el.style.position = "relative";
+        // NOTE: do NOT set el.style.position here. MapLibre owns this element
+        // and sets position:absolute on it; overriding to relative drops the
+        // marker into normal document flow, so preceding in-flow siblings push
+        // it down the page (the transform then stacks on top of that flow
+        // offset). That's what made the Treehouse pin — the only POI with a
+        // guest photo — render ~36px south of its actual coordinates.
+        // absolute is already a containing block, so the badge positions fine.
         const badge = document.createElement("div");
         badge.setAttribute("data-photo-badge", "true");
         badge.style.cssText = `position: absolute; top: -3px; right: -3px; width: 16px; height: 16px; background: #cdac7d; border: 1.5px solid #1A1310; border-radius: 50%; display: grid; place-items: center; z-index: 2; pointer-events: none; box-shadow: 0 1px 3px rgba(0,0,0,0.4);`;
