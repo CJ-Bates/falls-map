@@ -10,13 +10,18 @@ import AnalyticsTracker from "@/components/AnalyticsTracker";
 // @import chain in globals.css. Exposed as CSS variables consumed by
 // .font-sketch / .font-hand.
 const cabinSketch = Cabin_Sketch({
-  weight: ["400", "700"],
+  // Only 700 is ever rendered (.font-sketch, the map compass, and the
+  // hand-lettered area labels all set font-weight:700). next/font preloads
+  // every weight declared here, so listing 400 was shipping a ~73 KB woff2
+  // to every guest on every page that was never drawn.
+  weight: ["700"],
   subsets: ["latin"],
   variable: "--font-cabin-sketch",
   display: "swap",
 });
 const caveat = Caveat({
-  weight: ["500", "700"],
+  // Same story: .font-hand and the map's area labels only ever use 700.
+  weight: ["700"],
   subsets: ["latin"],
   variable: "--font-caveat",
   display: "swap",
