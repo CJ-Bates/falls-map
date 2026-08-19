@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import AnalyticsPanel from "./AnalyticsPanel";
 import Link from "next/link";
 import {
   supabase,
@@ -196,6 +197,9 @@ export default function AdminDashboard({ adminKey }: { adminKey: string }) {
           <StatCard label="Open requests" value={stats.loading ? "…" : stats.feedbackOpen.length.toString()} accent={stats.feedbackOpen.length > 0} />
           <StatCard label="Resolved" value={stats.loading ? "…" : stats.feedbackResolved.length.toString()} />
         </section>
+
+        {/* Usage analytics */}
+        <AnalyticsPanel adminKey={adminKey} />
 
         {/* Feedback */}
         <section className="ios-glass rounded-3xl p-5">

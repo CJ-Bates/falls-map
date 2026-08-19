@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { track } from "@/lib/analytics";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import type { SelectedItem, Basemap, PoiVisibility } from "@/components/PropertyMap";
@@ -196,7 +197,18 @@ function formatAgo(ms: number): string {
 
 // ---------- page --------------------------------------------------------------
 export default function MapPage() {
-  const [selected, setSelected] = useState<SelectedItem | null>(null);
+  const [selected, setSelectedRaw] = useState<SelectedItem | null>(null);
+
+  // Wrapper around setSelected that also records which pin/trail was opened.
+  // Analytics lives here (rather than in PropertyMap) so there is exactly one
+  // place where a selection happens, no matter which control triggered it.
+  const setSelected = useCallback((item: SelectedItem | null) => {
+    setSelectedRaw(item);
+    if (!item) return;
+    if (item.kind === "poi") track("poi_open", { slug: item.data.slug, name: item.data.name });
+    else if (item.kind === "cabin") track("cabin_open", { slug: item.data.slug, name: item.data.name });
+    else if (item.kind === "trail") track("trail_open", { slug: item.data.slug, name: item.data.name });
+  }, []);
   const [basemap, setBasemap] = useState<Basemap>("topo");
   const [layersOpen, setLayersOpen] = useState(false);
   const [offlineStatus, setOfflineStatus] = useState<OfflineStatus | null>(null);
@@ -657,7 +669,7 @@ export default function MapPage() {
                   return (
                     <button
                       key={b.id}
-                      onClick={() => setBasemap(b.id)}
+                      onClick={() => { setBasemap(b.id); track("basemap_change", { basemap: b.id }); }}
                       aria-pressed={active}
                       className="ios-press flex flex-col items-center gap-1.5"
                     >

@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import { Cabin_Sketch, Caveat } from "next/font/google";
 import "./globals.css";
 import RegisterSW from "@/components/RegisterSW";
 import BottomNav from "@/components/BottomNav";
+import AnalyticsTracker from "@/components/AnalyticsTracker";
 
 // Self-hosted via next/font — replaces the render-blocking Google Fonts
 // @import chain in globals.css. Exposed as CSS variables consumed by
@@ -84,6 +86,9 @@ export default function RootLayout({
         style={{ minHeight: "100dvh" }}
       >
         <RegisterSW />
+        <Suspense fallback={null}>
+          <AnalyticsTracker />
+        </Suspense>
         {children}
         <BottomNav />
       </body>

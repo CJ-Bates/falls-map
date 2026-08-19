@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { track } from "@/lib/analytics";
 
 // Chrome / Android type for the install prompt event.
 type BeforeInstallPromptEvent = Event & {
@@ -71,6 +72,7 @@ export default function InstallAppButton() {
 
   const handleClick = async () => {
     if (installPrompt) {
+      track("install_prompt");
       await installPrompt.prompt();
       const { outcome } = await installPrompt.userChoice;
       if (outcome === "accepted") setInstalled(true);

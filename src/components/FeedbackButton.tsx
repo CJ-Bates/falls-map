@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { track } from "@/lib/analytics";
 import { FEEDBACK_CATEGORIES, type FeedbackCategory } from "@/lib/supabase";
 
 // Stay-feedback widget — for ideas, compliments, app bugs, and suggestions
@@ -92,7 +93,7 @@ export default function FeedbackButton() {
   return (
     <>
       <button
-        onClick={() => setOpen(true)}
+        onClick={() => { track("feedback_open"); setOpen(true); }}
         className="ios-press inline-flex items-center gap-2 rounded-full bg-[#F0E2C2]/8 border border-[#F0E2C2]/18 px-3.5 py-2 text-[12px] font-semibold text-[#F0E2C2]"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

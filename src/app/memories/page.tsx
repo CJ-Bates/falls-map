@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { track } from "@/lib/analytics";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase, publicPhotoUrl, thumbPhotoUrl, type Memory } from "@/lib/supabase";
 import { publicCabins } from "@/data/cabins";
@@ -196,6 +197,7 @@ export default function MemoriesPage() {
     }
 
     if (row) setMemories((prev) => [row as Memory, ...prev]);
+    track("photo_upload", { tagged: place ? place.split(":")[0] : "none" });
     setUploadStatus({ state: "done" });
     setFile(null);
     setCaption("");
@@ -408,7 +410,7 @@ export default function MemoriesPage() {
             {memories.map((m, i) => (
               <button
                 key={m.id}
-                onClick={() => setLightboxIndex(i)}
+                onClick={() => { setLightboxIndex(i); track("photo_view", { index: i }); }}
                 className="ios-press relative overflow-hidden rounded-2xl aspect-square bg-[#2A1F18]"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}

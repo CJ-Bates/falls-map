@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { track } from "@/lib/analytics";
 import type { OfflineStatus, PrefetchProgress } from "@/lib/offlineTiles";
 
 // Floating "Save for offline" button on the right edge of the map.
@@ -137,7 +138,7 @@ export default function OfflineButton({ offlineStatus, downloading, onDownload, 
                     : "Download every map tile for the property so the app works without cell signal anywhere on the land. About 5–15 MB."}
                 </p>
                 <button
-                  onClick={onDownload}
+                  onClick={() => { track("offline_save"); onDownload(); }}
                   className="ios-press w-full rounded-2xl bg-[#F0E2C2] text-[#1A1310] font-semibold py-3 shadow-[0_8px_24px_rgba(184,153,104,0.25)]"
                 >
                   {hasOffline ? "Refresh offline tiles" : "Save for offline"}
