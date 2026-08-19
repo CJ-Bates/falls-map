@@ -55,6 +55,19 @@ function ThumbTopo() {
     </svg>
   );
 }
+function ThumbRelief() {
+  return (
+    <svg viewBox="0 0 80 60" preserveAspectRatio="none" className="h-full w-full">
+      <rect width="80" height="60" fill="#EFE4CC" />
+      {/* soft shaded ridges — light from the NW, same as the real layer */}
+      <path d="M0 40 Q 14 20, 28 34 T 56 26 T 80 36 L80 60 L0 60 Z" fill="#C9B48D" opacity="0.85" />
+      <path d="M0 44 Q 16 28, 30 40 T 58 32 T 80 42 L80 60 L0 60 Z" fill="#A98F66" opacity="0.7" />
+      <path d="M0 34 Q 14 16, 28 30" stroke="#FBF1D8" strokeWidth="2" fill="none" opacity="0.9" />
+      <path d="M30 38 Q 44 22, 58 30" stroke="#FBF1D8" strokeWidth="1.6" fill="none" opacity="0.75" />
+      <circle cx="64" cy="50" r="4" fill="#3a82c2" opacity="0.6" />
+    </svg>
+  );
+}
 function ThumbSatellite() {
   return (
     <svg viewBox="0 0 80 60" preserveAspectRatio="none" className="h-full w-full">
@@ -83,6 +96,8 @@ const BASEMAPS: { id: Basemap; label: string; Thumb: () => React.ReactElement }[
   { id: "topo",      label: "Topo",      Thumb: ThumbTopo },
   { id: "satellite", label: "Satellite", Thumb: ThumbSatellite },
   { id: "apple",     label: "Standard",  Thumb: ThumbStandard },
+  // Added alongside the original three, not replacing any of them.
+  { id: "relief",    label: "Relief",    Thumb: ThumbRelief },
 ];
 
 // ---------- icons -------------------------------------------------------------
@@ -663,7 +678,7 @@ export default function MapPage() {
             {/* Map style */}
             <div className="mb-4">
               <h3 className="text-[10px] uppercase tracking-[0.14em] text-[#B89968] mb-2">Map Style</h3>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-4 gap-2">
                 {BASEMAPS.map((b) => {
                   const active = b.id === basemap;
                   return (

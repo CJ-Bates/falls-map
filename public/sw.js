@@ -1,7 +1,7 @@
 // public/sw.js — caches the app shell + map tiles + photos for offline use.
 // Registered by /src/components/RegisterSW.tsx on the home page.
 
-const VERSION = "v114";
+const VERSION = "v115";
 const APP_SHELL = `falls-app-${VERSION}`;
 const RUNTIME = `falls-runtime-${VERSION}`;
 const TILES = `falls-tiles-${VERSION}`;
@@ -54,6 +54,13 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(req.url);
 
   // Map tiles — stale-while-revalidate, capped at TILES cache
+  // AWS Terrain Tiles (elevation DEM for the Relief basemap). Matched on the
+  // bucket path, not just the host — s3.amazonaws.com serves the whole world's
+  // buckets and we only want this one.
+  if (url.host === "s3.amazonaws.com" && url.pathname.startsWith("/elevation-tiles-prod/")) {
+    event.respondWith(staleWhileRevalidate(TILES, req));
+    return;
+  }
   if (url.host.endsWith("tile.opentopomap.org") || url.host.endsWith("basemap.nationalmap.gov") || url.host.endsWith("basemaps.cartocdn.com") || url.host.endsWith("openstreetmap.org") || url.host.endsWith("arcgisonline.com")) {
     event.respondWith(staleWhileRevalidate(TILES, req));
     return;

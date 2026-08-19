@@ -21,7 +21,7 @@ export type SelectedItem =
   | { kind: "poi"; data: Poi }
   | { kind: "trail"; data: TrailMeta };
 
-export type Basemap = "topo" | "satellite" | "apple";
+export type Basemap = "topo" | "satellite" | "apple" | "relief";
 
 export type PoiVisibility = {
   cabins: boolean;
@@ -83,6 +83,19 @@ const TOPO_STYLE: maplibregl.StyleSpecification = {
       maxzoom: 19,
       attribution: 'Imagery © <a href="https://www.esri.com/">Esri</a>, Maxar, Earthstar Geographics',
     },
+    // Elevation data for the "Relief" basemap. AWS Terrain Tiles (terrarium
+    // encoding) — free, public, no API key. Native data stops at z15; MapLibre
+    // overzooms it, which is fine because shaded relief stays smooth when
+    // upscaled in a way that contour lines do not. This is OUR terrain layer,
+    // unlike OpenTopoMap's baked-in shading, so it keeps working at every zoom.
+    "terrain-dem": {
+      type: "raster-dem",
+      tiles: ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],
+      tileSize: 256,
+      maxzoom: 15,
+      encoding: "terrarium",
+      attribution: 'Elevation: <a href="https://registry.opendata.aws/terrain-tiles/">AWS Terrain Tiles</a>',
+    },
   },
   // All four base layers are present from the start. Visibility is toggled
   // by the basemap prop (see useEffect below). The topo mode actually uses
@@ -92,6 +105,31 @@ const TOPO_STYLE: maplibregl.StyleSpecification = {
     { id: "base-topo-deep",   type: "raster", source: "apple",     minzoom: 17.2, layout: { visibility: "visible" } },
     { id: "base-apple",       type: "raster", source: "apple",                    layout: { visibility: "none" } },
     { id: "base-satellite",   type: "raster", source: "satellite",                layout: { visibility: "none" } },
+    // "Relief" basemap: the same pale Carto ground as Standard, with our own
+    // shaded relief painted on top. Added as a FOURTH option — Topo, Satellite
+    // and Standard are untouched.
+    { id: "base-relief",      type: "raster", source: "apple",                     layout: { visibility: "none" } },
+    {
+      id: "hillshade",
+      type: "hillshade",
+      source: "terrain-dem",
+      layout: { visibility: "none" },
+      paint: {
+        // Jefferson County hills are gentle, so the default exaggeration reads
+        // almost flat here. 0.65 makes the ridges and hollows legible without
+        // tipping into fake-looking relief.
+        "hillshade-exaggeration": 0.65,
+        // Tinted to the app palette rather than MapLibre's default grey/white.
+        "hillshade-shadow-color": "#4A3524",
+        "hillshade-highlight-color": "#FBF1D8",
+        "hillshade-accent-color": "#6B4423",
+        // Anchor the light to the map (not the viewport) so shadows stay put
+        // when the map rotates in nav mode — otherwise hills appear to
+        // "flip" inside out as you turn.
+        "hillshade-illumination-anchor": "map",
+        "hillshade-illumination-direction": 315,
+      },
+    },
   ],
 };
 
@@ -399,21 +437,26 @@ export default function PropertyMap({
         type: "line",
         source: "owned-boundary",
         paint: {
-          "line-color": "#1A0F08",
-          "line-width": 12,
-          "line-opacity": 0.9,
-          "line-blur": 3,
+          // Cream halo. Sits under the dark line so the boundary stays legible
+          // over dark satellite imagery AND busy topo shading, without the
+          // line itself having to be a loud colour.
+          "line-color": "#F5E8C9",
+          "line-width": 11,
+          "line-opacity": 0.85,
+          "line-blur": 1.5,
         },
         layout: { "line-join": "round", "line-cap": "round" },
       });
-      // Main fenceline: saturated bright gold, solid (no dashes).
+      // Main fenceline: deep brown, solid (no dashes). Reads as a boundary
+      // rather than a highlight, and sits inside the app's coffee/cream
+      // palette instead of fighting the muted greens of the topo tiles.
       map.addLayer({
         id: "owned-line",
         type: "line",
         source: "owned-boundary",
         paint: {
-          "line-color": "#B83A8C",
-          "line-width": 6,
+          "line-color": "#2A1F18",
+          "line-width": 5,
           "line-opacity": 1,
         },
         layout: { "line-join": "round", "line-cap": "round" },
@@ -1053,6 +1096,8 @@ export default function PropertyMap({
       vis("base-topo-deep", basemap === "topo");
       vis("base-apple",     basemap === "apple");
       vis("base-satellite", basemap === "satellite");
+      vis("base-relief",    basemap === "relief");
+      vis("hillshade",      basemap === "relief");
     };
     if (m.isStyleLoaded()) apply();
     else m.once("idle", apply);
