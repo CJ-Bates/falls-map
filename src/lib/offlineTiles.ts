@@ -3,8 +3,9 @@
 // The flow:
 //   1. We compute the list of (z, x, y) tile coordinates that cover the
 //      property bbox at zooms 14-17 (the most useful zoom range).
-//   2. For each (z, x, y), we build URLs across the three basemap sources
-//      (OpenTopoMap, CartoDB Voyager, Esri World Imagery).
+//   2. For each (z, x, y), we build URLs across the raster basemap sources
+//      (OpenTopoMap, CartoDB Voyager, Esri World Imagery), plus the
+//      OpenFreeMap vector tiles used by Standard and Relief.
 //   3. We fetch each URL. The existing service worker intercepts these
 //      and stores them in the TILES cache via its staleWhileRevalidate
 //      rules, so subsequent MapLibre loads hit the cache instead of the
@@ -72,6 +73,34 @@ export function urlsForTile({ z, x, y }: TileCoord): string[] {
   return urls;
 }
 
+// OpenFreeMap serves vector tiles from a dated planet build, e.g.
+//   .../planet/20260816_080001_pt/{z}/{x}/{y}.pbf
+// That build id rotates, so it can't be hardcoded — MapLibre reads it from
+// the TileJSON at runtime and so do we. Resolved once per prefetch and
+// cached in-module. Returns null if the lookup fails, in which case we just
+// skip vector prefetch rather than failing the whole download.
+let vectorTemplate: string | null | undefined;
+
+export async function resolveVectorTemplate(): Promise<string | null> {
+  if (vectorTemplate !== undefined) return vectorTemplate;
+  try {
+    const res = await fetch("https://tiles.openfreemap.org/planet", { cache: "default" });
+    if (!res.ok) throw new Error("tilejson " + res.status);
+    const tj = (await res.json()) as { tiles?: string[] };
+    vectorTemplate = tj.tiles?.[0] ?? null;
+  } catch {
+    vectorTemplate = null;
+  }
+  return vectorTemplate;
+}
+
+// Vector tiles stop at z14 and are overzoomed for deeper views, so covering
+// the property needs only a handful of tiles — far cheaper than raster.
+export function vectorUrlsForTile({ z, x, y }: TileCoord, template: string): string[] {
+  if (z > 14) return [];
+  return [template.replace("{z}", String(z)).replace("{x}", String(x)).replace("{y}", String(y))];
+}
+
 export type PrefetchProgress = {
   total: number;
   done: number;
@@ -85,7 +114,11 @@ export async function prefetchAll(
   onProgress: (p: PrefetchProgress) => void,
   concurrency = 6,
 ): Promise<PrefetchProgress> {
-  const allUrls = coords.flatMap(urlsForTile);
+  const template = await resolveVectorTemplate();
+  const allUrls = [
+    ...coords.flatMap(urlsForTile),
+    ...(template ? coords.flatMap((c) => vectorUrlsForTile(c, template)) : []),
+  ];
   let done = 0;
   let failed = 0;
   const total = allUrls.length;

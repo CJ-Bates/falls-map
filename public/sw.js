@@ -1,7 +1,7 @@
 // public/sw.js — caches the app shell + map tiles + photos for offline use.
 // Registered by /src/components/RegisterSW.tsx on the home page.
 
-const VERSION = "v115";
+const VERSION = "v116";
 const APP_SHELL = `falls-app-${VERSION}`;
 const RUNTIME = `falls-runtime-${VERSION}`;
 const TILES = `falls-tiles-${VERSION}`;
@@ -61,7 +61,7 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(staleWhileRevalidate(TILES, req));
     return;
   }
-  if (url.host.endsWith("tile.opentopomap.org") || url.host.endsWith("basemap.nationalmap.gov") || url.host.endsWith("basemaps.cartocdn.com") || url.host.endsWith("openstreetmap.org") || url.host.endsWith("arcgisonline.com")) {
+  if (url.host.endsWith("tile.opentopomap.org") || url.host.endsWith("basemap.nationalmap.gov") || url.host.endsWith("basemaps.cartocdn.com") || url.host.endsWith("openstreetmap.org") || url.host.endsWith("arcgisonline.com") || url.host.endsWith("tiles.openfreemap.org")) {
     event.respondWith(staleWhileRevalidate(TILES, req));
     return;
   }

@@ -83,6 +83,14 @@ const TOPO_STYLE: maplibregl.StyleSpecification = {
       maxzoom: 19,
       attribution: 'Imagery © <a href="https://www.esri.com/">Esri</a>, Maxar, Earthstar Geographics',
     },
+    // OpenFreeMap vector tiles (OpenStreetMap data, free, no API key, no
+    // usage limits). Unlike a raster basemap these are drawn on the device,
+    // so they stay razor-sharp when overzoomed past the source maxzoom of 14
+    // — which is exactly where the raster basemaps go soft.
+    openfreemap: {
+      type: "vector",
+      url: "https://tiles.openfreemap.org/planet",
+    },
     // Elevation data for the "Relief" basemap. AWS Terrain Tiles (terrarium
     // encoding) — free, public, no API key. Native data stops at z15; MapLibre
     // overzooms it, which is fine because shaded relief stays smooth when
@@ -108,6 +116,37 @@ const TOPO_STYLE: maplibregl.StyleSpecification = {
     // "Relief" basemap: the same pale Carto ground as Standard, with our own
     // shaded relief painted on top. Added as a FOURTH option — Topo, Satellite
     // and Standard are untouched.
+    // Vector basemap group. Painted before the hillshade so relief sits on top
+    // of the land colours. Toggled as a unit by the basemap effect below.
+    { id: "v-bg",       type: "background", layout: { visibility: "none" },
+      paint: { "background-color": "#F4EBD9" } },
+    { id: "v-wood",     type: "fill", source: "openfreemap", "source-layer": "landcover",
+      filter: ["in", "class", "wood", "forest"], layout: { visibility: "none" },
+      paint: { "fill-color": "#DFE6CE", "fill-opacity": 0.9 } },
+    { id: "v-grass",    type: "fill", source: "openfreemap", "source-layer": "landcover",
+      filter: ["in", "class", "grass", "meadow", "scrub"], layout: { visibility: "none" },
+      paint: { "fill-color": "#E7EDD8" } },
+    { id: "v-park",     type: "fill", source: "openfreemap", "source-layer": "park",
+      layout: { visibility: "none" }, paint: { "fill-color": "#E2EBD3", "fill-opacity": 0.7 } },
+    { id: "v-resi",     type: "fill", source: "openfreemap", "source-layer": "landuse",
+      filter: ["in", "class", "residential", "suburb", "neighbourhood"],
+      layout: { visibility: "none" }, paint: { "fill-color": "#EFE5D0" } },
+    { id: "v-water",    type: "fill", source: "openfreemap", "source-layer": "water",
+      layout: { visibility: "none" }, paint: { "fill-color": "#A8C9DF" } },
+    { id: "v-waterway", type: "line", source: "openfreemap", "source-layer": "waterway",
+      layout: { visibility: "none" },
+      paint: { "line-color": "#A8C9DF", "line-width": ["interpolate", ["linear"], ["zoom"], 10, 0.6, 16, 2.4] } },
+    { id: "v-building", type: "fill", source: "openfreemap", "source-layer": "building", minzoom: 14,
+      layout: { visibility: "none" },
+      paint: { "fill-color": "#E4D8C0", "fill-outline-color": "#D2C2A4" } },
+    { id: "v-road-case", type: "line", source: "openfreemap", "source-layer": "transportation", minzoom: 11,
+      filter: ["!in", "class", "path", "track", "ferry"],
+      layout: { visibility: "none", "line-cap": "round", "line-join": "round" },
+      paint: { "line-color": "#E3D7BE", "line-width": ["interpolate", ["linear"], ["zoom"], 11, 1.6, 16, 9] } },
+    { id: "v-road",     type: "line", source: "openfreemap", "source-layer": "transportation", minzoom: 11,
+      filter: ["!in", "class", "path", "track", "ferry"],
+      layout: { visibility: "none", "line-cap": "round", "line-join": "round" },
+      paint: { "line-color": "#FFFDF7", "line-width": ["interpolate", ["linear"], ["zoom"], 11, 0.8, 16, 6.5] } },
     { id: "base-relief",      type: "raster", source: "apple",                     layout: { visibility: "none" } },
     {
       id: "hillshade",
@@ -1092,11 +1131,19 @@ export default function PropertyMap({
       const vis = (id: string, on: boolean) => {
         if (m.getLayer(id)) m.setLayoutProperty(id, "visibility", on ? "visible" : "none");
       };
+      // Standard and Relief are drawn from vector tiles now; Topo and
+      // Satellite are untouched raster, exactly as before.
+      const vector = basemap === "apple" || basemap === "relief";
+      [
+        "v-bg", "v-wood", "v-grass", "v-park", "v-resi",
+        "v-water", "v-waterway", "v-building", "v-road-case", "v-road",
+      ].forEach((id) => vis(id, vector));
+
       vis("base-topo",      basemap === "topo");
       vis("base-topo-deep", basemap === "topo");
-      vis("base-apple",     basemap === "apple");
+      vis("base-apple",     false);
       vis("base-satellite", basemap === "satellite");
-      vis("base-relief",    basemap === "relief");
+      vis("base-relief",    false);
       vis("hillshade",      basemap === "relief");
     };
     if (m.isStyleLoaded()) apply();
