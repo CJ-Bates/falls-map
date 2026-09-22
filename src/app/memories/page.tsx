@@ -82,7 +82,9 @@ export default function MemoriesPage() {
         .limit(120);
       if (cancelled) return;
       if (error) {
-        setLoadError(error.message);
+        // Deliberately not error.message — guests were shown raw strings like
+        // "TypeError: Failed to fetch" when the Supabase project was paused.
+        setLoadError("Photos are temporarily unavailable. Please check back soon.");
       } else if (data) {
         setMemories(data as Memory[]);
       }
@@ -399,7 +401,7 @@ export default function MemoriesPage() {
           <div className="text-center text-[#F0E2C2]/55 text-[14px] py-8">Loading photos…</div>
         ) : loadError ? (
           <div className="rounded-2xl bg-red-900/30 border border-red-400/30 px-4 py-3 text-[13px] text-red-200">
-            Couldn&apos;t load photos: {loadError}
+            {loadError}
           </div>
         ) : memories.length === 0 ? (
           <div className="text-center text-[#F0E2C2]/55 text-[14px] py-8">

@@ -61,7 +61,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "db_error" }, { status: 500 });
   }
 
-  const rows = (data ?? []) as Row[];
+  // Drop the daily keep-alive pings (see /api/keepalive) — they're
+  // infrastructure, not guest behaviour, and would otherwise show up in the
+  // event tallies and inflate the totals.
+  const rows = ((data ?? []) as Row[]).filter((r) => r.event !== "keepalive");
   const views = rows.filter((r) => r.event === "pageview");
 
   // Daily series of views + unique visitors, oldest first.
