@@ -696,6 +696,13 @@ export default function MapPage() {
               width: "min(320px, calc(100vw - 2rem))",
               padding: "16px 16px 14px 16px",
               transformOrigin: "bottom right",
+              // The popover grows upward from the Layers button. With five
+              // basemaps + the 3D row it's taller than a phone screen, so cap
+              // it below the top safe area and let the inside scroll.
+              maxHeight: "calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 10rem)",
+              overflowY: "auto",
+              WebkitOverflowScrolling: "touch",
+              overscrollBehavior: "contain",
             }}
             role="dialog"
             aria-label="Map layers"

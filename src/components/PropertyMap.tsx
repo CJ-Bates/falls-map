@@ -1206,15 +1206,18 @@ export default function PropertyMap({
       if (terrain3d) {
         // ~250 ft of relief over a mile reads flat at true scale on a phone,
         // so exaggerate — same trick every outdoor app uses on gentle hills.
-        if (!m.getTerrain()) m.setTerrain({ source: "falls-dem", exaggeration: 2.0 });
-        // Fly to a framed "hero" view: Main Lake in the foreground, the
-        // Lions View Way ridge standing up behind it, looking north-west.
+        if (!m.getTerrain()) m.setTerrain({ source: "falls-dem", exaggeration: 1.6 });
+        // Fly to a framed "hero" view: the whole property mid-frame, Main Lake
+        // at centre, the Lions View Way ridge standing up behind it, looking
+        // north-west. NB: with terrain on, MapLibre re-derives zoom from the
+        // camera's height above the *ground*, so these numbers were tuned by
+        // running the real toggle on a phone-sized viewport, not by maths.
         if (!navMode) {
           m.easeTo({
-            center: [-90.4588, 38.4078],
-            zoom: 15.4,
-            pitch: 64,
-            bearing: -40,
+            center: [-90.4618, 38.4100],
+            zoom: 15.1,
+            pitch: 58,
+            bearing: -35,
             duration: 1400,
             essential: true,
           });
