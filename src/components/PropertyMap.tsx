@@ -43,6 +43,9 @@ type Props = {
   // Toggle for trail layers only (line, halo, hit, labels). Pin
   // visibility is independently controlled by `poiVisibility`.
   trailsVisible?: boolean;
+  // 3D terrain (lidar DEM, self-hosted). Tilts the map and drapes whichever
+  // basemap is active over real elevation. Off by default.
+  terrain3d?: boolean;
 };
 
 const TOPO_STYLE: maplibregl.StyleSpecification = {
@@ -124,6 +127,17 @@ const TOPO_STYLE: maplibregl.StyleSpecification = {
       type: "geojson",
       data: "/tiles/contours.json",
     },
+    // Terrarium-encoded lidar DEM for 3D terrain (same pipeline). z12–15,
+    // MapLibre overzooms beyond that. Only used when terrain3d is on.
+    "falls-dem": {
+      type: "raster-dem",
+      tiles: ["/tiles/terrain/{z}/{x}/{y}.png"],
+      tileSize: 512,
+      minzoom: 12,
+      maxzoom: 15,
+      encoding: "terrarium",
+      bounds: [-90.4855, 38.3835, -90.4285, 38.4275],
+    },
   },
   // All four base layers are present from the start. Visibility is toggled
   // by the basemap prop (see useEffect below). The topo mode actually uses
@@ -164,18 +178,39 @@ const TOPO_STYLE: maplibregl.StyleSpecification = {
       paint: { "fill-color": "#E4D8C0", "fill-outline-color": "#D2C2A4" } },
     // Lidar contours — minor 5 ft lines are whisper-thin, 25 ft index lines
     // carry the shape. Under roads, over relief. Falls basemap only.
+    // 10 ft minor / 50 ft index. Minors fade in from z14 so the overview
+    // stays clean; index lines carry the shape at every zoom.
     { id: "falls-contour", type: "line", source: "falls-contours", minzoom: 13.5,
       filter: ["==", ["get", "idx"], 0],
       layout: { visibility: "none", "line-cap": "round", "line-join": "round" },
       paint: { "line-color": "#7A5C38",
-               "line-opacity": ["interpolate", ["linear"], ["zoom"], 13.5, 0, 14.5, 0.28, 17, 0.38],
-               "line-width":   ["interpolate", ["linear"], ["zoom"], 14, 0.5, 17, 0.9] } },
+               "line-opacity": ["interpolate", ["linear"], ["zoom"], 13.5, 0, 14.5, 0.30, 17, 0.42],
+               "line-width":   ["interpolate", ["linear"], ["zoom"], 14, 0.55, 17, 1.0] } },
     { id: "falls-contour-index", type: "line", source: "falls-contours", minzoom: 12.5,
       filter: ["==", ["get", "idx"], 1],
       layout: { visibility: "none", "line-cap": "round", "line-join": "round" },
       paint: { "line-color": "#6B4A28",
-               "line-opacity": ["interpolate", ["linear"], ["zoom"], 12.5, 0, 13.5, 0.45, 17, 0.6],
-               "line-width":   ["interpolate", ["linear"], ["zoom"], 13, 0.8, 17, 1.6] } },
+               "line-opacity": ["interpolate", ["linear"], ["zoom"], 12.5, 0, 13.5, 0.5, 17, 0.7],
+               "line-width":   ["interpolate", ["linear"], ["zoom"], 13, 0.9, 17, 1.8] } },
+    // Elevation labels on the index contours, in feet. Rendered from local
+    // fonts like the trail labels (no glyph server in this style).
+    { id: "falls-contour-label", type: "symbol", source: "falls-contours", minzoom: 14.5,
+      filter: ["==", ["get", "idx"], 1],
+      layout: {
+        visibility: "none",
+        "symbol-placement": "line",
+        "symbol-spacing": 320,
+        "text-field": ["to-string", ["get", "ft"]],
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 14.5, 9.5, 17, 11.5],
+        "text-max-angle": 25,
+        "text-letter-spacing": 0.05,
+        "text-rotation-alignment": "map",
+        "text-pitch-alignment": "map",
+      },
+      paint: { "text-color": "#5E4022",
+               "text-halo-color": "#F6EEDA", "text-halo-width": 1.8, "text-halo-blur": 0.2,
+               "text-opacity": 0.85 } },
     { id: "v-road-case", type: "line", source: "openfreemap", "source-layer": "transportation", minzoom: 11,
       filter: ["!in", "class", "path", "track", "ferry"],
       layout: { visibility: "none", "line-cap": "round", "line-join": "round" },
@@ -412,6 +447,7 @@ export default function PropertyMap({
   onUserPosition,
   focusBounds = null,
   trailsVisible = true,
+  terrain3d = false,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
@@ -1158,6 +1194,26 @@ export default function PropertyMap({
     else m.once("idle", apply);
   }, [trailsVisible]);
 
+  // 3D terrain. Works with every basemap — the active one is draped over
+  // the lidar DEM. Tilt in on enable, flatten on disable; nav mode manages
+  // its own pitch and wins if both are active.
+  useEffect(() => {
+    const m = mapRef.current;
+    if (!m) return;
+    const apply = () => {
+      if (terrain3d) {
+        if (!m.getTerrain()) m.setTerrain({ source: "falls-dem", exaggeration: 1.3 });
+        if (!navMode && m.getPitch() < 30) m.easeTo({ pitch: 58, duration: 900, essential: true });
+      } else {
+        if (m.getTerrain()) m.setTerrain(null);
+        if (!navMode) m.easeTo({ pitch: 0, duration: 600, essential: true });
+      }
+    };
+    if (m.isStyleLoaded()) apply();
+    else m.once("idle", apply);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [terrain3d]);
+
   // Apply basemap selection by toggling visibility on the 4 base raster
   // layers. Topo mode uses two stacked layers (opentopomap + voyager deep
   // fallback); satellite and apple are single-layer.
@@ -1186,6 +1242,7 @@ export default function PropertyMap({
       vis("falls-relief",        basemap === "falls");
       vis("falls-contour",       basemap === "falls");
       vis("falls-contour-index", basemap === "falls");
+      vis("falls-contour-label", basemap === "falls");
     };
     if (m.isStyleLoaded()) apply();
     else m.once("idle", apply);

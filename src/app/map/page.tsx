@@ -263,6 +263,7 @@ export default function MapPage() {
   // Trails toggle — hides trail lines + labels for a bare-property view.
   // Pin visibility is controlled separately by the Points section below.
   const [showTrails, setShowTrails] = useState(true);
+  const [terrain3d, setTerrain3d] = useState(false);
   useEffect(() => {
     try {
       const raw = localStorage.getItem("falls-show-trails");
@@ -637,6 +638,7 @@ export default function MapPage() {
         routeCoords={route?.coords ?? null}
         poiVisibility={poiVisibility}
         trailsVisible={showTrails}
+        terrain3d={terrain3d}
         navMode={navigating}
         onUserPosition={setUserPos}
         focusBounds={focusBounds}
@@ -734,6 +736,23 @@ export default function MapPage() {
                   );
                 })}
               </div>
+            </div>
+
+            {/* 3D terrain — drapes the active basemap over the lidar DEM */}
+            <div className="pt-3 mt-3 border-t border-[#B89968]/15">
+              <h3 className="text-[10px] uppercase tracking-[0.14em] text-[#B89968] mb-2">Terrain</h3>
+              <ul className="space-y-1.5">
+                <PoiToggleRow
+                  label="3D terrain"
+                  count={0}
+                  color="#D8C294"
+                  active={terrain3d}
+                  onToggle={() => { setTerrain3d((v) => !v); track("basemap_change", { basemap: terrain3d ? "3d-off" : "3d-on" }); }}
+                />
+              </ul>
+              <p className="text-[10.5px] text-[#F0E2C2]/60 mt-2 leading-snug">
+                Tilts the map over real lidar elevation. Drag with two fingers to look around.
+              </p>
             </div>
 
             {/* Trails toggle (pins are controlled per-category below) */}

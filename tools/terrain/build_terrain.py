@@ -8,7 +8,7 @@ Turns the free USGS 3DEP lidar DEM (~1 m, project MO_StLouis_2017) into:
                                         512 px RGBA, z12–z16  (the Falls basemap)
   public/tiles/terrain/{z}/{x}/{y}.png  terrarium-encoded elevation, 512 px,
                                         z12–z15 (for 3D terrain / runtime hillshade)
-  public/tiles/contours.json            5 ft contours (25 ft index) clipped to the
+  public/tiles/contours.json            10 ft contours (50 ft index) clipped to the
                                         property + 250 m, in lon/lat
 
 Run from the repo root:
@@ -51,10 +51,18 @@ RELIEF_ZOOMS = range(12, 17)   # z16 @ 512 px ≈ 0.94 m/px here = lidar native
 TERRAIN_ZOOMS = range(12, 16)  # 3D terrain is fine at ~1.9 m; MapLibre overzooms
 
 # Brand palette (globals.css)
-CREAM_LOW = np.array([0xF2, 0xEA, 0xD6], dtype=np.float32)   # valleys / paper
-TAN_HIGH = np.array([0xCF, 0xBA, 0x90], dtype=np.float32)    # ridges
-SHADOW = np.array([0x4A, 0x35, 0x24], dtype=np.float32)      # hillshade shadow
-HIGHLIGHT = np.array([0xFD, 0xF6, 0xE4], dtype=np.float32)   # hillshade light
+# Tuned 2026-09-22 against the real DEM: warmer shadow, brighter highlight,
+# ~1.5x the contrast of the first cut, which read grey and muddy on a phone.
+CREAM_LOW = np.array([0xF6, 0xEE, 0xDA], dtype=np.float32)   # valleys / paper
+TAN_HIGH = np.array([0xD8, 0xC2, 0x94], dtype=np.float32)    # ridges
+SHADOW = np.array([0x5C, 0x3A, 0x1E], dtype=np.float32)      # hillshade shadow
+HIGHLIGHT = np.array([0xFF, 0xFB, 0xEE], dtype=np.float32)   # hillshade light
+SHADE_GAIN = 2.0      # contrast of the light/shadow blend
+SLOPE_DARKEN = 0.30   # extra darkening on steep faces (dams, creek cuts)
+SMOOTH_SIGMA = 1.0    # px; kills lidar speckle without softening the ridges
+
+CONTOUR_FT = 10       # minor interval
+INDEX_FT = 50         # index (heavier, labelled)
 
 FT = 3.28084
 
@@ -174,10 +182,10 @@ def _shade_strip(zs: np.ndarray, res: float, lo: float, hi: float) -> np.ndarray
     t = np.clip((zs - lo) / max(hi - lo, 1e-6), 0, 1)[..., None]
     rgb = CREAM_LOW * (1 - t) + TAN_HIGH * t          # (h,w,3) float32
     light = (hs - 0.5)[..., None]
-    k = np.abs(light) * 1.35
+    k = np.clip(np.abs(light) * SHADE_GAIN, 0, 1)
     shade = np.where(light < 0, SHADOW, HIGHLIGHT)
     rgb = rgb * (1 - k) + shade * k
-    rgb *= (1 - 0.22 * slope_k[..., None])
+    rgb *= (1 - SLOPE_DARKEN * slope_k[..., None])
     return rgb
 
 
@@ -194,7 +202,7 @@ def render_relief(dem: np.ndarray, res: float, valid: np.ndarray) -> np.ndarray:
     strip, pad = 512, 16
     for y0 in range(0, h, strip):
         a, b = max(0, y0 - pad), min(h, y0 + strip + pad)
-        zs = gaussian_filter(z[a:b], sigma=1.2)
+        zs = gaussian_filter(z[a:b], sigma=SMOOTH_SIGMA)
         rgb = _shade_strip(zs, res, lo, hi)
         s0 = y0 - a
         s1 = s0 + min(strip, h - y0)
@@ -284,9 +292,9 @@ def build_contours(dem: np.ndarray, valid: np.ndarray, transform, res: float):
     zft = gaussian_filter(z, sigma=2.0)[::2, ::2] * FT
     v2 = valid[::2, ::2]
     del z
-    lo = math.floor(np.nanmin(zft[v2]) / 5) * 5
-    hi = math.ceil(np.nanmax(zft[v2]) / 5) * 5
-    levels = np.arange(lo, hi + 5, 5)
+    lo = math.floor(np.nanmin(zft[v2]) / CONTOUR_FT) * CONTOUR_FT
+    hi = math.ceil(np.nanmax(zft[v2]) / CONTOUR_FT) * CONTOUR_FT
+    levels = np.arange(lo, hi + CONTOUR_FT, CONTOUR_FT)
     h, w = zft.shape
     xs = transform.c + (np.arange(w) * 2 + 0.5) * transform.a
     ys = transform.f + (np.arange(h) * 2 + 0.5) * transform.e
@@ -309,7 +317,7 @@ def build_contours(dem: np.ndarray, valid: np.ndarray, transform, res: float):
                 coords = [[round(x, 6), round(y, 6)] for x, y in ll.coords]
                 feats.append({
                     "type": "Feature",
-                    "properties": {"ft": int(round(lvl)), "idx": 1 if int(round(lvl)) % 25 == 0 else 0},
+                    "properties": {"ft": int(round(lvl)), "idx": 1 if int(round(lvl)) % INDEX_FT == 0 else 0},
                     "geometry": {"type": "LineString", "coordinates": coords},
                 })
     plt.close(fig)
