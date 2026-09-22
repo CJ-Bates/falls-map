@@ -21,7 +21,9 @@ export type SelectedItem =
   | { kind: "poi"; data: Poi }
   | { kind: "trail"; data: TrailMeta };
 
-export type Basemap = "topo" | "satellite" | "apple" | "relief" | "falls";
+// Two basemaps: our lidar "Falls" map (default) and satellite imagery.
+// Topo / Standard / Relief were retired 2026-09-22 once Falls was approved.
+export type Basemap = "falls" | "satellite";
 
 export type PoiVisibility = {
   cabins: boolean;
@@ -48,34 +50,9 @@ type Props = {
   terrain3d?: boolean;
 };
 
-const TOPO_STYLE: maplibregl.StyleSpecification = {
+const MAP_STYLE: maplibregl.StyleSpecification = {
   version: 8,
   sources: {
-    // OpenTopoMap — classic topographic look (contour + hillshade), z17 max
-    topo: {
-      type: "raster",
-      tiles: [
-        "https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
-        "https://b.tile.opentopomap.org/{z}/{x}/{y}.png",
-        "https://c.tile.opentopomap.org/{z}/{x}/{y}.png",
-      ],
-      tileSize: 256,
-      maxzoom: 17,
-      attribution:
-        'Map data: © <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors, SRTM | © <a href="https://opentopomap.org">OpenTopoMap</a>',
-    },
-    // CartoDB Voyager — clean light style, doubles as topo deep-zoom fallback
-    apple: {
-      type: "raster",
-      tiles: [
-        "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-        "https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-        "https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-      ],
-      tileSize: 256,
-      maxzoom: 20,
-      attribution: '© <a href="https://carto.com/attributions">CARTO</a>',
-    },
     // Esri World Imagery — aerial satellite photography, z19 max
     satellite: {
       type: "raster",
@@ -87,25 +64,10 @@ const TOPO_STYLE: maplibregl.StyleSpecification = {
       attribution: 'Imagery © <a href="https://www.esri.com/">Esri</a>, Maxar, Earthstar Geographics',
     },
     // OpenFreeMap vector tiles (OpenStreetMap data, free, no API key, no
-    // usage limits). Unlike a raster basemap these are drawn on the device,
-    // so they stay razor-sharp when overzoomed past the source maxzoom of 14
-    // — which is exactly where the raster basemaps go soft.
+    // usage limits). Drawn on the device, so they stay sharp at any zoom.
     openfreemap: {
       type: "vector",
       url: "https://tiles.openfreemap.org/planet",
-    },
-    // Elevation data for the "Relief" basemap. AWS Terrain Tiles (terrarium
-    // encoding) — free, public, no API key. Native data stops at z15; MapLibre
-    // overzooms it, which is fine because shaded relief stays smooth when
-    // upscaled in a way that contour lines do not. This is OUR terrain layer,
-    // unlike OpenTopoMap's baked-in shading, so it keeps working at every zoom.
-    "terrain-dem": {
-      type: "raster-dem",
-      tiles: ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],
-      tileSize: 256,
-      maxzoom: 15,
-      encoding: "terrarium",
-      attribution: 'Elevation: <a href="https://registry.opendata.aws/terrain-tiles/">AWS Terrain Tiles</a>',
     },
     // "Falls" basemap — OUR OWN shaded relief, pre-rendered from the USGS 3DEP
     // lidar DEM (~1 m) by tools/terrain/build_terrain.py and served from
@@ -139,42 +101,36 @@ const TOPO_STYLE: maplibregl.StyleSpecification = {
       bounds: [-90.4855, 38.3835, -90.4285, 38.4275],
     },
   },
-  // All four base layers are present from the start. Visibility is toggled
-  // by the basemap prop (see useEffect below). The topo mode actually uses
-  // two stacked layers: opentopomap up to z17.2, apple beyond.
+  // Both basemaps are present from the start; visibility is toggled by the
+  // basemap prop (see useEffect below).
   layers: [
-    { id: "base-topo",        type: "raster", source: "topo",      maxzoom: 17.2, layout: { visibility: "visible" } },
-    { id: "base-topo-deep",   type: "raster", source: "apple",     minzoom: 17.2, layout: { visibility: "visible" } },
-    { id: "base-apple",       type: "raster", source: "apple",                    layout: { visibility: "none" } },
     { id: "base-satellite",   type: "raster", source: "satellite",                layout: { visibility: "none" } },
-    // "Relief" basemap: the same pale Carto ground as Standard, with our own
-    // shaded relief painted on top. Added as a FOURTH option — Topo, Satellite
-    // and Standard are untouched.
-    // Vector basemap group. Painted before the hillshade so relief sits on top
-    // of the land colours. Toggled as a unit by the basemap effect below.
-    { id: "v-bg",       type: "background", layout: { visibility: "none" },
+    // Vector context group (OpenFreeMap / OSM): land colours, water, roads and
+    // buildings around the property. Drawn under the Falls relief so the
+    // world outside the lidar area still has shape. Hidden in satellite mode.
+    { id: "v-bg",       type: "background", layout: { visibility: "visible" },
       paint: { "background-color": "#F4EBD9" } },
     { id: "v-wood",     type: "fill", source: "openfreemap", "source-layer": "landcover",
-      filter: ["in", "class", "wood", "forest"], layout: { visibility: "none" },
+      filter: ["in", "class", "wood", "forest"], layout: { visibility: "visible" },
       paint: { "fill-color": "#DFE6CE", "fill-opacity": 0.9 } },
     { id: "v-grass",    type: "fill", source: "openfreemap", "source-layer": "landcover",
-      filter: ["in", "class", "grass", "meadow", "scrub"], layout: { visibility: "none" },
+      filter: ["in", "class", "grass", "meadow", "scrub"], layout: { visibility: "visible" },
       paint: { "fill-color": "#E7EDD8" } },
     { id: "v-park",     type: "fill", source: "openfreemap", "source-layer": "park",
-      layout: { visibility: "none" }, paint: { "fill-color": "#E2EBD3", "fill-opacity": 0.7 } },
+      layout: { visibility: "visible" }, paint: { "fill-color": "#E2EBD3", "fill-opacity": 0.7 } },
     { id: "v-resi",     type: "fill", source: "openfreemap", "source-layer": "landuse",
       filter: ["in", "class", "residential", "suburb", "neighbourhood"],
-      layout: { visibility: "none" }, paint: { "fill-color": "#EFE5D0" } },
+      layout: { visibility: "visible" }, paint: { "fill-color": "#EFE5D0" } },
     // Falls relief sits over the landcover fills and under OSM water / roads.
-    { id: "falls-relief", type: "raster", source: "falls-relief", layout: { visibility: "none" },
+    { id: "falls-relief", type: "raster", source: "falls-relief", layout: { visibility: "visible" },
       paint: { "raster-opacity": 1, "raster-fade-duration": 150, "raster-resampling": "linear" } },
     { id: "v-water",    type: "fill", source: "openfreemap", "source-layer": "water",
-      layout: { visibility: "none" }, paint: { "fill-color": "#A8C9DF" } },
+      layout: { visibility: "visible" }, paint: { "fill-color": "#A8C9DF" } },
     { id: "v-waterway", type: "line", source: "openfreemap", "source-layer": "waterway",
-      layout: { visibility: "none" },
+      layout: { visibility: "visible" },
       paint: { "line-color": "#A8C9DF", "line-width": ["interpolate", ["linear"], ["zoom"], 10, 0.6, 16, 2.4] } },
     { id: "v-building", type: "fill", source: "openfreemap", "source-layer": "building", minzoom: 14,
-      layout: { visibility: "none" },
+      layout: { visibility: "visible" },
       paint: { "fill-color": "#E4D8C0", "fill-outline-color": "#D2C2A4" } },
     // Lidar contours — minor 5 ft lines are whisper-thin, 25 ft index lines
     // carry the shape. Under roads, over relief. Falls basemap only.
@@ -182,13 +138,13 @@ const TOPO_STYLE: maplibregl.StyleSpecification = {
     // stays clean; index lines carry the shape at every zoom.
     { id: "falls-contour", type: "line", source: "falls-contours", minzoom: 13.5,
       filter: ["==", ["get", "idx"], 0],
-      layout: { visibility: "none", "line-cap": "round", "line-join": "round" },
+      layout: { visibility: "visible", "line-cap": "round", "line-join": "round" },
       paint: { "line-color": "#7A5C38",
                "line-opacity": ["interpolate", ["linear"], ["zoom"], 13.5, 0, 14.5, 0.30, 17, 0.42],
                "line-width":   ["interpolate", ["linear"], ["zoom"], 14, 0.55, 17, 1.0] } },
     { id: "falls-contour-index", type: "line", source: "falls-contours", minzoom: 12.5,
       filter: ["==", ["get", "idx"], 1],
-      layout: { visibility: "none", "line-cap": "round", "line-join": "round" },
+      layout: { visibility: "visible", "line-cap": "round", "line-join": "round" },
       paint: { "line-color": "#6B4A28",
                "line-opacity": ["interpolate", ["linear"], ["zoom"], 12.5, 0, 13.5, 0.5, 17, 0.7],
                "line-width":   ["interpolate", ["linear"], ["zoom"], 13, 0.9, 17, 1.8] } },
@@ -197,7 +153,7 @@ const TOPO_STYLE: maplibregl.StyleSpecification = {
     { id: "falls-contour-label", type: "symbol", source: "falls-contours", minzoom: 14.5,
       filter: ["==", ["get", "idx"], 1],
       layout: {
-        visibility: "none",
+        visibility: "visible",
         "symbol-placement": "line",
         "symbol-spacing": 320,
         "text-field": ["to-string", ["get", "ft"]],
@@ -213,34 +169,12 @@ const TOPO_STYLE: maplibregl.StyleSpecification = {
                "text-opacity": 0.85 } },
     { id: "v-road-case", type: "line", source: "openfreemap", "source-layer": "transportation", minzoom: 11,
       filter: ["!in", "class", "path", "track", "ferry"],
-      layout: { visibility: "none", "line-cap": "round", "line-join": "round" },
+      layout: { visibility: "visible", "line-cap": "round", "line-join": "round" },
       paint: { "line-color": "#E3D7BE", "line-width": ["interpolate", ["linear"], ["zoom"], 11, 1.6, 16, 9] } },
     { id: "v-road",     type: "line", source: "openfreemap", "source-layer": "transportation", minzoom: 11,
       filter: ["!in", "class", "path", "track", "ferry"],
-      layout: { visibility: "none", "line-cap": "round", "line-join": "round" },
+      layout: { visibility: "visible", "line-cap": "round", "line-join": "round" },
       paint: { "line-color": "#FFFDF7", "line-width": ["interpolate", ["linear"], ["zoom"], 11, 0.8, 16, 6.5] } },
-    { id: "base-relief",      type: "raster", source: "apple",                     layout: { visibility: "none" } },
-    {
-      id: "hillshade",
-      type: "hillshade",
-      source: "terrain-dem",
-      layout: { visibility: "none" },
-      paint: {
-        // Jefferson County hills are gentle, so the default exaggeration reads
-        // almost flat here. 0.65 makes the ridges and hollows legible without
-        // tipping into fake-looking relief.
-        "hillshade-exaggeration": 0.65,
-        // Tinted to the app palette rather than MapLibre's default grey/white.
-        "hillshade-shadow-color": "#4A3524",
-        "hillshade-highlight-color": "#FBF1D8",
-        "hillshade-accent-color": "#6B4423",
-        // Anchor the light to the map (not the viewport) so shadows stay put
-        // when the map rotates in nav mode — otherwise hills appear to
-        // "flip" inside out as you turn.
-        "hillshade-illumination-anchor": "map",
-        "hillshade-illumination-direction": 315,
-      },
-    },
   ],
 };
 
@@ -440,7 +374,7 @@ function buildUserDot(): HTMLDivElement {
 
 export default function PropertyMap({
   onSelect,
-  basemap = "topo",
+  basemap = "falls",
   routeCoords = null,
   poiVisibility = { cabins: true, spots: true, carvings: true },
   navMode = false,
@@ -471,7 +405,7 @@ export default function PropertyMap({
 
     const map = new maplibregl.Map({
       container,
-      style: TOPO_STYLE,
+      style: MAP_STYLE,
       center: [property.center.lng, property.center.lat],
       zoom: 14.5,
       // 3D terrain looks best tilted well past the default 60° cap.
@@ -1242,21 +1176,12 @@ export default function PropertyMap({
       const vis = (id: string, on: boolean) => {
         if (m.getLayer(id)) m.setLayoutProperty(id, "visibility", on ? "visible" : "none");
       };
-      // Standard and Relief are drawn from vector tiles now; Topo and
-      // Satellite are untouched raster, exactly as before.
-      const vector = basemap === "apple" || basemap === "relief" || basemap === "falls";
+      const falls = basemap === "falls";
       [
         "v-bg", "v-wood", "v-grass", "v-park", "v-resi",
         "v-water", "v-waterway", "v-building", "v-road-case", "v-road",
-      ].forEach((id) => vis(id, vector));
-
-      vis("base-topo",      basemap === "topo");
-      vis("base-topo-deep", basemap === "topo");
-      vis("base-apple",     false);
+      ].forEach((id) => vis(id, falls));
       vis("base-satellite", basemap === "satellite");
-      vis("base-relief",    false);
-      vis("hillshade",      basemap === "relief");
-      // Fifth basemap. Everything above is exactly as it was.
       vis("falls-relief",        basemap === "falls");
       vis("falls-contour",       basemap === "falls");
       vis("falls-contour-index", basemap === "falls");

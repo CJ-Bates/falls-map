@@ -58,14 +58,6 @@ export function propertyTileCoords(minZ = 14, maxZ = 17): TileCoord[] {
 // PropertyMap.tsx's TOPO_STYLE.
 export function urlsForTile({ z, x, y }: TileCoord): string[] {
   const urls: string[] = [];
-  if (z <= 17) {
-    const sub = ["a", "b", "c"][Math.abs(x + y) % 3];
-    urls.push(`https://${sub}.tile.opentopomap.org/${z}/${x}/${y}.png`);
-  }
-  if (z <= 20) {
-    const sub = ["a", "b", "c"][Math.abs(x + y) % 3];
-    urls.push(`https://${sub}.basemaps.cartocdn.com/rastertiles/voyager/${z}/${x}/${y}.png`);
-  }
   // NB: Esri uses {z}/{y}/{x} order.
   if (z <= 19) {
     urls.push(`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`);

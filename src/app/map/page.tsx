@@ -43,31 +43,6 @@ import trailsData from "@/data/trails.json";
 // ---------- basemap thumbnails ------------------------------------------------
 // Tiny SVG previews that hint at each basemap's character. They sit inside
 // a square card with a cream selected-state ring.
-function ThumbTopo() {
-  return (
-    <svg viewBox="0 0 80 60" preserveAspectRatio="none" className="h-full w-full">
-      <rect width="80" height="60" fill="#E8D5A8" />
-      <path d="M0 18 Q 20 10, 40 18 T 80 16" stroke="#8B6F47" strokeWidth="1.2" fill="none" opacity="0.75" />
-      <path d="M0 30 Q 20 22, 40 30 T 80 28" stroke="#8B6F47" strokeWidth="1.2" fill="none" opacity="0.85" />
-      <path d="M0 42 Q 20 34, 40 42 T 80 40" stroke="#8B6F47" strokeWidth="1.2" fill="none" opacity="0.6" />
-      <ellipse cx="60" cy="48" rx="14" ry="6" fill="#7d8f5a" opacity="0.55" />
-      <circle cx="22" cy="46" r="3.5" fill="#2E6FA0" opacity="0.7" />
-    </svg>
-  );
-}
-function ThumbRelief() {
-  return (
-    <svg viewBox="0 0 80 60" preserveAspectRatio="none" className="h-full w-full">
-      <rect width="80" height="60" fill="#EFE4CC" />
-      {/* soft shaded ridges — light from the NW, same as the real layer */}
-      <path d="M0 40 Q 14 20, 28 34 T 56 26 T 80 36 L80 60 L0 60 Z" fill="#C9B48D" opacity="0.85" />
-      <path d="M0 44 Q 16 28, 30 40 T 58 32 T 80 42 L80 60 L0 60 Z" fill="#A98F66" opacity="0.7" />
-      <path d="M0 34 Q 14 16, 28 30" stroke="#FBF1D8" strokeWidth="2" fill="none" opacity="0.9" />
-      <path d="M30 38 Q 44 22, 58 30" stroke="#FBF1D8" strokeWidth="1.6" fill="none" opacity="0.75" />
-      <circle cx="64" cy="50" r="4" fill="#3a82c2" opacity="0.6" />
-    </svg>
-  );
-}
 function ThumbSatellite() {
   return (
     <svg viewBox="0 0 80 60" preserveAspectRatio="none" className="h-full w-full">
@@ -79,19 +54,6 @@ function ThumbSatellite() {
     </svg>
   );
 }
-function ThumbStandard() {
-  return (
-    <svg viewBox="0 0 80 60" preserveAspectRatio="none" className="h-full w-full">
-      <rect width="80" height="60" fill="#f4f0e6" />
-      <rect x="0" y="32" width="80" height="3" fill="#d5cdb0" />
-      <rect x="36" y="0" width="3" height="60" fill="#d5cdb0" />
-      <rect x="8" y="6" width="24" height="20" fill="#e8e0c8" rx="2" />
-      <rect x="44" y="38" width="28" height="18" fill="#e8e0c8" rx="2" />
-      <circle cx="55" cy="14" r="2.2" fill="#B23A1F" />
-    </svg>
-  );
-}
-
 function ThumbFalls() {
   return (
     <svg viewBox="0 0 80 60" preserveAspectRatio="none" className="h-full w-full">
@@ -113,14 +75,10 @@ function ThumbFalls() {
 }
 
 const BASEMAPS: { id: Basemap; label: string; Thumb: () => React.ReactElement }[] = [
-  { id: "topo",      label: "Topo",      Thumb: ThumbTopo },
-  { id: "satellite", label: "Satellite", Thumb: ThumbSatellite },
-  { id: "apple",     label: "Standard",  Thumb: ThumbStandard },
-  // Added alongside the original three, not replacing any of them.
-  { id: "relief",    label: "Relief",    Thumb: ThumbRelief },
-  // Fifth option: our own lidar relief + contours. The four above stay until
-  // CJ confirms this is the keeper.
+  // Falls (our lidar relief + contours) is the default; Satellite is the
+  // alternative. Topo / Standard / Relief retired 2026-09-22.
   { id: "falls",     label: "Falls",     Thumb: ThumbFalls },
+  { id: "satellite", label: "Satellite", Thumb: ThumbSatellite },
 ];
 
 // ---------- icons -------------------------------------------------------------
@@ -247,7 +205,7 @@ export default function MapPage() {
     else if (item.kind === "cabin") track("cabin_open", { slug: item.data.slug, name: item.data.name });
     else if (item.kind === "trail") track("trail_open", { slug: item.data.slug, name: item.data.name });
   }, []);
-  const [basemap, setBasemap] = useState<Basemap>("topo");
+  const [basemap, setBasemap] = useState<Basemap>("falls");
   const [layersOpen, setLayersOpen] = useState(false);
   const [offlineStatus, setOfflineStatus] = useState<OfflineStatus | null>(null);
   const [downloading, setDownloading] = useState<PrefetchProgress | null>(null);

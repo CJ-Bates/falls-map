@@ -61,6 +61,8 @@ SHADE_GAIN = 2.0      # contrast of the light/shadow blend
 SLOPE_DARKEN = 0.30   # extra darkening on steep faces (dams, creek cuts)
 SMOOTH_SIGMA = 1.0    # px; kills lidar speckle without softening the ridges
 
+EDGE_FEATHER_M = 450  # relief fades to transparent over this distance at the AOI edge
+
 CONTOUR_FT = 10       # minor interval
 INDEX_FT = 50         # index (heavier, labelled)
 
@@ -207,7 +209,15 @@ def render_relief(dem: np.ndarray, res: float, valid: np.ndarray) -> np.ndarray:
         s0 = y0 - a
         s1 = s0 + min(strip, h - y0)
         rgba[y0:y0 + (s1 - s0), :, :3] = np.clip(rgb[s0:s1], 0, 255).astype(np.uint8)
-    rgba[..., 3] = np.where(valid, 255, 0).astype(np.uint8)
+    # Alpha: opaque inside, feathered to 0 over EDGE_FEATHER_M at the AOI
+    # edge so the relief dissolves into the basemap instead of ending in a
+    # hard rectangle a mile out from the property.
+    yy = np.arange(h, dtype=np.float32)[:, None]
+    xx = np.arange(w, dtype=np.float32)[None, :]
+    edge = np.minimum(np.minimum(xx, w - 1 - xx), np.minimum(yy, h - 1 - yy)) * res
+    feather = np.clip(edge / EDGE_FEATHER_M, 0, 1)
+    feather = feather * feather * (3 - 2 * feather)  # smoothstep
+    rgba[..., 3] = np.where(valid, (255 * feather).astype(np.uint8), 0)
     del z
     return rgba
 
@@ -343,6 +353,7 @@ def main():
     ap.add_argument("--skip-tiles", action="store_true")
     ap.add_argument("--skip-contours", action="store_true")
     ap.add_argument("--terrain-only", action="store_true", help="re-render only the terrain (DEM) tiles")
+    ap.add_argument("--relief-only", action="store_true", help="re-render only the relief tiles")
     args = ap.parse_args()
 
     # Windows consoles default to cp1252, which can't print the arrows/dashes
@@ -368,6 +379,10 @@ def main():
 
     if args.terrain_only:
         write_tiles(terrarium(dem, valid), transform, TERRAIN_DIR, "terrain", False, TERRAIN_ZOOMS)
+        print("done")
+        return
+    if args.relief_only:
+        write_tiles(render_relief(dem, res, valid), transform, RELIEF_DIR, "relief", True, RELIEF_ZOOMS)
         print("done")
         return
     if not args.skip_tiles:
