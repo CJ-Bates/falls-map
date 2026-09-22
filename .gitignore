@@ -25,3 +25,4 @@ next-env.d.ts
 
 # terrain pipeline intermediates (raw lidar DEM, ~150 MB)
 /tools/terrain/out/
+__pycache__/

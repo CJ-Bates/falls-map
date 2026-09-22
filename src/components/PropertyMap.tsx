@@ -474,6 +474,8 @@ export default function PropertyMap({
       style: TOPO_STYLE,
       center: [property.center.lng, property.center.lat],
       zoom: 14.5,
+      // 3D terrain looks best tilted well past the default 60° cap.
+      maxPitch: 72,
       maxBounds: [
         [property.bounds.west - 0.02, property.bounds.south - 0.02],
         [property.bounds.east + 0.02, property.bounds.north + 0.02],
@@ -1202,8 +1204,21 @@ export default function PropertyMap({
     if (!m) return;
     const apply = () => {
       if (terrain3d) {
-        if (!m.getTerrain()) m.setTerrain({ source: "falls-dem", exaggeration: 1.3 });
-        if (!navMode && m.getPitch() < 30) m.easeTo({ pitch: 58, duration: 900, essential: true });
+        // ~250 ft of relief over a mile reads flat at true scale on a phone,
+        // so exaggerate — same trick every outdoor app uses on gentle hills.
+        if (!m.getTerrain()) m.setTerrain({ source: "falls-dem", exaggeration: 2.0 });
+        // Fly to a framed "hero" view: Main Lake in the foreground, the
+        // Lions View Way ridge standing up behind it, looking north-west.
+        if (!navMode) {
+          m.easeTo({
+            center: [-90.4588, 38.4078],
+            zoom: 15.4,
+            pitch: 64,
+            bearing: -40,
+            duration: 1400,
+            essential: true,
+          });
+        }
       } else {
         if (m.getTerrain()) m.setTerrain(null);
         if (!navMode) m.easeTo({ pitch: 0, duration: 600, essential: true });
