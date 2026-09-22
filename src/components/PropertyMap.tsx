@@ -69,6 +69,20 @@ const MAP_STYLE: maplibregl.StyleSpecification = {
       type: "vector",
       url: "https://tiles.openfreemap.org/planet",
     },
+    // Self-hosted aerial imagery for the Satellite basemap: Missouri's 6-inch
+    // winter-2024 statewide flight (MSDIS), tiled by tools/terrain/
+    // build_imagery.py. ~4x sharper than Esri and post-clearing. Sits on top
+    // of Esri World Imagery, which still fills the world beyond the fade.
+    // A spring drone orthomosaic can replace these tiles in the same slot.
+    ortho: {
+      type: "raster",
+      tiles: ["/tiles/ortho/{z}/{x}/{y}.webp"],
+      tileSize: 512,
+      minzoom: 12,
+      maxzoom: 18,
+      bounds: [-90.4855, 38.3835, -90.4285, 38.4275],
+      attribution: 'Imagery: <a href="https://www.msdis.missouri.edu/">MSDIS / State of Missouri</a> 2024',
+    },
     // "Falls" basemap — OUR OWN shaded relief, pre-rendered from the USGS 3DEP
     // lidar DEM (~1 m) by tools/terrain/build_terrain.py and served from
     // /public. 512 px WebP, z12–z16; MapLibre overzooms past that. `bounds`
@@ -105,6 +119,8 @@ const MAP_STYLE: maplibregl.StyleSpecification = {
   // basemap prop (see useEffect below).
   layers: [
     { id: "base-satellite",   type: "raster", source: "satellite",                layout: { visibility: "none" } },
+    { id: "base-ortho",       type: "raster", source: "ortho",                    layout: { visibility: "none" },
+      paint: { "raster-fade-duration": 150, "raster-resampling": "linear" } },
     // Vector context group (OpenFreeMap / OSM): land colours, water, roads and
     // buildings around the property. Drawn under the Falls relief so the
     // world outside the lidar area still has shape. Hidden in satellite mode.
@@ -1182,6 +1198,7 @@ export default function PropertyMap({
         "v-water", "v-waterway", "v-building", "v-road-case", "v-road",
       ].forEach((id) => vis(id, falls));
       vis("base-satellite", basemap === "satellite");
+      vis("base-ortho",     basemap === "satellite");
       vis("falls-relief",        basemap === "falls");
       vis("falls-contour",       basemap === "falls");
       vis("falls-contour-index", basemap === "falls");
