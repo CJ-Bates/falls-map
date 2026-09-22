@@ -256,8 +256,18 @@ def write_tiles(arr: np.ndarray, transform, out_dir: Path, label: str, alpha: bo
             img = np.moveaxis(dst, 0, -1)
             if alpha and img[..., 3].max() == 0:
                 continue
-            if not alpha and (img.sum(axis=-1) == 0).all():
-                continue
+            if not alpha:
+                # Terrain: pixels outside the DEM came back as (0,0,0), which
+                # terrarium decodes as -32768 m — a chasm at the AOI edge in
+                # 3D. Extend the nearest real elevation outward instead so the
+                # ground just goes flat past the lidar coverage.
+                empty = img.sum(axis=-1) == 0
+                if empty.all():
+                    continue
+                if empty.any():
+                    from scipy.ndimage import distance_transform_edt
+                    idx = distance_transform_edt(empty, return_distances=False, return_indices=True)
+                    img = img[tuple(idx)]
             p = out_dir / str(z) / str(tx)
             p.mkdir(parents=True, exist_ok=True)
             if alpha:
@@ -332,6 +342,7 @@ def main():
     ap.add_argument("--dem", help="existing EPSG:3857 DEM GeoTIFF (skip download)")
     ap.add_argument("--skip-tiles", action="store_true")
     ap.add_argument("--skip-contours", action="store_true")
+    ap.add_argument("--terrain-only", action="store_true", help="re-render only the terrain (DEM) tiles")
     args = ap.parse_args()
 
     # Windows consoles default to cp1252, which can't print the arrows/dashes
@@ -355,6 +366,10 @@ def main():
     print(f"DEM {dem.shape[1]}x{dem.shape[0]} @ {res:.2f} m, valid {valid.mean()*100:.1f}%, "
           f"{np.nanmin(dem[valid])*FT:.0f}–{np.nanmax(dem[valid])*FT:.0f} ft")
 
+    if args.terrain_only:
+        write_tiles(terrarium(dem, valid), transform, TERRAIN_DIR, "terrain", False, TERRAIN_ZOOMS)
+        print("done")
+        return
     if not args.skip_tiles:
         import shutil
         for d in (RELIEF_DIR, TERRAIN_DIR):
