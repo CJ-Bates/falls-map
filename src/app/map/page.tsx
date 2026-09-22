@@ -92,12 +92,35 @@ function ThumbStandard() {
   );
 }
 
+function ThumbFalls() {
+  return (
+    <svg viewBox="0 0 80 60" preserveAspectRatio="none" className="h-full w-full">
+      <rect width="80" height="60" fill="#EFE6D2" />
+      {/* lidar-style relief: a ridge lit from the NW with fine contour rings */}
+      <path d="M0 38 Q 18 14, 40 26 T 80 22 L80 60 L0 60 Z" fill="#CDB88F" opacity="0.9" />
+      <path d="M0 38 Q 18 14, 40 26" stroke="#FBF1D8" strokeWidth="2.2" fill="none" opacity="0.95" />
+      <path d="M40 26 Q 60 18, 80 22" stroke="#5A3F26" strokeWidth="1.4" fill="none" opacity="0.35" />
+      <g fill="none" stroke="#6B4A28" strokeWidth="0.55" opacity="0.55">
+        <ellipse cx="30" cy="40" rx="20" ry="9" />
+        <ellipse cx="30" cy="40" rx="14" ry="6" />
+        <ellipse cx="30" cy="40" rx="8" ry="3.2" />
+        <ellipse cx="62" cy="44" rx="12" ry="6" />
+        <ellipse cx="62" cy="44" rx="6" ry="2.8" />
+      </g>
+      <circle cx="16" cy="52" r="3.5" fill="#3a82c2" opacity="0.6" />
+    </svg>
+  );
+}
+
 const BASEMAPS: { id: Basemap; label: string; Thumb: () => React.ReactElement }[] = [
   { id: "topo",      label: "Topo",      Thumb: ThumbTopo },
   { id: "satellite", label: "Satellite", Thumb: ThumbSatellite },
   { id: "apple",     label: "Standard",  Thumb: ThumbStandard },
   // Added alongside the original three, not replacing any of them.
   { id: "relief",    label: "Relief",    Thumb: ThumbRelief },
+  // Fifth option: our own lidar relief + contours. The four above stay until
+  // CJ confirms this is the keeper.
+  { id: "falls",     label: "Falls",     Thumb: ThumbFalls },
 ];
 
 // ---------- icons -------------------------------------------------------------

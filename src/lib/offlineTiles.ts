@@ -70,6 +70,12 @@ export function urlsForTile({ z, x, y }: TileCoord): string[] {
   if (z <= 19) {
     urls.push(`https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`);
   }
+  // "Falls" relief — our own 512 px tiles, z12–16. A 512 px tile at z covers
+  // the same ground as four 256 px tiles at z+1, so map the 256-grid coord
+  // (z, x, y) to its 512-grid parent (z-1, x>>1, y>>1) and dedupe.
+  if (z >= 13 && z <= 17) {
+    urls.push(`/tiles/relief/${z - 1}/${x >> 1}/${y >> 1}.webp`);
+  }
   return urls;
 }
 
@@ -115,10 +121,11 @@ export async function prefetchAll(
   concurrency = 6,
 ): Promise<PrefetchProgress> {
   const template = await resolveVectorTemplate();
-  const allUrls = [
+  const allUrls = Array.from(new Set([
     ...coords.flatMap(urlsForTile),
     ...(template ? coords.flatMap((c) => vectorUrlsForTile(c, template)) : []),
-  ];
+    "/tiles/contours.json",
+  ]));
   let done = 0;
   let failed = 0;
   const total = allUrls.length;

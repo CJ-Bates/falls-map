@@ -1,7 +1,7 @@
 // public/sw.js — caches the app shell + map tiles + photos for offline use.
 // Registered by /src/components/RegisterSW.tsx on the home page.
 
-const VERSION = "v117";
+const VERSION = "v118";
 const APP_SHELL = `falls-app-${VERSION}`;
 const RUNTIME = `falls-runtime-${VERSION}`;
 const TILES = `falls-tiles-${VERSION}`;
@@ -72,6 +72,12 @@ self.addEventListener("fetch", (event) => {
   }
   // Same-origin: app shell + runtime
   if (url.origin === self.location.origin) {
+    // Our own relief / terrain / contour tiles — keep them with the other map
+    // tiles so "Save for offline" and cache accounting treat them the same.
+    if (url.pathname.startsWith("/tiles/")) {
+      event.respondWith(staleWhileRevalidate(TILES, req));
+      return;
+    }
     // Navigations (HTML pages) — serve the cached shell instantly and
     // refresh it in the background. On the property's spotty signal a
     // network-first strategy made every page tap wait out a round-trip.

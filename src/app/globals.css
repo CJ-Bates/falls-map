@@ -113,6 +113,9 @@ body {
 }
 /* Standard mode: no filter — it's already designed to be the "clean" look */
 .map-mode-apple .maplibregl-canvas { filter: none; }
+/* Falls mode: the relief is already painted in brand colours, so no filter;
+   the paper grain stays at full strength — it suits the drawn-map look. */
+.map-mode-falls .maplibregl-canvas { filter: none; }
 
 /* Paper grain feels right on topo, less right on a photo, and overpowering
    on the clean basemap. Tone it down for the non-topo modes. */

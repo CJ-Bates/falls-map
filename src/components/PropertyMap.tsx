@@ -21,7 +21,7 @@ export type SelectedItem =
   | { kind: "poi"; data: Poi }
   | { kind: "trail"; data: TrailMeta };
 
-export type Basemap = "topo" | "satellite" | "apple" | "relief";
+export type Basemap = "topo" | "satellite" | "apple" | "relief" | "falls";
 
 export type PoiVisibility = {
   cabins: boolean;
@@ -104,6 +104,26 @@ const TOPO_STYLE: maplibregl.StyleSpecification = {
       encoding: "terrarium",
       attribution: 'Elevation: <a href="https://registry.opendata.aws/terrain-tiles/">AWS Terrain Tiles</a>',
     },
+    // "Falls" basemap — OUR OWN shaded relief, pre-rendered from the USGS 3DEP
+    // lidar DEM (~1 m) by tools/terrain/build_terrain.py and served from
+    // /public. 512 px WebP, z12–z16; MapLibre overzooms past that. `bounds`
+    // stops the map requesting tiles outside the ~5 km area we rendered.
+    "falls-relief": {
+      type: "raster",
+      tiles: ["/tiles/relief/{z}/{x}/{y}.webp"],
+      tileSize: 512,
+      minzoom: 12,
+      maxzoom: 16,
+      bounds: [-90.4855, 38.3835, -90.4285, 38.4275],
+      attribution: 'Elevation: <a href="https://www.usgs.gov/3d-elevation-program">USGS 3DEP</a>',
+    },
+    // 5 ft contours (25 ft index) traced from the same lidar, clipped to the
+    // property + 250 m. Loaded by URL, not imported, so the app still builds
+    // before the pipeline has been run.
+    "falls-contours": {
+      type: "geojson",
+      data: "/tiles/contours.json",
+    },
   },
   // All four base layers are present from the start. Visibility is toggled
   // by the basemap prop (see useEffect below). The topo mode actually uses
@@ -131,6 +151,9 @@ const TOPO_STYLE: maplibregl.StyleSpecification = {
     { id: "v-resi",     type: "fill", source: "openfreemap", "source-layer": "landuse",
       filter: ["in", "class", "residential", "suburb", "neighbourhood"],
       layout: { visibility: "none" }, paint: { "fill-color": "#EFE5D0" } },
+    // Falls relief sits over the landcover fills and under OSM water / roads.
+    { id: "falls-relief", type: "raster", source: "falls-relief", layout: { visibility: "none" },
+      paint: { "raster-opacity": 1, "raster-fade-duration": 150, "raster-resampling": "linear" } },
     { id: "v-water",    type: "fill", source: "openfreemap", "source-layer": "water",
       layout: { visibility: "none" }, paint: { "fill-color": "#A8C9DF" } },
     { id: "v-waterway", type: "line", source: "openfreemap", "source-layer": "waterway",
@@ -139,6 +162,20 @@ const TOPO_STYLE: maplibregl.StyleSpecification = {
     { id: "v-building", type: "fill", source: "openfreemap", "source-layer": "building", minzoom: 14,
       layout: { visibility: "none" },
       paint: { "fill-color": "#E4D8C0", "fill-outline-color": "#D2C2A4" } },
+    // Lidar contours — minor 5 ft lines are whisper-thin, 25 ft index lines
+    // carry the shape. Under roads, over relief. Falls basemap only.
+    { id: "falls-contour", type: "line", source: "falls-contours", minzoom: 13.5,
+      filter: ["==", ["get", "idx"], 0],
+      layout: { visibility: "none", "line-cap": "round", "line-join": "round" },
+      paint: { "line-color": "#7A5C38",
+               "line-opacity": ["interpolate", ["linear"], ["zoom"], 13.5, 0, 14.5, 0.28, 17, 0.38],
+               "line-width":   ["interpolate", ["linear"], ["zoom"], 14, 0.5, 17, 0.9] } },
+    { id: "falls-contour-index", type: "line", source: "falls-contours", minzoom: 12.5,
+      filter: ["==", ["get", "idx"], 1],
+      layout: { visibility: "none", "line-cap": "round", "line-join": "round" },
+      paint: { "line-color": "#6B4A28",
+               "line-opacity": ["interpolate", ["linear"], ["zoom"], 12.5, 0, 13.5, 0.45, 17, 0.6],
+               "line-width":   ["interpolate", ["linear"], ["zoom"], 13, 0.8, 17, 1.6] } },
     { id: "v-road-case", type: "line", source: "openfreemap", "source-layer": "transportation", minzoom: 11,
       filter: ["!in", "class", "path", "track", "ferry"],
       layout: { visibility: "none", "line-cap": "round", "line-join": "round" },
@@ -1133,7 +1170,7 @@ export default function PropertyMap({
       };
       // Standard and Relief are drawn from vector tiles now; Topo and
       // Satellite are untouched raster, exactly as before.
-      const vector = basemap === "apple" || basemap === "relief";
+      const vector = basemap === "apple" || basemap === "relief" || basemap === "falls";
       [
         "v-bg", "v-wood", "v-grass", "v-park", "v-resi",
         "v-water", "v-waterway", "v-building", "v-road-case", "v-road",
@@ -1145,6 +1182,10 @@ export default function PropertyMap({
       vis("base-satellite", basemap === "satellite");
       vis("base-relief",    false);
       vis("hillshade",      basemap === "relief");
+      // Fifth basemap. Everything above is exactly as it was.
+      vis("falls-relief",        basemap === "falls");
+      vis("falls-contour",       basemap === "falls");
+      vis("falls-contour-index", basemap === "falls");
     };
     if (m.isStyleLoaded()) apply();
     else m.once("idle", apply);
