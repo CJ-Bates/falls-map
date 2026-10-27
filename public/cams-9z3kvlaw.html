@@ -13,7 +13,8 @@
   #map { position:absolute; inset:0; }
   .glass { background:rgba(42,31,24,.88); -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px); border:1px solid rgba(240,226,194,.18); box-shadow:0 14px 36px rgba(0,0,0,.45); }
   #title { position:absolute; top:calc(env(safe-area-inset-top,0px) + 12px); left:12px; right:12px; padding:10px 14px; border-radius:18px; z-index:5; display:flex; align-items:center; justify-content:space-between; gap:10px; }
-  #title h1 { margin:0; font-size:15px; font-weight:700; letter-spacing:-.01em; }
+  #title h1 { margin:0; font-size:15px; font-weight:700; letter-spacing:-.01em; white-space:nowrap; }
+  @media (max-width:430px) { #title { flex-direction:column; align-items:stretch; gap:8px; } #style { align-self:flex-start; } }
   #title small { display:block; font-size:11.5px; color:rgba(240,226,194,.65); margin-top:2px; }
   #style { display:flex; border-radius:999px; overflow:hidden; border:1px solid rgba(240,226,194,.25); }
   #style button { font:inherit; font-size:12px; font-weight:600; padding:7px 11px; border:0; background:transparent; color:rgba(240,226,194,.7); cursor:pointer; }
@@ -48,7 +49,7 @@
 <body>
 <div id="map"></div>
 <div id="title" class="glass">
-  <div><h1>Trail cameras — The Falls at Lions Den</h1><small>5 cameras · tap one for coordinates &amp; directions</small></div>
+  <div><h1>Trail cameras</h1><small>The Falls at Lions Den · tap a pin for coordinates &amp; directions</small></div>
   <div id="style"><button data-s="sat" class="on">Satellite</button><button data-s="terrain">Terrain</button></div>
 </div>
 <button id="locate" class="glass" title="Show my location" aria-label="Show my location">
@@ -106,7 +107,7 @@ map.addControl(new maplibregl.ScaleControl({ unit:"imperial" }), "bottom-left");
 // Fit to cameras + a little breathing room
 const b = new maplibregl.LngLatBounds();
 CAMS.forEach(c => b.extend([c.lon, c.lat]));
-map.fitBounds(b, { padding:{ top:110, bottom:150, left:40, right:40 }, maxZoom:16.2, duration:0 });
+map.fitBounds(b, { padding:{ top:150, bottom:160, left:44, right:44 }, maxZoom:16.2, duration:0 });
 
 // Basemap toggle
 document.querySelectorAll("#style button").forEach(btn => btn.onclick = () => {
@@ -131,7 +132,7 @@ function show(i) {
   document.querySelectorAll(".cam").forEach((el, k) => el.classList.toggle("on", k === i));
   if (popup) popup.remove();
   const ll = c.lat.toFixed(5) + ", " + c.lon.toFixed(5);
-  popup = new maplibregl.Popup({ offset:22, maxWidth:"260px" })
+  popup = new maplibregl.Popup({ offset:22, maxWidth:"260px", closeOnClick:false })
     .setLngLat([c.lon, c.lat])
     .setHTML(`<div class="pp"><b>${c.name}</b><div class="c">${ll}</div>` +
       `<a href="https://maps.apple.com/?ll=${c.lat},${c.lon}&q=${encodeURIComponent(c.name)}">Apple Maps</a>` +
@@ -141,12 +142,14 @@ function show(i) {
 }
 CAMS.forEach((c, i) => {
   const el = document.createElement("div"); el.className = "pin"; el.innerHTML = camIcon; el.title = c.name;
-  el.onclick = (e) => { e.stopPropagation(); show(i); };
+  el.addEventListener("click", (e) => { e.stopPropagation(); setTimeout(() => show(i), 0); });
   markers.push(new maplibregl.Marker({ element: el, anchor:"center" }).setLngLat([c.lon, c.lat]).addTo(map));
   const btn = document.createElement("button"); btn.className = "cam";
   btn.innerHTML = `<b>${c.name}</b><span>${c.zone}</span>`; btn.onclick = () => show(i);
   document.getElementById("row").appendChild(btn);
 });
+
+map.on("click", () => { if (popup) { popup.remove(); popup = null; } markers.forEach(m => m.getElement().classList.remove("on")); document.querySelectorAll(".cam").forEach(el => el.classList.remove("on")); });
 
 // My location
 let me = null, watch = null;
