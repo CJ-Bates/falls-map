@@ -68,7 +68,7 @@ export function urlsForTile({ z, x, y }: TileCoord): string[] {
   if (z >= 13 && z <= 17) {
     urls.push(`/tiles/relief/${z - 1}/${x >> 1}/${y >> 1}.webp`);
   }
-  // Self-hosted NAIP imagery for Satellite, z12–18 on the 512 grid.
+  // Self-hosted MO 6-inch (2024) imagery for Satellite, z12–18 on the 512 grid.
   if (z >= 13 && z <= 19) {
     urls.push(`/tiles/ortho/${z - 1}/${x >> 1}/${y >> 1}.webp`);
   }

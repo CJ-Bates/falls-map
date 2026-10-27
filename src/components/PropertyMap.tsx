@@ -25,6 +25,10 @@ export type SelectedItem =
 // Topo / Standard / Relief were retired 2026-09-22 once Falls was approved.
 export type Basemap = "falls" | "satellite";
 
+// Flip to true once tools/terrain/build_canopy.py has written
+// public/tiles/surface/**. Until then Satellite + 3D uses bare ground.
+const SURFACE_READY = false;
+
 export type PoiVisibility = {
   cabins: boolean;
   spots: boolean;
@@ -108,6 +112,18 @@ const MAP_STYLE: maplibregl.StyleSpecification = {
     "falls-dem": {
       type: "raster-dem",
       tiles: ["/tiles/terrain/{z}/{x}/{y}.png"],
+      tileSize: 512,
+      minzoom: 12,
+      maxzoom: 15,
+      encoding: "terrarium",
+      bounds: [-90.4855, 38.3835, -90.4285, 38.4275],
+    },
+    // Ground + tree canopy + buildings (lidar DSM, cleared areas flattened),
+    // from tools/terrain/build_canopy.py. Used for 3D in Satellite mode so
+    // the woods stand up under the imagery. Falls mode keeps bare ground.
+    "falls-surface": {
+      type: "raster-dem",
+      tiles: ["/tiles/surface/{z}/{x}/{y}.png"],
       tileSize: 512,
       minzoom: 12,
       maxzoom: 15,
@@ -1154,9 +1170,18 @@ export default function PropertyMap({
     if (!m) return;
     const apply = () => {
       if (terrain3d) {
+        // Satellite drapes over the canopy surface (trees stand up); Falls
+        // uses bare ground so the contours sit on the dirt they describe.
+        const useSurface = SURFACE_READY && basemap === "satellite";
+        const source = useSurface ? "falls-surface" : "falls-dem";
         // ~250 ft of relief over a mile reads flat at true scale on a phone,
         // so exaggerate — same trick every outdoor app uses on gentle hills.
-        if (!m.getTerrain()) m.setTerrain({ source: "falls-dem", exaggeration: 1.6 });
+        // The canopy surface already has 60–90 ft trees on it, so it needs
+        // less help than bare ground.
+        const exaggeration = useSurface ? 1.35 : 1.6;
+        const cur = m.getTerrain();
+        if (!cur || cur.source !== source) m.setTerrain({ source, exaggeration });
+        if (cur && cur.source !== source) return; // basemap swap while in 3D: keep the camera
         // Fly to a framed "hero" view: the whole property mid-frame, Main Lake
         // at centre, the Lions View Way ridge standing up behind it, looking
         // north-west. NB: with terrain on, MapLibre re-derives zoom from the
@@ -1172,15 +1197,17 @@ export default function PropertyMap({
             essential: true,
           });
         }
-      } else {
-        if (m.getTerrain()) m.setTerrain(null);
+      } else if (m.getTerrain()) {
+        // Only flatten when we're actually leaving 3D — this effect also
+        // runs on basemap changes, and those shouldn't touch the camera.
+        m.setTerrain(null);
         if (!navMode) m.easeTo({ pitch: 0, duration: 600, essential: true });
       }
     };
     if (m.isStyleLoaded()) apply();
     else m.once("idle", apply);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [terrain3d]);
+  }, [terrain3d, basemap]);
 
   // Apply basemap selection by toggling visibility on the 4 base raster
   // layers. Topo mode uses two stacked layers (opentopomap + voyager deep
